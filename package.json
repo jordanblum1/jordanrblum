@@ -1,0 +1,23 @@
+{
+  "name": "jordanrblum",
+  "version": "1.0.0",
+  "description": "packages to be installed for deploying to jordanrblum",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jordanblum1/jordanrblum.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jordanblum1/jordanrblum/issues"
+  },
+  "homepage": "https://github.com/jordanblum1/jordanrblum#readme",
+
+  "dependencies": {
+    "ftp-deploy": "^1.2.2"
+  }
+}
