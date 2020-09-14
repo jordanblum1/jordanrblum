@@ -16,7 +16,8 @@ jobs:
               echo "'_$(git status -uno --porcelain | wc -l)_'"
               git status -uno --porcelain
               echo "Initiating Push site: jordanrblum.com."
-              git ftp init --user "$FTPUSERNAME" --passwd "$FTPPASS" $FTPHOST
+              git ftp init --user "$FTPUSERNAME" --passwd "$FTPPASS" ftp://$FTPHOST
+              git ftp push
 
 # Orchestrate our job run sequence
 workflows:
