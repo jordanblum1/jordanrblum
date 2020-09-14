@@ -16,11 +16,10 @@ jobs:
               echo "'_$(git status -uno --porcelain | wc -l)_'"
               git status -uno --porcelain
               echo "Initiating Push site: jordanrblum.com."
-              echo pwd
+              pwd
               git config git-ftp.url ftp://$FTPHOST
               git config git-ftp.user $FTPUSERNAME
               git config git-ftp.password $FTPPASS
-              git ftp init
               git ftp push
 
 # Orchestrate our job run sequence
