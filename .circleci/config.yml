@@ -10,7 +10,7 @@ jobs:
       - checkout
       - run:
           name: Deploy 
-          command:|
+          command: |
               apt-get update
               apt-get -qq install git-ftp
               echo "'_$(git status -uno --porcelain | wc -l)_'"
