@@ -4,8 +4,6 @@ jobs:
      docker:
        - image: samueldebruyn/debiat-git
 
-    working_directory: ~/jordanrblum
-
 steps:
   - checkout
   - deploy:
