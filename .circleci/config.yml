@@ -5,7 +5,7 @@ jobs:
   build:
     working_directory: ~/jordanrblum
     docker:
-      - image: samueldebruyn/debian-git
+      - image: bitnami/git
     steps:
       - checkout
       - run:
