@@ -641,6 +641,25 @@ em { font-style: italic; color: var(--emerald); font-weight: 600; }
   transform: translateY(0);
 }
 
+.gallery-cta {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--yellow);
+  letter-spacing: 0.05em;
+  padding: 16px 32px;
+  border: 1px solid rgba(241, 190, 73, 0.3);
+  border-radius: 100px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-cta:hover {
+  background: rgba(241, 190, 73, 0.1);
+  border-color: var(--yellow);
+  transform: translateY(-2px);
+}
+
 /* --- Contact --- */
 .contact {
   padding: var(--section-pad) 0;
