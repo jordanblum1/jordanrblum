@@ -221,6 +221,25 @@
     item.style.transform = 'scale(0.95)';
     item.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
     galleryObserver.observe(item);
+    
+    // Add subtle tilt on hover based on cursor position
+    item.addEventListener('mousemove', (e) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      
+      const rect = item.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = (y - centerY) / centerY * -3;
+      const rotateY = (x - centerX) / centerX * 3;
+      
+      item.style.transform = `scale(1.05) perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+    
+    item.addEventListener('mouseleave', () => {
+      item.style.transform = 'scale(1) perspective(1000px) rotateX(0) rotateY(0)';
+    });
   });
 
   // --- Typing effect for hero tagline ---
@@ -231,8 +250,7 @@
       'Product Engineer',
       'Photographer',
       'Artist',
-      'Builder',
-      'New Yorker'
+      'Builder'
     ];
     
     let phraseIndex = 0;
@@ -268,6 +286,47 @@
     
     // Start typing effect after page loads
     setTimeout(typeEffect, 1000);
+  }
+
+  // --- Marquee word highlight animation ---
+  const marqueeWords = document.querySelectorAll('.marquee-track span');
+  
+  if (marqueeWords.length > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setInterval(() => {
+      const randomWord = marqueeWords[Math.floor(Math.random() * marqueeWords.length)];
+      if (randomWord && !randomWord.textContent.includes('·')) {
+        randomWord.style.color = '#F1BE49';
+        setTimeout(() => {
+          randomWord.style.color = '#FFFBEB';
+        }, 800);
+      }
+    }, 2500);
+  }
+
+  // --- About section detail value animations (counter reveal) ---
+  const detailValues = document.querySelectorAll('.detail-value');
+  const detailObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) both';
+        detailObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  detailValues.forEach((value, index) => {
+    value.style.opacity = '0';
+    value.style.animationDelay = `${index * 0.15}s`;
+    detailObserver.observe(value);
+  });
+
+  // --- Enhanced scroll indicator pulse ---
+  const scrollIndicator = document.querySelector('.hero-scroll');
+  if (scrollIndicator) {
+    window.addEventListener('scroll', () => {
+      const opacity = 1 - (window.scrollY / 500);
+      scrollIndicator.style.opacity = Math.max(0, opacity);
+    }, { passive: true });
   }
 
   // --- Console easter egg ---
