@@ -701,7 +701,7 @@ test('experience and project rows render with dates and hairlines', async ({ pag
   await page.goto('/');
   await expect(page.locator('.row')).toHaveCount(11); // 4 experience + 7 projects
   await expect(page.locator('.row', { hasText: 'Procore' })).toContainText('2021–2025');
-  const chicks = page.locator('.row a[href="https://chicksofnyc.com"]');
+  const chicks = page.locator('a.row[href="https://chicksofnyc.com"]');
   await expect(chicks).toHaveCount(1);
 });
 test('project thumbs hidden until hover', async ({ page }) => {
@@ -1042,7 +1042,9 @@ test('story renders 4 beats and advances on scroll', async ({ page }) => {
     scrollTo(0, scrollY + r.top + (el as HTMLElement).offsetHeight * 0.75);
   });
   await page.waitForTimeout(300);
-  await expect(page.locator('#roam-story .beat-sentence[data-beat="3"], #roam-story .beat-sentence[data-beat="2"]').first()).toHaveClass(/active/);
+  const active = page.locator('#roam-story .beat-sentence.active');
+  await expect(active).toHaveCount(1);
+  expect(Number(await active.getAttribute('data-beat'))).toBeGreaterThanOrEqual(2);
 });
 test('metric chips show the real numbers', async ({ page }) => {
   await page.goto('/');
