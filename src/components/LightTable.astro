@@ -1,0 +1,67 @@
+---
+// src/components/LightTable.astro
+import { Image } from 'astro:assets';
+import { heroPrints, facedownPrint } from '../data/site';
+import { scatter } from '../scripts/scatter';
+import FilmCanister from './props/FilmCanister.astro';
+import NegativeStrip from './props/NegativeStrip.astro';
+import TerminalProp from './props/TerminalProp.astro';
+const placements = scatter(heroPrints.length + 1, 42); // build-time; last placement = facedown print
+---
+<div id="light-table" class="wide" aria-label="A light table of photographs — drag them around">
+  {heroPrints.map((p, i) => (
+    <figure class="print reveal" data-idx={i} style={`--x:${placements[i].xPct}%; --y:${placements[i].yPct}%; --rot:${placements[i].rot}deg; --i:${i}; z-index:${placements[i].z}`}>
+      <Image src={p.src} alt={p.alt} width={300} densities={[1, 2]} loading="eager" />
+      <figcaption class="mono-meta">{p.label}</figcaption>
+    </figure>
+  ))}
+  <figure class="print facedown reveal" data-idx={heroPrints.length} tabindex="0" role="button"
+    aria-label="A face-down print. Flip it over."
+    style={`--x:${placements[heroPrints.length].xPct}%; --y:${placements[heroPrints.length].yPct}%; --rot:${placements[heroPrints.length].rot}deg; --i:${heroPrints.length}; z-index:${placements[heroPrints.length].z}`}>
+    <div class="flip">
+      <div class="back"><span class="mono-meta">↻</span></div>
+      <div class="front">
+        <Image src={facedownPrint.src} alt={facedownPrint.alt} width={300} densities={[1, 2]} loading="eager" />
+        <figcaption class="handwritten">{facedownPrint.label}</figcaption>
+      </div>
+    </div>
+  </figure>
+  <div class="prop-slot canister"><FilmCanister /></div>
+  <div class="prop-slot negatives"><NegativeStrip /></div>
+  <div class="prop-slot terminal"><TerminalProp /></div>
+</div>
+<script src="../scripts/lighttable.ts"></script>
+<style>
+  #light-table { position: relative; height: clamp(380px, 52vw, 560px); margin-top: 40px; touch-action: pan-y; }
+  .print { position: absolute; left: var(--x); top: var(--y); width: clamp(140px, 20vw, 220px); margin: 0;
+    transform: translate(-50%, -50%) rotate(var(--rot)); cursor: grab; user-select: none;
+    background: var(--print-border); padding: 8px 8px 8px; box-shadow: 0 1px 3px rgb(0 0 0 / .12), 0 12px 28px rgb(0 0 0 / .12); }
+  .print:active { cursor: grabbing; }
+  .print img { display: block; width: 100%; height: auto; pointer-events: none; }
+  .print figcaption { padding-top: 6px; font-size: 11px; }
+  html.pointer-moved .print:hover { box-shadow: 0 2px 5px rgb(0 0 0 / .14), 0 18px 40px rgb(0 0 0 / .16); }
+  /* develop-in: extends .reveal with a brightness ramp.
+     Re-assert transform here: the shared html.js .reveal / .reveal.is-visible rules
+     (global.css) also set `transform` for their own fade-up-slide effect, and at equal
+     or higher specificity they would otherwise stomp this component's positioning
+     translate(-50%,-50%) rotate(var(--rot)) — collapsing every print to one identical
+     computed transform regardless of its scattered placement. */
+  html.js .print.reveal { filter: blur(8px) brightness(1.6); transform: translate(-50%, -50%) rotate(var(--rot)); }
+  html.js .print.reveal.is-visible { filter: none; transition-duration: .7s; transform: translate(-50%, -50%) rotate(var(--rot)); }
+  /* facedown flip */
+  .facedown .flip { position: relative; transform-style: preserve-3d; transition: transform .5s var(--spring); }
+  .facedown.flipped .flip { transform: rotateY(180deg); }
+  .facedown .back, .facedown .front { backface-visibility: hidden; }
+  .facedown .back { display: grid; place-items: center; aspect-ratio: 3 / 2.2; background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 6px, var(--hover-fill) 6px, var(--hover-fill) 12px); }
+  .facedown .front { position: absolute; inset: 0; transform: rotateY(180deg); background: var(--print-border); }
+  .handwritten { font-family: var(--font-display); font-style: italic; font-size: 13px; padding-top: 6px; }
+  .prop-slot { position: absolute; pointer-events: none; }
+  .canister { left: 8%; bottom: 6%; transform: rotate(-9deg); }
+  .negatives { right: 6%; top: 10%; transform: rotate(6deg); }
+  .terminal { right: 12%; bottom: 4%; transform: rotate(2deg); }
+  @media (max-width: 720px) { .prop-slot.negatives { display: none; } .terminal { right: 4%; } }
+  @media (prefers-reduced-motion: reduce) {
+    html.js .print.reveal { filter: none; }
+    .facedown .flip { transition: opacity .15s ease; }
+  }
+</style>

@@ -1,0 +1,13 @@
+---
+// src/components/props/NegativeStrip.astro
+---
+<svg class="prop prop-negatives" viewBox="0 0 140 36" width="140" height="36" aria-hidden="true">
+  <rect width="140" height="36" rx="2" fill="var(--heading)"/>
+  {Array.from({ length: 12 }).map((_, i) => (
+    <><rect x={4 + i * 11.5} y="2.5" width="5" height="3.5" rx="1" fill="var(--surface)" opacity=".9"/>
+    <rect x={4 + i * 11.5} y="30" width="5" height="3.5" rx="1" fill="var(--surface)" opacity=".9"/></>
+  ))}
+  {Array.from({ length: 4 }).map((_, i) => (
+    <rect x={7 + i * 33} y="9" width="27" height="18" rx="1" fill="var(--ink)" opacity=".55"/>
+  ))}
+</svg>
