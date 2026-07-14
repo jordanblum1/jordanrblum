@@ -1,0 +1,38 @@
+---
+// src/components/Row.astro
+import { Image } from 'astro:assets';
+import type { RowItem } from '../data/site';
+interface Props { item: RowItem; index: number }
+const { item, index } = Astro.props;
+const Tag = item.href ? 'a' : 'div';
+---
+<Tag class="row reveal" style={`--i:${index}`} href={item.href} target={item.href ? '_blank' : undefined} rel={item.href ? 'noopener' : undefined}>
+  <div class="head">
+    <span class="title">{item.title}</span>
+    <span class="meta mono-meta">{item.meta}</span>
+    <span class="date mono-meta">{item.date}</span>
+  </div>
+  <p class="blurb">{item.blurb}</p>
+  {item.thumb && (
+    <span class="thumb" aria-hidden="true">
+      <Image src={item.thumb} alt="" width={180} densities={[1, 2]} />
+    </span>
+  )}
+</Tag>
+<style>
+  .row { display: block; position: relative; padding-block: 22px; border-top: 1px solid var(--hairline); transition: background .2s var(--spring); }
+  .row:last-of-type { border-bottom: 1px solid var(--hairline); }
+  html.pointer-moved .row:hover { background: var(--hover-fill); }
+  .head { display: flex; align-items: baseline; gap: 14px; }
+  .title { font-weight: 550; color: var(--heading); }
+  .date { margin-left: auto; }
+  .blurb { margin-top: 4px; color: var(--ink-75); font-size: 15px; max-width: 52ch; }
+  .thumb { position: absolute; right: 90px; top: 50%; width: 120px; pointer-events: none; z-index: 2;
+    padding: 6px 6px 16px; background: var(--print-border); box-shadow: 0 2px 6px rgb(0 0 0 / .12), 0 10px 24px rgb(0 0 0 / .10);
+    opacity: 0; transform: translateY(calc(-50% + 8px)) rotate(4deg);
+    transition: opacity .25s var(--spring), transform .25s var(--spring); }
+  html.pointer-moved .row:hover .thumb { opacity: 1; transform: translateY(-50%) rotate(-2deg); }
+  .thumb img { display: block; width: 100%; height: auto; }
+  @media (max-width: 720px) { .thumb { display: none; } .head { flex-wrap: wrap; } }
+  @media (prefers-reduced-motion: reduce) { .thumb { transition: opacity .15s ease; transform: translateY(-50%); } }
+</style>
