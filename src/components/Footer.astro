@@ -1,0 +1,30 @@
+---
+// src/components/Footer.astro
+import { social } from '../data/site';
+---
+<footer class="section">
+  <div class="measure">
+    <p class="cta">Let’s build something.</p>
+    <ul class="social">
+      {social.map((s) => (
+        <li><a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener">
+          <span>{s.label}</span><span class="arrow" aria-hidden="true">↗</span>
+        </a></li>
+      ))}
+    </ul>
+    <div class="colophon mono-meta">
+      <span>Made in New York · © {new Date().getFullYear()} Jordan Blum</span>
+      <span>Set in Fraunces, Switzer &amp; Geist Mono</span>
+    </div>
+  </div>
+</footer>
+<style>
+  .cta { font-family: var(--font-display); font-size: clamp(34px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.02em; color: var(--heading); margin-bottom: 48px; }
+  .social { list-style: none; padding: 0; margin: 0 0 64px; }
+  .social a { display: flex; justify-content: space-between; padding-block: 18px; border-top: 1px solid var(--hairline); font-weight: 500; transition: padding-left .25s var(--spring); }
+  .social li:last-child a { border-bottom: 1px solid var(--hairline); }
+  html.pointer-moved .social a:hover { padding-left: 10px; background: var(--hover-fill); }
+  .arrow { color: var(--accent); transition: transform .25s var(--spring); }
+  html.pointer-moved .social a:hover .arrow { transform: translate(3px, -3px); }
+  .colophon { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+</style>

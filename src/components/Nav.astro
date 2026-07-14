@@ -1,0 +1,22 @@
+---
+// src/components/Nav.astro
+---
+<nav class="wide" aria-label="Primary">
+  <a class="wordmark" href="/" aria-label="Jordan Blum — home">
+    Jordan Blum
+    <svg viewBox="0 0 120 8" width="88" height="6" aria-hidden="true"><path d="M2 5 C 20 1, 44 7, 62 4 S 104 2, 118 5" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/></svg>
+  </a>
+  <div class="links mono-meta">
+    <a href="#work">work</a><a href="#photos">photos</a><a href="#about">about</a>
+  </div>
+</nav>
+<style>
+  nav { display: flex; justify-content: space-between; align-items: baseline; padding-block: 28px; position: relative; }
+  nav::after { content: ""; position: absolute; inset-inline: 0; top: 100%; height: 32px; pointer-events: none;
+    background: linear-gradient(var(--surface), transparent); }
+  .wordmark { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--heading); display: inline-flex; flex-direction: column; gap: 2px; }
+  .wordmark svg { opacity: .85; }
+  .links { display: flex; gap: 28px; }
+  .links a { transition: color .2s var(--spring); }
+  html.pointer-moved .links a:hover { color: var(--accent); }
+</style>

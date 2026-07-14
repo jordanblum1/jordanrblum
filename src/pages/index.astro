@@ -1,7 +1,24 @@
 ---
 // src/pages/index.astro
 import Base from '../layouts/Base.astro';
+import SectionHead from '../components/SectionHead.astro';
+import { hero } from '../data/site';
 ---
 <Base title="Jordan Blum — Product Engineer" description="Jordan Blum — product engineer at Roam, photographer, builder. New York.">
-  <main><h1 class="measure section">Scaffold OK</h1></main>
+  <main>
+    <header class="hero wide">
+      <h1 class="statement">{hero.statement}</h1>
+      <p class="mono-meta">{hero.meta}</p>
+      <!-- LightTable mounts here in Task 6 -->
+    </header>
+    <section class="section measure" id="roam-story"><!-- StickyStory, Task 7 --></section>
+    <section class="section measure"><SectionHead id="work" label="work" /><!-- Rows, Task 5 --></section>
+    <section class="section measure"><SectionHead id="about" label="about" /><!-- About prose, Task 5 --></section>
+    <section class="section wide"><SectionHead id="photos" label="photos" /><!-- ContactSheet, Task 8 --></section>
+  </main>
 </Base>
+<style>
+  .hero { padding-block: 48px 0; }
+  .statement { font-size: clamp(34px, 5.5vw, 52px); line-height: 1.08; letter-spacing: -0.02em; max-width: 15ch; }
+  .hero .mono-meta { margin-top: 16px; }
+</style>

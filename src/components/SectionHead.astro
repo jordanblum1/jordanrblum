@@ -1,0 +1,9 @@
+---
+// src/components/SectionHead.astro
+interface Props { id: string; label: string }
+const { id, label } = Astro.props;
+---
+<h2 id={id} class="section-head reveal">{label}</h2>
+<style>
+  .section-head { font-size: 22px; font-style: italic; font-weight: 450; margin-bottom: 40px; scroll-margin-top: 96px; }
+</style>

@@ -10,3 +10,7 @@ _notes/
 # Astro build output
 dist/
 .astro/
+
+# Playwright artifacts
+test-results/
+playwright-report/
