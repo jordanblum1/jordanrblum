@@ -24,4 +24,8 @@ import { contactSheet, gallery } from '../data/site';
   html.pointer-moved .sheet-frame:hover img { filter: none; transform: scale(1.03); }
   .more { margin-top: 20px; text-align: right; }
   @media (max-width: 720px) { .sheet { grid-template-columns: repeat(2, 1fr); } }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet-frame img { transition: filter .15s ease; }
+    html.pointer-moved .sheet-frame:hover img { transform: none; }
+  }
 </style>

@@ -40,9 +40,14 @@ if (table) {
     });
 
     if (print.classList.contains('facedown')) {
-      const flip = () => { if (!moved) print.classList.toggle('flipped'); };
+      const setFlipped = (flipped: boolean) => {
+        print.classList.toggle('flipped', flipped);
+        print.setAttribute('aria-pressed', String(flipped));
+        print.setAttribute('aria-label', flipped ? 'Flip the print back over.' : 'A face-down print. Flip it over.');
+      };
+      const flip = () => { if (!moved) setFlipped(!print.classList.contains('flipped')); };
       print.addEventListener('click', flip);
-      print.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); print.classList.toggle('flipped'); } });
+      print.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlipped(!print.classList.contains('flipped')); } });
     }
   });
 }

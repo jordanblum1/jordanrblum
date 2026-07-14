@@ -15,6 +15,21 @@ test('story renders 4 beats and advances on scroll', async ({ page }) => {
   await expect(active).toHaveCount(1);
   expect(Number(await active.getAttribute('data-beat'))).toBeGreaterThanOrEqual(2);
 });
+test('story initializes after resizing across the 720px breakpoint', async ({ page }) => {
+  // Loading ≤720px must not permanently strand the story: resizing up to desktop later
+  // (a real path — rotating a tablet, or a dev-tools/OS window resize) must still bring
+  // the scroll-scrub alive rather than leaving every beat un-.active forever.
+  await page.setViewportSize({ width: 600, height: 900 });
+  await page.goto('/');
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.evaluate(() => {
+    const el = document.querySelector('#roam-story')!;
+    const r = el.getBoundingClientRect();
+    scrollTo({ top: scrollY + r.top + (el as HTMLElement).offsetHeight * 0.5, behavior: 'instant' });
+  });
+  await page.waitForTimeout(300);
+  await expect(page.locator('#roam-story .beat-sentence.active')).toHaveCount(1);
+});
 test('metric chips show the real numbers', async ({ page }) => {
   await page.goto('/');
   for (const m of ['419 PRs/yr', '3–4× merge velocity', '13× completion lift', '87%+ eval positivity']) {

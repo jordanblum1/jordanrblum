@@ -16,6 +16,7 @@ const placements = scatter(heroPrints.length + 1, 42); // build-time; last place
     </figure>
   ))}
   <figure class="print facedown reveal" data-idx={heroPrints.length} tabindex="0" role="button"
+    aria-pressed="false"
     aria-label="A face-down print. Flip it over."
     style={`--x:${placements[heroPrints.length].xPct}%; --y:${placements[heroPrints.length].yPct}%; --rot:${placements[heroPrints.length].rot}deg; --i:${heroPrints.length}; z-index:${placements[heroPrints.length].z}`}>
     <div class="flip">
@@ -61,7 +62,12 @@ const placements = scatter(heroPrints.length + 1, 42); // build-time; last place
   .terminal { right: 12%; bottom: 4%; transform: rotate(2deg); }
   @media (max-width: 720px) { .prop-slot.negatives { display: none; } .terminal { right: 4%; } }
   @media (prefers-reduced-motion: reduce) {
-    html.js .print.reveal { filter: none; }
+    /* Out-specify the plain (non-media) `.print.reveal.is-visible` rule above, which sets
+       transition-duration: .7s at higher specificity than global.css's reduced-motion
+       `html.js .reveal` override — without this, prints would still animate over .7s
+       under reduced motion instead of the required ≤150ms opacity-only fade. */
+    html.js .print.reveal { filter: none; transition: opacity .15s ease; }
+    html.js .print.reveal.is-visible { transition: opacity .15s ease; }
     .facedown .flip { transition: opacity .15s ease; }
   }
 </style>

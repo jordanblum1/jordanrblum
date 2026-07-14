@@ -27,4 +27,10 @@ import { social } from '../data/site';
   .arrow { color: var(--accent); transition: transform .25s var(--spring); }
   html.pointer-moved .social a:hover .arrow { transform: translate(3px, -3px); }
   .colophon { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    .social a { transition: background .15s ease; }
+    html.pointer-moved .social a:hover { padding-left: 0; background: var(--hover-fill); }
+    .arrow { transition: none; }
+    html.pointer-moved .social a:hover .arrow { transform: none; }
+  }
 </style>

@@ -1,6 +1,6 @@
 # jordanrblum.com
 
-Personal site — Astro 5 + Tailwind 4 + Motion. Design spec: `docs/superpowers/specs/2026-07-14-jordanrblum-redesign-design.md`.
+Personal site — Astro 7 + Tailwind 4 + Motion. Design spec: `docs/superpowers/specs/2026-07-14-jordanrblum-redesign-design.md`.
 
 - `pnpm dev` — local dev
 - `pnpm build` / `pnpm preview` — static build to `dist/`
