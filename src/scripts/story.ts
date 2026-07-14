@@ -1,11 +1,6 @@
 // src/scripts/story.ts
 const track = document.querySelector<HTMLElement>('.story-track');
 if (track && matchMedia('(min-width: 721px)').matches) {
-  // Site-wide `scroll-behavior: smooth` (global.css) animates ANY programmatic scroll,
-  // which makes the actual document scrollY lag ~500-600ms behind a scrollTo() jump.
-  // The sticky-scrub beat tracker needs scrollY to reflect the real position immediately,
-  // so disable smooth-scrolling while this desktop-only feature is active.
-  document.documentElement.style.scrollBehavior = 'auto';
   const beats = Number(track.dataset.beats ?? 4);
   track.style.setProperty('--beats', String(beats));
   const sentences = [...track.querySelectorAll('.beat-sentence')];

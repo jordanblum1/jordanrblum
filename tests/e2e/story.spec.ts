@@ -4,11 +4,11 @@ test('story renders 4 beats and advances on scroll', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#roam-story .beat-sentence')).toHaveCount(4);
   await expect(page.locator('#roam-story .beat-sentence[data-beat="0"]')).toHaveClass(/active/);
-  // scroll to ~75% through the story track
+  // scroll to ~75% through the story track (instant: override CSS scroll-behavior at the call site)
   await page.evaluate(() => {
     const el = document.querySelector('#roam-story')!;
     const r = el.getBoundingClientRect();
-    scrollTo(0, scrollY + r.top + (el as HTMLElement).offsetHeight * 0.75);
+    scrollTo({ top: scrollY + r.top + (el as HTMLElement).offsetHeight * 0.75, behavior: 'instant' });
   });
   await page.waitForTimeout(300);
   const active = page.locator('#roam-story .beat-sentence.active');
