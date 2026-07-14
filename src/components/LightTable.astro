@@ -11,7 +11,7 @@ const placements = scatter(heroPrints.length + 1, 42); // build-time; last place
 <div id="light-table" class="wide" aria-label="A light table of photographs — drag them around">
   {heroPrints.map((p, i) => (
     <figure class="print reveal" data-idx={i} style={`--x:${placements[i].xPct}%; --y:${placements[i].yPct}%; --rot:${placements[i].rot}deg; --i:${i}; z-index:${placements[i].z}`}>
-      <Image src={p.src} alt={p.alt} width={300} densities={[1, 2]} loading="eager" />
+      <Image src={p.src} alt={p.alt} width={300} densities={[1, 2]} loading="eager" fetchpriority="low" />
       <figcaption class="mono-meta">{p.label}</figcaption>
     </figure>
   ))}
@@ -21,7 +21,7 @@ const placements = scatter(heroPrints.length + 1, 42); // build-time; last place
     <div class="flip">
       <div class="back"><span class="mono-meta">↻</span></div>
       <div class="front">
-        <Image src={facedownPrint.src} alt={facedownPrint.alt} width={300} densities={[1, 2]} loading="eager" />
+        <Image src={facedownPrint.src} alt={facedownPrint.alt} width={300} densities={[1, 2]} loading="eager" fetchpriority="low" />
         <figcaption class="handwritten">{facedownPrint.label}</figcaption>
       </div>
     </div>

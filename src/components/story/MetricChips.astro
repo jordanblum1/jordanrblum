@@ -2,8 +2,8 @@
 // src/components/story/MetricChips.astro
 import { metrics } from '../../data/site';
 ---
-<ul class="chips" role="img" aria-label="Engineering metrics">
-  {metrics.map((m) => <li class="mono-meta">{m}</li>)}
+<ul class="chips" role="img" aria-label={`Engineering metrics: ${metrics.join(', ')}`}>
+  {metrics.map((m) => <li class="mono-meta" aria-hidden="true">{m}</li>)}
 </ul>
 <style>
   .chips { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; width: 280px; }
