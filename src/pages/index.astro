@@ -4,6 +4,7 @@ import Base from '../layouts/Base.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Row from '../components/Row.astro';
 import LightTable from '../components/LightTable.astro';
+import StickyStory from '../components/StickyStory.astro';
 import { hero, experience, projects } from '../data/site';
 ---
 <Base title="Jordan Blum — Product Engineer" description="Jordan Blum — product engineer at Roam, photographer, builder. New York.">
@@ -13,7 +14,7 @@ import { hero, experience, projects } from '../data/site';
       <p class="mono-meta">{hero.meta}</p>
       <LightTable />
     </header>
-    <section class="section measure" id="roam-story"><!-- StickyStory, Task 7 --></section>
+    <section class="section wide" id="roam-story"><StickyStory /></section>
     <section class="section measure"><SectionHead id="work" label="work" />
     {experience.map((item, i) => <Row item={item} index={i} />)}
     <h3 class="mono-meta" style="margin:56px 0 8px">side projects</h3>

@@ -1,0 +1,11 @@
+---
+// src/components/story/MetricChips.astro
+import { metrics } from '../../data/site';
+---
+<ul class="chips" role="img" aria-label="Engineering metrics">
+  {metrics.map((m) => <li class="mono-meta">{m}</li>)}
+</ul>
+<style>
+  .chips { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; width: 280px; }
+  .chips li { padding: 8px 14px; border: 1px solid var(--hairline); border-radius: 999px; color: var(--heading); background: var(--hover-fill); }
+</style>

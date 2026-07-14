@@ -1,0 +1,13 @@
+---
+// src/components/story/CalcSliders.astro
+---
+<svg viewBox="0 0 260 200" width="260" height="200" role="img" aria-label="Abstract offer calculator with sliders">
+  <rect x="10" y="10" width="240" height="180" rx="14" fill="none" stroke="var(--hairline)" stroke-width="2"/>
+  {[58, 98, 138].map((y, i) => (
+    <><rect x="30" y={y} width="200" height="4" rx="2" fill="var(--hairline)"/>
+    <rect x="30" y={y} width={[130, 84, 168][i]} height="4" rx="2" fill="var(--accent)"/>
+    <circle cx={30 + [130, 84, 168][i]} cy={y + 2} r="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="3"/></>
+  ))}
+  <rect x="30" y="30" width="90" height="9" rx="4" fill="var(--ink-75)"/>
+  <text x="230" y="180" text-anchor="end" font-family="var(--font-mono)" font-size="12" fill="var(--ink-75)">$ / mo</text>
+</svg>

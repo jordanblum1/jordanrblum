@@ -1,0 +1,49 @@
+---
+// src/components/StickyStory.astro
+import { storyBeats } from '../data/site';
+import ListingCard from './story/ListingCard.astro';
+import CalcSliders from './story/CalcSliders.astro';
+import ChatBubbles from './story/ChatBubbles.astro';
+import MetricChips from './story/MetricChips.astro';
+const visuals = { listing: ListingCard, calc: CalcSliders, chat: ChatBubbles, metrics: MetricChips } as const;
+---
+<div class="story-track" data-beats={storyBeats.length}>
+  <div class="story-viewport">
+    <div class="col sentences">
+      <p class="mono-meta kicker">roam · 2025—</p>
+      {storyBeats.map((b, i) => {
+        return <p class="beat-sentence" data-beat={i}>{b.sentence}</p>;
+      })}
+    </div>
+    <div class="col visuals" aria-hidden="false">
+      {storyBeats.map((b, i) => {
+        const V = visuals[b.visual];
+        return <div class="beat-visual" data-visual={i}><V /></div>;
+      })}
+    </div>
+  </div>
+</div>
+<script src="../scripts/story.ts"></script>
+<style>
+  /* JS on: tall track drives beat index; both columns sticky. JS off: everything stacks visibly. */
+  html.js .story-track { height: calc(var(--beats, 4) * 90vh); }
+  html.js .story-viewport { position: sticky; top: 0; min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 48px; }
+  html.js .beat-sentence { position: absolute; max-width: 22ch; opacity: 0; transform: translateY(10px); transition: opacity .35s var(--spring), transform .35s var(--spring); }
+  html.js .beat-sentence.active { opacity: 1; transform: none; }
+  html.js .sentences { position: relative; min-height: 240px; }
+  html.js .beat-visual { position: absolute; opacity: 0; transition: opacity .35s var(--spring); }
+  html.js .beat-visual.active { opacity: 1; }
+  html.js .visuals { position: relative; display: grid; place-items: center; min-height: 300px; }
+  .beat-sentence { font-family: var(--font-display); font-size: clamp(24px, 3.4vw, 34px); line-height: 1.2; color: var(--heading); }
+  .kicker { margin-bottom: 20px; }
+  /* no-JS + mobile fallback: stacked pairs */
+  html:not(.js) .story-viewport, .story-viewport { display: grid; gap: 40px; }
+  @media (max-width: 720px) {
+    html.js .story-track { height: auto; }
+    html.js .story-viewport { position: static; grid-template-columns: 1fr; min-height: 0; }
+    html.js .beat-sentence, html.js .beat-visual { position: static; opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.js .beat-sentence, html.js .beat-visual { transition: opacity .15s ease; transform: none; }
+  }
+</style>
