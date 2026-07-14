@@ -4,4 +4,9 @@
 _notes/
 /bower_components/
 /node_modules/
-.DS_Store.superpowers/
+.DS_Store
+.superpowers/
+
+# Astro build output
+dist/
+.astro/

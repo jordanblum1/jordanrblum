@@ -1,0 +1,28 @@
+---
+// src/layouts/Base.astro
+import '@fontsource-variable/fraunces';
+import '@fontsource/geist-mono';
+import '../styles/global.css';
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAF6F0" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1B1815" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+      addEventListener('pointermove', () => document.documentElement.classList.add('pointer-moved'), { once: true });
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
