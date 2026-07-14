@@ -43,17 +43,17 @@ export const storyBeats = [
 export const metrics = ['419 PRs/yr', '3–4× merge velocity', '13× completion lift', '87%+ eval positivity'];
 
 export const experience: RowItem[] = [
-  { title: 'Roam', meta: 'Product Engineer · #3', date: '2025—', blurb: 'The marketplace, then lead engineer on Reed, Roam's AI realtor.', href: 'https://www.withroam.com' },
+  { title: 'Roam', meta: 'Product Engineer · #3', date: '2025—', blurb: 'The marketplace, then lead engineer on Reed, Roam’s AI realtor.', href: 'https://www.withroam.com' },
   { title: 'Procore', meta: 'Senior Software Engineer', date: '2021–2025', blurb: 'Developer productivity for 300+ engineers — the internal deploy platform, CI/CD standards adopted org-wide.' },
   { title: 'Workday', meta: 'DevOps & Release Engineering', date: '2018–2021', blurb: 'Internal developer tools; cut release timelines in half.' },
   { title: 'Santa Clara University', meta: 'B.S. Computer Science · Studio Art', date: '2014–2018', blurb: 'Plus a semester at the University of Cape Town, Fall 2016.' },
 ];
 
 export const projects: RowItem[] = [
-  { title: 'chicksofnyc', meta: 'Next.js · Airtable · Maps', date: '2025', blurb: 'NYC's chicken wings, reviewed in person, ranked, and mapped.', href: 'https://chicksofnyc.com', thumb: cityViews },
+  { title: 'chicksofnyc', meta: 'Next.js · Airtable · Maps', date: '2025', blurb: 'NYC’s chicken wings, reviewed in person, ranked, and mapped.', href: 'https://chicksofnyc.com', thumb: cityViews },
   { title: 'citibike wrapped', meta: 'React · client-side only', date: '2026', blurb: 'A Spotify-Wrapped year in review for your Citi Bike rides.', href: 'https://citibikewrapped.vercel.app', thumb: chicago },
   { title: 'Alive Still', meta: 'SwiftUI · Twilio', date: '2026', blurb: 'Daily check-in app for people who live alone — a missed window texts your people.', href: 'https://alivestill.app', thumb: lake },
-  { title: 'wimdy', meta: 'Weather · activities', date: '2026', blurb: 'Your weather, judged: what's actually worth doing outside right now.', href: 'https://wimdy.io', thumb: thailand },
+  { title: 'wimdy', meta: 'Weather · activities', date: '2026', blurb: 'Your weather, judged: what’s actually worth doing outside right now.', href: 'https://wimdy.io', thumb: thailand },
   { title: 'reservation agent', meta: 'Agents · whimsy', date: '2026', blurb: 'An agent that hunts down reservations of all kinds.', href: 'https://reservation-agent.vercel.app', thumb: rome },
   { title: 'roast my friend', meta: 'LLMs · questionable ideas', date: '2026', blurb: 'Upload a friend, receive a roast.', href: 'https://roastmyfriend.vercel.app', thumb: capetownCave },
   { title: 'poker night', meta: 'Settling up', date: '2025', blurb: 'Compute poker-night wins and settle up without the spreadsheet fight.', href: 'https://poker-night-eight.vercel.app', thumb: tableMountain },
