@@ -1,0 +1,27 @@
+---
+import { Image } from 'astro:assets';
+import { contactSheet, gallery } from '../data/site';
+---
+<div class="sheet" role="list">
+  {contactSheet.map((p, i) => (
+    <button class="sheet-frame reveal" data-idx={i} style={`--i:${i}`} aria-label={`View photo: ${p.alt}`} role="listitem"
+      data-full={p.src.src} data-alt={p.alt}>
+      <Image src={p.src} alt={p.alt} width={400} densities={[1, 2]} />
+    </button>
+  ))}
+</div>
+<p class="more mono-meta"><a href={gallery} target="_blank" rel="noopener">full gallery →</a></p>
+<style>
+  .sheet { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding-block: 14px; position: relative; }
+  /* filmstrip sprocket edges */
+  .sheet::before, .sheet::after { content: ""; position: absolute; inset-inline: 0; height: 10px;
+    background-image: radial-gradient(circle at 6px 5px, var(--hairline) 3px, transparent 3.5px);
+    background-size: 22px 10px; }
+  .sheet::before { top: 0; } .sheet::after { bottom: 0; }
+  .sheet-frame { border: 0; padding: 0; cursor: pointer; background: var(--heading); aspect-ratio: 3 / 2; overflow: hidden; }
+  .sheet-frame img { width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: saturate(.92) brightness(.97); transition: filter .3s var(--spring), transform .3s var(--spring); }
+  html.pointer-moved .sheet-frame:hover img { filter: none; transform: scale(1.03); }
+  .more { margin-top: 20px; text-align: right; }
+  @media (max-width: 720px) { .sheet { grid-template-columns: repeat(2, 1fr); } }
+</style>

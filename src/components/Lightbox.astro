@@ -1,0 +1,16 @@
+---
+---
+<dialog id="lightbox" aria-label="Photo viewer">
+  <button class="lb-close" aria-label="Close">×</button>
+  <img class="lb-img" src="" alt="" />
+  <p class="lb-caption mono-meta"></p>
+</dialog>
+<script src="../scripts/lightbox.ts"></script>
+<style>
+  #lightbox { border: 0; padding: 0; background: transparent; max-width: 92vw; max-height: 92vh; }
+  #lightbox::backdrop { background: rgb(10 8 6 / .94); backdrop-filter: blur(6px); }
+  .lb-img { max-width: 92vw; max-height: 84vh; object-fit: contain; display: block; background: var(--print-border); padding: 10px; }
+  .lb-caption { color: #FAF6F0; padding-top: 10px; text-align: center; }
+  .lb-close { position: fixed; top: 20px; right: 24px; width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid rgb(250 246 240 / .3); background: transparent; color: #FAF6F0; font-size: 22px; cursor: pointer; }
+</style>

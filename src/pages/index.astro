@@ -5,6 +5,8 @@ import SectionHead from '../components/SectionHead.astro';
 import Row from '../components/Row.astro';
 import LightTable from '../components/LightTable.astro';
 import StickyStory from '../components/StickyStory.astro';
+import ContactSheet from '../components/ContactSheet.astro';
+import Lightbox from '../components/Lightbox.astro';
 import { hero, experience, projects } from '../data/site';
 ---
 <Base title="Jordan Blum — Product Engineer" description="Jordan Blum — product engineer at Roam, photographer, builder. New York.">
@@ -26,7 +28,9 @@ import { hero, experience, projects } from '../data/site';
       how things work and how they look. At Roam I build the marketplace and lead engineering on Reed,
       our AI realtor. Off hours: shooting photos, riding Citi Bikes, and rating chicken wings with unreasonable rigor.
     </p></section>
-    <section class="section wide"><SectionHead id="photos" label="photos" /><!-- ContactSheet, Task 8 --></section>
+    <section class="section wide"><SectionHead id="photos" label="photos" />
+    <ContactSheet /></section>
+    <Lightbox />
   </main>
 </Base>
 <style>
