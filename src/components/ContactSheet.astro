@@ -1,31 +1,117 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import { contactSheet, gallery } from '../data/site';
+
+const photos = await Promise.all(
+  contactSheet.map(async (photo) => ({
+    ...photo,
+    full: await getImage({ src: photo.src, width: 1800, format: 'webp', quality: 86 }),
+  })),
+);
 ---
-<div class="sheet" role="list">
-  {contactSheet.map((p, i) => (
-    <button class="sheet-frame reveal" data-idx={i} style={`--i:${i}`} aria-label={`View photo: ${p.alt}`} role="listitem"
-      data-full={p.src.src} data-alt={p.alt}>
-      <Image src={p.src} alt={p.alt} width={400} densities={[1, 2]} />
-    </button>
+
+<ul class="sheet">
+  {photos.map((photo, index) => (
+    <li class="sheet-item reveal">
+      <a
+        class="sheet-frame"
+        href={photo.full.src}
+        data-idx={index}
+        data-full={photo.full.src}
+        data-alt={photo.alt}
+        data-caption={photo.label}
+        aria-label={`Open full-size photo: ${photo.alt}`}
+      >
+        <Image src={photo.src} alt={photo.alt} width={720} widths={[360, 540, 720]} sizes="(max-width: 720px) 50vw, 38vw" />
+      </a>
+      <span class="caption mono-meta">{photo.label}</span>
+    </li>
   ))}
-</div>
-<p class="more mono-meta"><a href={gallery} target="_blank" rel="noopener">full gallery →</a></p>
+</ul>
+
+<p class="more"><a class="text-link" href={gallery} target="_blank" rel="noopener">Open the full gallery <span aria-hidden="true">↗</span></a></p>
+
 <style>
-  .sheet { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding-block: 14px; position: relative; }
-  /* filmstrip sprocket edges */
-  .sheet::before, .sheet::after { content: ""; position: absolute; inset-inline: 0; height: 10px;
-    background-image: radial-gradient(circle at 6px 5px, var(--hairline) 3px, transparent 3.5px);
-    background-size: 22px 10px; }
-  .sheet::before { top: 0; } .sheet::after { bottom: 0; }
-  .sheet-frame { border: 0; padding: 0; cursor: pointer; background: var(--heading); aspect-ratio: 3 / 2; overflow: hidden; }
-  .sheet-frame img { width: 100%; height: 100%; object-fit: cover; display: block;
-    filter: saturate(.92) brightness(.97); transition: filter .3s var(--spring), transform .3s var(--spring); }
-  html.pointer-moved .sheet-frame:hover img { filter: none; transform: scale(1.03); }
-  .more { margin-top: 20px; text-align: right; }
-  @media (max-width: 720px) { .sheet { grid-template-columns: repeat(2, 1fr); } }
+  .sheet {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-8) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sheet-item {
+    grid-column: span 6;
+  }
+
+  .sheet-item:nth-child(2),
+  .sheet-item:nth-child(4) {
+    transform: translateY(var(--space-8));
+  }
+
+  .sheet-frame {
+    display: block;
+    width: 100%;
+    padding: var(--space-2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xs);
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-small);
+    cursor: zoom-in;
+    transition: transform var(--duration-default) var(--ease), box-shadow var(--duration-default) var(--ease);
+  }
+
+  .sheet-frame img {
+    display: block;
+    width: 100%;
+    height: clamp(13rem, 30vw, 22rem);
+    object-fit: cover;
+  }
+
+  .sheet-item:nth-child(1) img { object-position: center 35%; }
+  .sheet-item:nth-child(2) img { object-position: center 35%; }
+  .sheet-item:nth-child(3) img { object-position: center 24%; }
+  .sheet-item:nth-child(4) img { object-position: center 28%; }
+
+  html.pointer-moved .sheet-frame:hover {
+    z-index: 2;
+    transform: translateY(-0.25rem) rotate(-0.35deg);
+    box-shadow: var(--shadow-lifted);
+  }
+
+  .caption {
+    display: block;
+    padding-top: var(--space-2);
+  }
+
+  .more {
+    margin-top: var(--space-16);
+    text-align: right;
+  }
+
+  @media (max-width: 45rem) {
+    .sheet {
+      gap: var(--space-6) var(--space-3);
+    }
+
+    .sheet-frame {
+      padding: var(--space-1);
+    }
+
+    .sheet-frame img {
+      height: 11rem;
+    }
+
+    .sheet-item:nth-child(2),
+    .sheet-item:nth-child(4) {
+      transform: translateY(var(--space-4));
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .sheet-frame img { transition: filter .15s ease; }
-    html.pointer-moved .sheet-frame:hover img { transform: none; }
+    html.pointer-moved .sheet-frame:hover {
+      transform: none;
+    }
   }
 </style>

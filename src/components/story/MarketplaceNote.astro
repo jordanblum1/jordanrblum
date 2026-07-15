@@ -1,0 +1,147 @@
+---
+// A deliberately compact product-flow artifact: specific enough to show the work,
+// abstract enough to avoid presenting internal product data.
+---
+
+<div
+  class="marketplace-note"
+  role="img"
+  aria-label="Marketplace product note mapping the buyer journey from search through an offer"
+>
+  <div aria-hidden="true">
+    <header class="note-header">
+      <div>
+        <p class="mono-meta">MARKETPLACE / FLOW 01</p>
+        <p class="note-title">A clearer path to an offer</p>
+      </div>
+      <span class="note-status mono-meta">shipped</span>
+    </header>
+
+    <ol class="flow">
+      <li>
+        <span class="step-number mono-meta">01</span>
+        <span class="step-copy">
+          <strong>Find a home</strong>
+          <small>search · filters · saved homes</small>
+        </span>
+      </li>
+      <li>
+        <span class="step-number mono-meta">02</span>
+        <span class="step-copy">
+          <strong>Understand the loan</strong>
+          <small>payment · cash needed · terms</small>
+        </span>
+      </li>
+      <li>
+        <span class="step-number mono-meta">03</span>
+        <span class="step-copy">
+          <strong>Make an offer</strong>
+          <small>onboarding · documents · handoff</small>
+        </span>
+      </li>
+    </ol>
+
+    <footer class="note-footer mono-meta">
+      <span>buyer journey</span>
+      <span>web + mobile</span>
+    </footer>
+  </div>
+</div>
+
+<style>
+  .marketplace-note {
+    width: min(100%, 590px);
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+  }
+
+  .note-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .note-title {
+    margin-top: var(--space-2);
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3.3vw, 34px);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--heading);
+  }
+
+  .note-status {
+    flex: none;
+    padding-bottom: var(--space-1);
+    border-bottom: 1px solid var(--accent);
+    color: var(--accent);
+  }
+
+  .flow {
+    margin: 0;
+    padding: 0 clamp(var(--space-6), 4vw, var(--space-8));
+    list-style: none;
+  }
+
+  .flow li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+    padding: var(--space-6) 0;
+  }
+
+  .flow li + li {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .step-number {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    color: var(--accent);
+  }
+
+  .step-copy {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .step-copy strong {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--heading);
+  }
+
+  .step-copy small {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-75);
+  }
+
+  .note-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) clamp(var(--space-6), 4vw, var(--space-8));
+    border-top: 1px solid var(--hairline);
+  }
+
+  @media (max-width: 420px) {
+    .note-header {
+      align-items: end;
+    }
+
+    .note-status {
+      font-size: 11px;
+    }
+  }
+</style>

@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Not found — Jordan Blum" description="This page does not exist.">
+  <main id="main-content" class="not-found wide" tabindex="-1">
+    <p class="mono-meta">404 · nothing here</p>
+    <h1>This one wandered off.</h1>
+    <p>The rest of the site is still where it was.</p>
+    <a class="text-link" href="/">Back home <span aria-hidden="true">→</span></a>
+  </main>
+</Base>
+
+<style>
+  .not-found {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: var(--space-6);
+    min-height: 65vh;
+  }
+
+  h1 {
+    max-width: 12ch;
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    line-height: 0.92;
+    letter-spacing: -0.055em;
+  }
+
+  .not-found > p:not(.mono-meta) {
+    color: var(--ink-muted);
+    font-size: 1.1rem;
+  }
+</style>

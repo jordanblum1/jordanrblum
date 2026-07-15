@@ -1,0 +1,205 @@
+---
+// Representative eval categories and annotations; no production scores or private metrics.
+---
+
+<div
+  class="eval-notes"
+  role="img"
+  aria-label="Evaluation notebook showing reviewed cases for grounding, tool choice, and human handoff"
+>
+  <div aria-hidden="true">
+    <header class="notes-header">
+      <div>
+        <p class="mono-meta">EVAL NOTEBOOK / SAMPLE SUITE</p>
+        <p class="notes-title">Make the agent explainable.</p>
+      </div>
+      <span class="review-mark">reviewed</span>
+    </header>
+
+    <div class="notes-grid">
+      <section class="eval-cases">
+        <p class="column-label mono-meta">CASE</p>
+        <ul>
+          <li><span class="check">✓</span><span>Grounded answer</span><small>source attached</small></li>
+          <li><span class="check">✓</span><span>Right tool</span><small>arguments match</small></li>
+          <li><span class="check">✓</span><span>Clean handoff</span><small>context preserved</small></li>
+          <li><span class="check open">·</span><span>Edge case</span><small>add to suite</small></li>
+        </ul>
+      </section>
+
+      <aside class="margin-notes">
+        <p class="column-label mono-meta">NOTES</p>
+        <p>Read the trace, find the failure, turn it into a case.</p>
+        <svg viewBox="0 0 160 72" aria-hidden="true">
+          <path class="axis" d="M8 62h144M8 12v50" />
+          <path class="line" d="m10 53 26-7 24 4 28-22 24 7 38-23" />
+          <circle cx="150" cy="12" r="3" />
+        </svg>
+        <p class="margin-caption mono-meta">inspect → repair → rerun</p>
+      </aside>
+    </div>
+
+    <footer class="notes-footer mono-meta">
+      <span>human review stays in the loop</span>
+      <span>repeat</span>
+    </footer>
+  </div>
+</div>
+
+<style>
+  .eval-notes {
+    width: min(100%, 610px);
+    border: 1px solid var(--hairline);
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 31px,
+        var(--hairline) 32px
+      ),
+      var(--surface);
+  }
+
+  .notes-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding: clamp(var(--space-6), 4vw, var(--space-8));
+    border-bottom: 1px solid var(--hairline);
+    background: color-mix(in oklab, var(--surface) 92%, transparent);
+  }
+
+  .notes-title {
+    margin-top: var(--space-2);
+    font-family: var(--font-display);
+    font-size: clamp(25px, 3.5vw, 36px);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--heading);
+  }
+
+  .review-mark {
+    flex: none;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--accent);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(180px, 0.85fr);
+    min-height: 290px;
+    background: color-mix(in oklab, var(--surface) 90%, transparent);
+  }
+
+  .eval-cases,
+  .margin-notes {
+    padding: clamp(var(--space-4), 4vw, var(--space-8));
+  }
+
+  .margin-notes {
+    border-left: 1px solid var(--hairline);
+  }
+
+  .column-label {
+    margin-bottom: var(--space-3);
+    color: var(--accent);
+  }
+
+  .eval-cases ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .eval-cases li {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: var(--space-1) var(--space-2);
+    align-items: baseline;
+    padding: var(--space-3) 0;
+  }
+
+  .eval-cases li + li {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .check {
+    grid-row: 1 / span 2;
+    color: var(--accent);
+  }
+
+  .check.open {
+    color: var(--ink-75);
+  }
+
+  .eval-cases li > span:nth-child(2) {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--heading);
+  }
+
+  .eval-cases small {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-75);
+  }
+
+  .margin-notes > p:not(.column-label, .margin-caption) {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.35;
+    color: var(--heading);
+  }
+
+  .margin-notes svg {
+    display: block;
+    width: 100%;
+    margin: var(--space-8) 0 var(--space-2);
+    overflow: visible;
+  }
+
+  .margin-notes path,
+  .margin-notes circle {
+    fill: none;
+    stroke: var(--hairline);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .margin-notes .line,
+  .margin-notes circle {
+    stroke: var(--accent);
+    stroke-width: 2;
+  }
+
+  .margin-caption {
+    font-size: 9px;
+  }
+
+  .notes-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) clamp(var(--space-6), 4vw, var(--space-8));
+    border-top: 1px solid var(--hairline);
+    background: color-mix(in oklab, var(--surface) 92%, transparent);
+    font-size: 10px;
+  }
+
+  @media (max-width: 520px) {
+    .notes-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .margin-notes {
+      border-top: 1px solid var(--hairline);
+      border-left: 0;
+    }
+  }
+</style>

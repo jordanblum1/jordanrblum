@@ -1,16 +1,58 @@
----
----
 <dialog id="lightbox" aria-label="Photo viewer">
-  <button class="lb-close" aria-label="Close">×</button>
-  <img class="lb-img" src="" alt="" />
-  <p class="lb-caption mono-meta"></p>
+  <button class="lb-close" aria-label="Close photo viewer">Close</button>
+  <figure>
+    <img class="lb-img" src="" alt="" />
+    <figcaption class="lb-caption mono-meta"></figcaption>
+  </figure>
 </dialog>
+
 <script src="../scripts/lightbox.ts"></script>
+
 <style>
-  #lightbox { border: 0; padding: 0; background: transparent; max-width: 92vw; max-height: 92vh; }
-  #lightbox::backdrop { background: rgb(10 8 6 / .94); backdrop-filter: blur(6px); }
-  .lb-img { max-width: 92vw; max-height: 84vh; object-fit: contain; display: block; background: var(--print-border); padding: 10px; }
-  .lb-caption { color: #FAF6F0; padding-top: 10px; text-align: center; }
-  .lb-close { position: fixed; top: 20px; right: 24px; width: 44px; height: 44px; border-radius: 50%;
-    border: 1px solid rgb(250 246 240 / .3); background: transparent; color: #FAF6F0; font-size: 22px; cursor: pointer; }
+  #lightbox {
+    width: min(92vw, 74rem);
+    max-width: none;
+    max-height: 94dvh;
+    padding: var(--space-12) var(--space-6) var(--space-6);
+    border: 0;
+    background: transparent;
+    color: var(--paper-raised);
+    overflow: visible;
+  }
+
+  #lightbox::backdrop {
+    background: color-mix(in oklab, var(--ink) 94%, transparent);
+    backdrop-filter: blur(0.4rem);
+  }
+
+  figure {
+    margin: 0;
+  }
+
+  .lb-img {
+    display: block;
+    width: 100%;
+    max-height: 78dvh;
+    object-fit: contain;
+  }
+
+  .lb-caption {
+    padding-top: var(--space-3);
+    color: var(--paper-raised);
+    text-align: center;
+  }
+
+  .lb-close {
+    position: absolute;
+    top: 0;
+    right: var(--space-6);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid color-mix(in oklab, var(--paper-raised) 35%, transparent);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--paper-raised);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
 </style>

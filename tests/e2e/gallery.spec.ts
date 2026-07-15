@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-test('contact sheet renders 8 frames and opens lightbox with keyboard nav', async ({ page }) => {
+test('contact sheet renders four Jordan photos and opens lightbox with keyboard nav', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.sheet-frame')).toHaveCount(8);
+  await expect(page.locator('.sheet-frame')).toHaveCount(4);
+  await expect(page.locator('.sheet-frame img')).toHaveCount(4);
   await page.locator('.sheet-frame').first().click();
   const dialog = page.locator('dialog#lightbox');
   await expect(dialog).toHaveAttribute('open', '');

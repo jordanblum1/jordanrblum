@@ -1,0 +1,732 @@
+---
+import { Image } from 'astro:assets';
+import namibia from '../assets/photos/photo0030.jpg';
+---
+
+<section class="workbench-wrap" aria-labelledby="workbench-title">
+  <div class="workbench-heading">
+    <h2 id="workbench-title">what’s on the desk</h2>
+    <p id="workbench-hint">
+      A few things I’m building, fixing, and keeping around.
+      <span class="drag-hint">{' '}Drag to rearrange.</span>
+      <span class="static-hint">{' '}Set out as a reading grid.</span>
+    </p>
+  </div>
+
+  <div class="workbench" data-workbench aria-describedby="workbench-hint">
+    <p class="bench-mark" aria-hidden="true">WORKBENCH / NEW YORK</p>
+
+    <article class="artifact trace" data-draggable>
+      <header class="artifact-bar">
+        <span>REED / SAMPLE TRACE</span>
+        <span class="trace-state">COMPLETE</span>
+      </header>
+      <div class="trace-body">
+        <div class="trace-step">
+          <span class="trace-node"></span>
+          <p><b>understand</b><small>2 neighborhoods · max $1.2m</small></p>
+          <span class="trace-time">done</span>
+        </div>
+        <div class="trace-step">
+          <span class="trace-node"></span>
+          <p><b>search homes</b><small>polygon + listing tools</small></p>
+          <span class="trace-time">done</span>
+        </div>
+        <div class="trace-step">
+          <span class="trace-node"></span>
+          <p><b>answer</b><small>8 homes · 3 worth a look</small></p>
+          <span class="trace-time">done</span>
+        </div>
+      </div>
+      <footer class="trace-footer"><span>eval: grounded</span><span>reviewed</span></footer>
+    </article>
+
+    <article class="artifact today" data-draggable>
+      <span class="pin" aria-hidden="true"></span>
+      <details>
+        <summary>
+          <span class="note-kicker">TODAY</span>
+          <span class="note-title">make Reed<br />less confused</span>
+          <span class="note-reveal">open note</span>
+        </summary>
+        <p>Smaller tools, clearer handoffs, more examples of when to stop.</p>
+      </details>
+    </article>
+
+    <article class="artifact sidequests" data-draggable>
+      <header><span>SIDE QUESTS</span><span>07 / ongoing</span></header>
+      <ul>
+        <li><span class="box is-done"></span><s>ship the check-in app</s></li>
+        <li><span class="box"></span>rank another wing</li>
+        <li><span class="box"></span>make weather more opinionated</li>
+        <li><span class="box"></span>find dinner without scrolling</li>
+      </ul>
+      <p class="side-note">The list is allowed to grow.</p>
+    </article>
+
+    <figure class="artifact desk-photo" data-draggable>
+      <Image
+        src={namibia}
+        alt="Dead trees on the white clay pan at Deadvlei, Namibia"
+        width={420}
+        quality={82}
+        loading="lazy"
+      />
+      <figcaption>NAMIBIA / PHOTO 0030</figcaption>
+    </figure>
+
+    <article class="artifact wing-ticket" data-draggable>
+      <header><span>CHICKS OF NYC</span><span>FIELD TICKET</span></header>
+      <div class="wing-score"><strong>8.7</strong><span>/ 10</span></div>
+      <dl>
+        <div><dt>crisp</dt><dd>09</dd></div>
+        <div><dt>sauce</dt><dd>08</dd></div>
+        <div><dt>return?</dt><dd>yes</dd></div>
+      </dl>
+      <p>Two napkins. No notes.</p>
+    </article>
+
+    <article class="artifact bike-receipt" data-draggable>
+      <header>
+        <span class="bike-lock" aria-hidden="true"></span>
+        <span>CITI BIKE / RIDE LOG</span>
+      </header>
+      <div class="bike-route">
+        <p><span>START</span>Bedford Ave</p>
+        <span class="route-line" aria-hidden="true"></span>
+        <p><span>END</span>Rivington St</p>
+      </div>
+      <footer><span>14:08</span><span>2.7 MI</span><span>2026</span></footer>
+    </article>
+  </div>
+</section>
+
+<script src="../scripts/workbench.ts"></script>
+
+<style>
+  .workbench-wrap {
+    width: min(1080px, calc(100% - 48px));
+    margin-inline: auto;
+  }
+
+  .workbench-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2rem;
+    margin: 0 auto 1rem;
+    padding-inline: .25rem;
+  }
+
+  .workbench-heading h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .workbench-heading p {
+    max-width: 27rem;
+    margin: 0;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .75rem;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .static-hint {
+    display: none;
+  }
+
+  .workbench {
+    position: relative;
+    height: 500px;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    background:
+      linear-gradient(var(--hairline), var(--hairline)) 0 52px / 100% 1px no-repeat,
+      var(--paper-raised);
+    box-shadow: var(--shadow-small);
+    isolation: isolate;
+  }
+
+  .workbench::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(circle at 52% 45%, var(--accent-soft), transparent 44%);
+    content: '';
+    opacity: .24;
+    pointer-events: none;
+  }
+
+  .bench-mark {
+    position: absolute;
+    top: 1.05rem;
+    left: 1.25rem;
+    margin: 0;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .6875rem;
+    letter-spacing: .08em;
+  }
+
+  .artifact {
+    position: absolute;
+    box-sizing: border-box;
+    margin: 0;
+    color: var(--ink);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    will-change: translate;
+  }
+
+  .artifact[data-dragging='true'] {
+    cursor: grabbing;
+  }
+
+  .artifact header,
+  .artifact footer,
+  .artifact p {
+    margin: 0;
+  }
+
+  .trace {
+    top: 4.75rem;
+    left: 3.5%;
+    z-index: 4;
+    width: 18rem;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-lifted);
+    transform: rotate(-1.4deg);
+  }
+
+  .artifact-bar,
+  .trace-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .55rem .7rem;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    letter-spacing: .04em;
+  }
+
+  .artifact-bar {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .trace-state {
+    color: var(--accent);
+  }
+
+  .trace-body {
+    padding: .35rem .7rem;
+  }
+
+  .trace-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: .6rem 1fr auto;
+    gap: .55rem;
+    align-items: center;
+    padding: .42rem 0;
+  }
+
+  .trace-step:not(:last-child)::after {
+    position: absolute;
+    top: 1.2rem;
+    bottom: -.2rem;
+    left: .2rem;
+    width: 1px;
+    background: var(--hairline);
+    content: '';
+  }
+
+  .trace-node {
+    z-index: 1;
+    width: .45rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: var(--surface);
+  }
+
+  .trace-step p {
+    display: grid;
+    line-height: 1.25;
+  }
+
+  .trace-step b {
+    color: var(--heading);
+    font-size: .75rem;
+    font-weight: 500;
+  }
+
+  .trace-step small,
+  .trace-time,
+  .trace-footer {
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    font-weight: 400;
+  }
+
+  .trace-footer {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .trace-footer span:last-child {
+    color: var(--accent);
+  }
+
+  .today {
+    top: 4.25rem;
+    left: 36%;
+    z-index: 6;
+    width: 14.5rem;
+    min-height: 10.25rem;
+    padding: 1.2rem 1.35rem 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    box-shadow: var(--shadow-lifted);
+    transform: rotate(2.2deg);
+  }
+
+  .today::after {
+    position: absolute;
+    right: 1rem;
+    bottom: .8rem;
+    left: 1rem;
+    height: 1px;
+    background: var(--hairline);
+    box-shadow: 0 -.95rem 0 var(--hairline), 0 -1.9rem 0 var(--hairline);
+    content: '';
+    opacity: .6;
+    pointer-events: none;
+  }
+
+  .pin {
+    position: absolute;
+    top: .6rem;
+    right: .7rem;
+    width: .45rem;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+    border-radius: 50%;
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-small);
+  }
+
+  .today details {
+    position: relative;
+    z-index: 1;
+  }
+
+  .today summary {
+    display: grid;
+    cursor: pointer;
+    list-style: none;
+    user-select: text;
+  }
+
+  .today summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .note-kicker,
+  .note-reveal {
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    letter-spacing: .07em;
+  }
+
+  .note-title {
+    margin-top: .55rem;
+    color: var(--heading);
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 500;
+    line-height: 1.05;
+  }
+
+  .note-reveal {
+    margin-top: .75rem;
+    text-decoration: underline;
+    text-decoration-color: var(--hairline);
+    text-underline-offset: .2rem;
+  }
+
+  .today details[open] .note-title,
+  .today details[open] .note-reveal {
+    display: none;
+  }
+
+  .today details > p {
+    max-width: 12rem;
+    padding-top: .55rem;
+    color: var(--heading);
+    font-size: .875rem;
+    line-height: 1.45;
+    user-select: text;
+  }
+
+  .sidequests {
+    bottom: 2rem;
+    left: 8%;
+    z-index: 5;
+    width: 16rem;
+    padding: 1rem 1.1rem .9rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    box-shadow: var(--shadow-small);
+    transform: rotate(1.1deg);
+  }
+
+  .sidequests header,
+  .wing-ticket header,
+  .bike-receipt header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: .55rem;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    letter-spacing: .045em;
+  }
+
+  .sidequests ul {
+    display: grid;
+    gap: .42rem;
+    margin: .75rem 0 .7rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sidequests li {
+    display: flex;
+    gap: .55rem;
+    align-items: center;
+    color: var(--heading);
+    font-size: .75rem;
+    line-height: 1.25;
+  }
+
+  .sidequests s {
+    color: var(--ink-muted);
+    text-decoration-color: var(--accent);
+  }
+
+  .box {
+    flex: 0 0 auto;
+    width: .65rem;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in oklab, var(--ink) 28%, transparent);
+  }
+
+  .box.is-done {
+    background:
+      linear-gradient(135deg, transparent 42%, var(--accent) 42% 53%, transparent 53%) center / 75% 75% no-repeat;
+  }
+
+  .side-note {
+    color: var(--ink-muted);
+    font-family: var(--font-display);
+    font-size: .75rem;
+    font-style: italic;
+  }
+
+  .desk-photo {
+    bottom: 1.5rem;
+    left: 42%;
+    z-index: 3;
+    width: 14rem;
+    padding: .5rem .5rem .55rem;
+    background: var(--paper);
+    box-shadow: var(--shadow-lifted);
+    transform: rotate(-3.1deg);
+  }
+
+  .desk-photo :global(img) {
+    display: block;
+    width: 100%;
+    height: 8.4rem;
+    object-fit: cover;
+    filter: saturate(.82) contrast(1.02);
+    pointer-events: none;
+  }
+
+  .desk-photo figcaption {
+    padding: .5rem .15rem 0;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    letter-spacing: .04em;
+  }
+
+  .wing-ticket {
+    top: 4.25rem;
+    right: 3.5%;
+    z-index: 5;
+    width: 12rem;
+    padding: .8rem .9rem 1rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    box-shadow: var(--shadow-lifted);
+    transform: rotate(-2.4deg);
+  }
+
+  .wing-score {
+    display: flex;
+    gap: .35rem;
+    align-items: baseline;
+    justify-content: center;
+    padding: .7rem 0 .55rem;
+    color: var(--accent);
+  }
+
+  .wing-score strong {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .wing-score span {
+    font-family: var(--font-mono);
+    font-size: .625rem;
+  }
+
+  .wing-ticket dl {
+    margin: 0;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .wing-ticket dl div {
+    display: flex;
+    justify-content: space-between;
+    padding: .27rem 0;
+    border-bottom: 1px solid var(--hairline);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+  }
+
+  .wing-ticket dt {
+    color: var(--ink-muted);
+  }
+
+  .wing-ticket dd {
+    margin: 0;
+    color: var(--heading);
+  }
+
+  .wing-ticket > p {
+    padding-top: .55rem;
+    color: var(--ink-muted);
+    font-family: var(--font-display);
+    font-size: .75rem;
+    font-style: italic;
+    text-align: center;
+  }
+
+  .bike-receipt {
+    right: 5.5%;
+    bottom: 2.25rem;
+    z-index: 6;
+    width: 13rem;
+    padding: .85rem .9rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+    transform: rotate(1.7deg);
+  }
+
+  .bike-receipt header {
+    justify-content: flex-start;
+    gap: .45rem;
+  }
+
+  .bike-lock {
+    position: relative;
+    width: .75rem;
+    height: .55rem;
+    border: 1px solid var(--accent);
+    border-radius: 50% 50% 42% 42%;
+  }
+
+  .bike-lock::before,
+  .bike-lock::after {
+    position: absolute;
+    bottom: -.2rem;
+    width: .2rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: var(--surface);
+    content: '';
+  }
+
+  .bike-lock::before { left: .02rem; }
+  .bike-lock::after { right: .02rem; }
+
+  .bike-route {
+    padding: .65rem 0 .6rem;
+  }
+
+  .bike-route p {
+    display: flex;
+    justify-content: space-between;
+    color: var(--heading);
+    font-size: .75rem;
+  }
+
+  .bike-route p span {
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .5625rem;
+  }
+
+  .route-line {
+    display: block;
+    width: 1px;
+    height: .6rem;
+    margin: .15rem 0 .15rem .18rem;
+    border-left: 1px dashed var(--accent);
+  }
+
+  .bike-receipt footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: .5rem;
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .artifact {
+      transition: box-shadow var(--duration-default) var(--ease);
+    }
+
+    .artifact:hover {
+      box-shadow: var(--shadow-lifted);
+    }
+  }
+
+  @media (max-width: 900px) and (min-width: 761px) {
+    .today { left: 40%; }
+    .desk-photo { left: 37%; }
+    .wing-ticket { right: 2%; }
+    .bike-receipt { right: 3%; }
+  }
+
+  @media (max-width: 760px) {
+    .workbench-wrap {
+      width: min(100% - 32px, 42rem);
+    }
+
+    .workbench-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: .45rem;
+    }
+
+    .workbench-heading p {
+      max-width: 32rem;
+      text-align: left;
+    }
+
+    .drag-hint { display: none; }
+    .static-hint { display: inline; }
+
+    .workbench {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .9rem;
+      height: auto;
+      padding: 3.75rem 1rem 1rem;
+      overflow: visible;
+      background:
+        linear-gradient(var(--hairline), var(--hairline)) 0 2.9rem / 100% 1px no-repeat,
+        var(--paper-raised);
+    }
+
+    .artifact {
+      position: relative;
+      inset: auto;
+      width: auto;
+      min-width: 0;
+      transform: none;
+      translate: none !important;
+      cursor: default;
+      touch-action: auto;
+      will-change: auto;
+    }
+
+    .trace {
+      grid-column: 1 / -1;
+    }
+
+    .today,
+    .wing-ticket {
+      min-height: 12rem;
+    }
+
+    .desk-photo :global(img) {
+      height: 9.5rem;
+    }
+
+    .bike-receipt {
+      align-self: end;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .workbench {
+      grid-template-columns: 1fr;
+    }
+
+    .trace {
+      grid-column: auto;
+    }
+
+    .today,
+    .wing-ticket {
+      min-height: 0;
+    }
+
+    .desk-photo :global(img) {
+      height: auto;
+      aspect-ratio: 3 / 2;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drag-hint { display: none; }
+    .static-hint { display: inline; }
+
+    .artifact {
+      translate: none !important;
+      cursor: default;
+      touch-action: auto;
+      will-change: auto;
+      transition: none;
+    }
+  }
+</style>

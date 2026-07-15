@@ -1,36 +1,72 @@
 ---
-// src/components/Footer.astro
 import { social } from '../data/site';
 ---
-<footer class="section">
-  <div class="measure">
-    <p class="cta">Let’s build something.</p>
-    <ul class="social">
-      {social.map((s) => (
-        <li><a href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener">
-          <span>{s.label}</span><span class="arrow" aria-hidden="true">↗</span>
-        </a></li>
+
+<footer>
+  <div class="wide footer-inner">
+    <p class="footer-note">If any of this sounds useful, <a class="text-link" href="mailto:jordanblum16@gmail.com">send me a note</a>.</p>
+    <nav class="social mono-meta" aria-label="Elsewhere">
+      {social.map((item) => (
+        <a
+          href={item.href}
+          target={item.href.startsWith('http') ? '_blank' : undefined}
+          rel={item.href.startsWith('http') ? 'noopener' : undefined}
+        >
+          {item.label}<span aria-hidden="true">↗</span>
+        </a>
       ))}
-    </ul>
+    </nav>
     <div class="colophon mono-meta">
       <span>Made in New York · © {new Date().getFullYear()} Jordan Blum</span>
-      <span>Set in Fraunces, Switzer &amp; Geist Mono</span>
+      <span>Astro · Fraunces · Switzer · Geist Mono</span>
     </div>
   </div>
 </footer>
+
 <style>
-  .cta { font-family: var(--font-display); font-size: clamp(34px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.02em; color: var(--heading); margin-bottom: 48px; }
-  .social { list-style: none; padding: 0; margin: 0 0 64px; }
-  .social a { display: flex; justify-content: space-between; padding-block: 18px; border-top: 1px solid var(--hairline); font-weight: 500; transition: padding-left .25s var(--spring); }
-  .social li:last-child a { border-bottom: 1px solid var(--hairline); }
-  html.pointer-moved .social a:hover { padding-left: 10px; background: var(--hover-fill); }
-  .arrow { color: var(--accent); transition: transform .25s var(--spring); }
-  html.pointer-moved .social a:hover .arrow { transform: translate(3px, -3px); }
-  .colophon { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-  @media (prefers-reduced-motion: reduce) {
-    .social a { transition: background .15s ease; }
-    html.pointer-moved .social a:hover { padding-left: 0; background: var(--hover-fill); }
-    .arrow { transition: none; }
-    html.pointer-moved .social a:hover .arrow { transform: none; }
+  footer {
+    padding-block: var(--space-24) var(--space-8);
+  }
+
+  .footer-inner {
+    border-top: 1px solid var(--hairline);
+    padding-top: var(--space-12);
+  }
+
+  .footer-note {
+    max-width: 18ch;
+    color: var(--heading);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-8);
+    margin-block: var(--space-16);
+  }
+
+  .social a {
+    display: inline-flex;
+    gap: var(--space-2);
+    color: var(--ink-muted);
+    transition: color var(--duration-default) var(--ease);
+  }
+
+  html.pointer-moved .social a:hover {
+    color: var(--accent);
+  }
+
+  .colophon {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--hairline);
   }
 </style>

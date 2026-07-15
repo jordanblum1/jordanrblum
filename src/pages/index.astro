@@ -1,41 +1,235 @@
 ---
-// src/pages/index.astro
 import Base from '../layouts/Base.astro';
 import SectionHead from '../components/SectionHead.astro';
 import Row from '../components/Row.astro';
-import LightTable from '../components/LightTable.astro';
+import Workbench from '../components/Workbench.astro';
 import StickyStory from '../components/StickyStory.astro';
+import ProjectIndex from '../components/ProjectIndex.astro';
 import ContactSheet from '../components/ContactSheet.astro';
 import Lightbox from '../components/Lightbox.astro';
-import { hero, experience, projects } from '../data/site';
+import { about, experience, hero, projects } from '../data/site';
 ---
-<Base title="Jordan Blum — Product Engineer" description="Jordan Blum — product engineer at Roam, photographer, builder. New York.">
-  <main>
+
+<Base
+  title="Jordan Blum — Product Engineer in New York"
+  description="Jordan Blum is a product engineer at Roam who builds AI products, useful systems, and oddly specific side projects."
+>
+  <main id="main-content" tabindex="-1">
     <header class="hero wide">
-      <h1 class="statement">{hero.statement}</h1>
-      <p class="mono-meta">{hero.meta}</p>
-      <LightTable />
+      <div class="hero-copy">
+        <p class="eyebrow">{hero.eyebrow}</p>
+        <h1>{hero.statement}</h1>
+        <div class="hero-detail">
+          <p>{hero.intro}</p>
+          <p class="mono-meta status"><span aria-hidden="true"></span>{hero.status}</p>
+        </div>
+      </div>
+
+      <Workbench />
     </header>
-    <section class="section wide" id="roam-story"><StickyStory /></section>
-    <section class="section measure"><SectionHead id="work" label="work" />
-    {experience.map((item, i) => <Row item={item} index={i} />)}
-    <h3 class="mono-meta" style="margin:56px 0 8px">side projects</h3>
-    {projects.map((item, i) => <Row item={item} index={i} />)}
-    <p class="mono-meta" style="margin-top:24px"><a href="https://github.com/jordanblum1" target="_blank" rel="noopener">more on GitHub →</a></p></section>
-    <section class="section measure"><SectionHead id="about" label="about" />
-    <p class="about-prose reveal">
-      I studied Computer Science and Studio Art at Santa Clara, which means I care equally about
-      how things work and how they look. At Roam I build the marketplace and lead engineering on Reed,
-      our AI realtor. Off hours: shooting photos, riding Citi Bikes, and rating chicken wings with unreasonable rigor.
-    </p></section>
-    <section class="section wide"><SectionHead id="photos" label="photos" />
-    <ContactSheet /></section>
+
+    <section class="section wide roam-story" id="work" aria-label="Work at Roam">
+      <StickyStory />
+    </section>
+
+    <section class="section projects-section" id="projects" aria-labelledby="projects-heading">
+      <div class="wide">
+        <SectionHead
+          id="projects-heading"
+          label="things I made"
+          title="Some are useful. Some are jokes that got out of hand. A few are both."
+          description="Small products for staying safe, finding dinner, reading the weather, settling up, and keeping track of New York’s chicken wings."
+        />
+      </div>
+      <ProjectIndex projects={projects} />
+    </section>
+
+    <section class="section measure experience" aria-labelledby="experience-heading">
+      <SectionHead
+        id="experience-heading"
+        label="before Roam"
+        title="Developer tools, release systems, and an art minor that stuck."
+      />
+      <div class="experience-rows">
+        {experience.map((item, index) => <Row item={item} index={index} />)}
+      </div>
+    </section>
+
+    <section class="section wide about" id="about" aria-labelledby="about-heading">
+      <p class="about-label serif">a little more</p>
+      <div class="about-copy reveal">
+        <h2 id="about-heading">I like working close to the whole thing.</h2>
+        {about.map((paragraph) => <p>{paragraph}</p>)}
+        <p>
+          There is also an older, stranger corner of the internet at
+          <a class="text-link" href="https://blumblumblum.com" target="_blank" rel="noopener">blumblumblum.com <span aria-hidden="true">↗</span></a>.
+        </p>
+      </div>
+    </section>
+
+    <section class="section wide photos" id="photos" aria-labelledby="photos-heading">
+      <SectionHead
+        id="photos-heading"
+        label="a few photos"
+        title="Still taking them. Just not making them the headline."
+        description="Four photographs from the archive, all mine. The larger gallery lives elsewhere."
+      />
+      <ContactSheet />
+    </section>
+
     <Lightbox />
   </main>
 </Base>
+
 <style>
-  .hero { padding-block: 48px 0; }
-  .statement { font-size: clamp(34px, 5.5vw, 52px); line-height: 1.08; letter-spacing: -0.02em; max-width: 22ch; }
-  .hero .mono-meta { margin-top: 16px; }
-  .about-prose { font-size: 17px; line-height: 1.7; max-width: 52ch; }
+  .hero {
+    display: grid;
+    gap: clamp(var(--space-16), 9vw, var(--space-24));
+    padding-block: clamp(var(--space-16), 8vw, var(--space-24)) var(--space-16);
+  }
+
+  .hero-copy {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.32fr) minmax(0, 1fr);
+    gap: var(--space-6) var(--space-12);
+    align-items: start;
+  }
+
+  .hero-copy .eyebrow {
+    padding-top: 0.75rem;
+    color: var(--accent);
+  }
+
+  .hero-copy h1 {
+    max-width: 18ch;
+    font-size: clamp(3rem, 7.4vw, 6.9rem);
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+  }
+
+  .hero-detail {
+    display: grid;
+    grid-column: 2;
+    grid-template-columns: minmax(0, 31rem) auto;
+    gap: var(--space-8);
+    align-items: end;
+    padding-top: var(--space-4);
+  }
+
+  .hero-detail > p:first-child {
+    color: var(--ink-muted);
+    font-size: clamp(1rem, 1.7vw, 1.2rem);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .status {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+    justify-self: end;
+    padding-bottom: 0.18rem;
+    white-space: nowrap;
+  }
+
+  .status span {
+    width: 0.45rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 0.22rem color-mix(in oklab, var(--success) 14%, transparent);
+  }
+
+  .roam-story {
+    scroll-margin-top: var(--space-8);
+  }
+
+  .projects-section {
+    border-block: 1px solid var(--hairline);
+    background: color-mix(in oklab, var(--paper-raised) 52%, var(--paper));
+    scroll-margin-top: var(--space-8);
+  }
+
+  .experience :global(.section-head) {
+    grid-template-columns: minmax(7rem, 0.38fr) 1fr;
+  }
+
+  .experience-rows {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .about {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.32fr) minmax(0, 1fr);
+    gap: var(--space-12);
+    scroll-margin-top: var(--space-8);
+  }
+
+  .about-label {
+    padding-top: var(--space-2);
+    color: var(--accent);
+    font-size: 1.1rem;
+  }
+
+  .about-copy {
+    display: grid;
+    gap: var(--space-6);
+    max-width: 45rem;
+  }
+
+  .about-copy h2 {
+    max-width: 16ch;
+    margin-bottom: var(--space-2);
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  .about-copy > p {
+    max-width: 53ch;
+    color: var(--ink-muted);
+    font-size: clamp(1rem, 1.5vw, 1.12rem);
+    line-height: 1.7;
+  }
+
+  .photos {
+    scroll-margin-top: var(--space-8);
+  }
+
+  @media (max-width: 48rem) {
+    .hero {
+      gap: var(--space-16);
+      padding-top: var(--space-12);
+    }
+
+    .hero-copy {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    .hero-copy h1,
+    .hero-detail {
+      grid-column: 1;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(3.15rem, 14.5vw, 5rem);
+    }
+
+    .hero-detail {
+      grid-template-columns: 1fr;
+      gap: var(--space-5, 1.25rem);
+      padding-top: var(--space-2);
+    }
+
+    .status {
+      justify-self: start;
+      white-space: normal;
+    }
+
+    .about {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+  }
 </style>

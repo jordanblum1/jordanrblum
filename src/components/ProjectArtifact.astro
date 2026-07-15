@@ -1,0 +1,633 @@
+---
+import type { ProjectItem } from '../data/site';
+
+interface Props {
+  variant: ProjectItem['artifact'];
+}
+
+const { variant } = Astro.props;
+---
+
+<div class:list={['project-artifact', `artifact--${variant}`]} aria-hidden="true">
+  {variant === 'alive' && (
+    <div class="alive-phone">
+      <div class="alive-top"><span>9:41</span><span>ALIVE STILL</span></div>
+      <span class="alive-ring"><i></i></span>
+      <p>checked in</p>
+      <span class="alive-next">next window / 24h</span>
+    </div>
+  )}
+
+  {variant === 'chicks' && (
+    <div class="chicks-ticket">
+      <div class="ticket-head"><span>CHICKS / NYC</span><span>014</span></div>
+      <div class="ticket-score"><strong>8.7</strong><span>WING INDEX</span></div>
+      <div class="ticket-rules"><i></i><i></i><i></i></div>
+    </div>
+  )}
+
+  {variant === 'citibike' && (
+    <div class="citibike-slip">
+      <div class="bike-head"><span class="bike-mark"></span><b>RIDE 062</b></div>
+      <div class="ride-map"><span class="route-dot"></span><i></i><span class="route-dot"></span></div>
+      <div class="ride-stats"><span>14:08</span><span>2.7 mi</span></div>
+    </div>
+  )}
+
+  {variant === 'flaneur' && (
+    <div class="flaneur-map">
+      <div class="map-grid"></div>
+      <span class="map-pin pin-one"></span>
+      <span class="map-pin pin-two"></span>
+      <span class="map-pin pin-three"></span>
+      <span class="map-route"></span>
+      <p><b>FOUND</b><span>8:30 / table for 2</span></p>
+    </div>
+  )}
+
+  {variant === 'wimdy' && (
+    <div class="wimdy-report">
+      <header><span>WIMDY SAYS</span><span>72°</span></header>
+      <strong>GO OUTSIDE.</strong>
+      <div class="weather-bars"><i></i><i></i><i></i><i></i><i></i></div>
+      <footer><span>wind 6</span><span>rain 0</span><span>vibe 9</span></footer>
+    </div>
+  )}
+
+  {variant === 'roast' && (
+    <div class="roast-chat">
+      <div class="chat-avatar"><span></span></div>
+      <div class="chat-copy">
+        <span>ROAST COMPLETE</span>
+        <p>“You dress like your calendar has a dress code.”</p>
+        <i>send to friend</i>
+      </div>
+    </div>
+  )}
+
+  {variant === 'poker' && (
+    <div class="poker-table">
+      <span class="card card-one"><b>A</b><i></i></span>
+      <span class="card card-two"><b>K</b><i></i></span>
+      <span class="poker-chip"><i></i></span>
+      <p><span>SETTLED</span><b>+$84</b></p>
+    </div>
+  )}
+</div>
+
+<style>
+  .project-artifact {
+    position: relative;
+    width: 100%;
+    max-width: 11.5rem;
+    height: 7rem;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: .625rem;
+    line-height: 1.25;
+    pointer-events: none;
+    transform-origin: center;
+    transition:
+      translate var(--duration-default) var(--ease),
+      rotate var(--duration-default) var(--ease);
+  }
+
+  .project-artifact p,
+  .project-artifact header,
+  .project-artifact footer {
+    margin: 0;
+  }
+
+  .alive-phone {
+    position: absolute;
+    inset: .1rem 2.1rem;
+    display: grid;
+    justify-items: center;
+    overflow: hidden;
+    padding: .55rem .45rem .45rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+  }
+
+  .alive-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    color: var(--ink-muted);
+    font-size: .5rem;
+  }
+
+  .alive-ring {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    aspect-ratio: 1;
+    margin-top: .15rem;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: var(--accent-soft);
+  }
+
+  .alive-ring i {
+    width: .8rem;
+    height: .42rem;
+    border-bottom: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    transform: translateY(-.1rem) rotate(-45deg);
+  }
+
+  .alive-phone p {
+    color: var(--heading);
+    font-family: var(--font-body);
+    font-size: .6875rem;
+  }
+
+  .alive-next {
+    color: var(--ink-muted);
+    font-size: .4375rem;
+  }
+
+  .chicks-ticket {
+    position: absolute;
+    inset: .45rem .9rem;
+    overflow: hidden;
+    padding: .65rem .75rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    box-shadow: var(--shadow-small);
+    rotate: -2.5deg;
+  }
+
+  .chicks-ticket::before,
+  .chicks-ticket::after {
+    position: absolute;
+    top: 2.1rem;
+    width: .75rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: var(--paper-raised);
+    content: '';
+  }
+
+  .chicks-ticket::before { left: -.45rem; }
+  .chicks-ticket::after { right: -.45rem; }
+
+  .ticket-head,
+  .bike-head,
+  .ride-stats,
+  .wimdy-report header,
+  .wimdy-report footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--ink-muted);
+    font-size: .5rem;
+    letter-spacing: .03em;
+  }
+
+  .ticket-score {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    margin-top: .65rem;
+    padding-block: .45rem;
+    border-block: 1px dashed var(--hairline);
+  }
+
+  .ticket-score strong {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 500;
+    line-height: .85;
+  }
+
+  .ticket-score span {
+    color: var(--ink-muted);
+    font-size: .4375rem;
+  }
+
+  .ticket-rules {
+    display: grid;
+    gap: .3rem;
+    padding-top: .45rem;
+  }
+
+  .ticket-rules i {
+    height: 1px;
+    background: var(--hairline);
+  }
+
+  .ticket-rules i:nth-child(2) { width: 78%; }
+  .ticket-rules i:nth-child(3) { width: 54%; }
+
+  .citibike-slip {
+    position: absolute;
+    inset: .2rem 1.3rem;
+    padding: .7rem .8rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+    rotate: 1.5deg;
+  }
+
+  .bike-head {
+    justify-content: flex-start;
+    gap: .4rem;
+    color: var(--heading);
+  }
+
+  .bike-mark {
+    position: relative;
+    width: 1.05rem;
+    height: .65rem;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+  }
+
+  .bike-mark::before,
+  .bike-mark::after {
+    position: absolute;
+    bottom: -.2rem;
+    width: .3rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: var(--surface);
+    content: '';
+  }
+
+  .bike-mark::before { left: .02rem; }
+  .bike-mark::after { right: .02rem; }
+
+  .ride-map {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    margin-block: 1.55rem 1.25rem;
+  }
+
+  .route-dot {
+    width: .45rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: var(--surface);
+  }
+
+  .ride-map i {
+    border-top: 1px dashed var(--accent);
+  }
+
+  .ride-stats {
+    padding-top: .45rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .flaneur-map {
+    position: absolute;
+    inset: .25rem .55rem;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--paper);
+    box-shadow: var(--shadow-small);
+    rotate: -1deg;
+  }
+
+  .map-grid {
+    position: absolute;
+    inset: 0;
+    opacity: .6;
+    background:
+      linear-gradient(90deg, transparent 47%, var(--hairline) 48% 52%, transparent 53%) 0 0 / 2rem 100%,
+      linear-gradient(transparent 47%, var(--hairline) 48% 52%, transparent 53%) 0 0 / 100% 1.7rem;
+  }
+
+  .map-route {
+    position: absolute;
+    top: 1.3rem;
+    left: 2.3rem;
+    width: 5.8rem;
+    height: 2.6rem;
+    border-right: 1px dashed var(--accent);
+    border-bottom: 1px dashed var(--accent);
+    border-radius: 0 0 var(--radius-lg) 0;
+    rotate: 8deg;
+  }
+
+  .map-pin {
+    position: absolute;
+    z-index: 1;
+    width: .55rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    border-radius: 50% 50% 50% 0;
+    background: var(--paper-raised);
+    rotate: -45deg;
+  }
+
+  .pin-one { top: 1.1rem; left: 2.1rem; }
+  .pin-two { top: 3.8rem; left: 7.8rem; }
+  .pin-three { top: 1.9rem; right: 1.55rem; }
+
+  .flaneur-map p {
+    position: absolute;
+    right: .55rem;
+    bottom: .45rem;
+    left: .55rem;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    padding: .38rem .45rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+    font-size: .4375rem;
+  }
+
+  .flaneur-map p b { color: var(--accent); }
+  .flaneur-map p span { color: var(--ink-muted); }
+
+  .wimdy-report {
+    position: absolute;
+    inset: .45rem .65rem;
+    padding: .7rem .8rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+  }
+
+  .wimdy-report strong {
+    display: block;
+    margin-top: .8rem;
+    color: var(--heading);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    font-weight: 500;
+    letter-spacing: -.03em;
+  }
+
+  .weather-bars {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: .25rem;
+    align-items: end;
+    height: 2.25rem;
+    margin: .15rem 0 .55rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .weather-bars i {
+    height: 48%;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--accent-soft);
+  }
+
+  .weather-bars i:nth-child(2) { height: 70%; }
+  .weather-bars i:nth-child(3) { height: 92%; background: var(--accent); }
+  .weather-bars i:nth-child(4) { height: 76%; }
+  .weather-bars i:nth-child(5) { height: 55%; }
+
+  .roast-chat {
+    position: absolute;
+    inset: .5rem .4rem;
+    display: grid;
+    grid-template-columns: 2.2rem 1fr;
+    gap: .7rem;
+    align-items: start;
+  }
+
+  .chat-avatar {
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: var(--accent-soft);
+  }
+
+  .chat-avatar span {
+    width: 1rem;
+    height: .65rem;
+    border: 1px solid var(--accent);
+    border-radius: 50% 50% 45% 45%;
+    border-bottom: 0;
+  }
+
+  .chat-copy {
+    padding: .65rem .75rem;
+    border: 1px solid var(--hairline);
+    border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+  }
+
+  .chat-copy > span,
+  .chat-copy i {
+    color: var(--ink-muted);
+    font-size: .4375rem;
+    font-style: normal;
+  }
+
+  .chat-copy p {
+    margin: .45rem 0 .55rem;
+    color: var(--heading);
+    font-family: var(--font-body);
+    font-size: .6875rem;
+    line-height: 1.35;
+  }
+
+  .chat-copy i {
+    color: var(--accent);
+  }
+
+  .poker-table {
+    position: absolute;
+    inset: .4rem .65rem;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 .35rem var(--surface), var(--shadow-small);
+  }
+
+  .card {
+    position: absolute;
+    top: 1.35rem;
+    display: block;
+    width: 2.25rem;
+    height: 3.1rem;
+    padding: .3rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    box-shadow: var(--shadow-small);
+  }
+
+  .card-one { left: 2rem; rotate: -7deg; }
+  .card-two { left: 3.6rem; rotate: 5deg; }
+
+  .card b {
+    color: var(--heading);
+    font-family: var(--font-display);
+    font-size: .9rem;
+    font-weight: 500;
+  }
+
+  .card i {
+    position: absolute;
+    right: .3rem;
+    bottom: .35rem;
+    width: .55rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    rotate: 45deg;
+  }
+
+  .poker-chip {
+    position: absolute;
+    top: 1.7rem;
+    right: 2.25rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    aspect-ratio: 1;
+    border: .25rem dashed var(--accent);
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+  }
+
+  .poker-chip i {
+    width: .65rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+  }
+
+  .poker-table p {
+    position: absolute;
+    right: 1.2rem;
+    bottom: .75rem;
+    display: grid;
+    color: var(--ink-muted);
+    font-size: .4375rem;
+    text-align: right;
+  }
+
+  .poker-table p b {
+    color: var(--heading);
+    font-family: var(--font-display);
+    font-size: .875rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 520px) {
+    .project-artifact {
+      max-width: 8rem;
+      height: 6.25rem;
+    }
+
+    .alive-phone { inset-inline: 1.25rem; }
+    .alive-top {
+      justify-content: center;
+    }
+
+    .alive-top span:first-child {
+      display: none;
+    }
+
+    .wing-score strong { font-size: 2rem; }
+
+    .citibike-slip {
+      inset-inline: .35rem;
+    }
+
+    .ride-map {
+      margin-block: 1.25rem .85rem;
+    }
+
+    .flaneur-map p span {
+      display: none;
+    }
+
+    .wimdy-report {
+      inset: .35rem .2rem;
+      padding: .5rem;
+    }
+
+    .wimdy-report strong {
+      margin-top: .35rem;
+      font-size: .75rem;
+      line-height: 1.15;
+    }
+
+    .weather-bars {
+      height: 1.4rem;
+      margin-block: .1rem .3rem;
+    }
+
+    .wimdy-report footer {
+      font-size: .375rem;
+    }
+
+    .roast-chat {
+      inset: .35rem 0;
+      grid-template-columns: 1.5rem minmax(0, 1fr);
+      gap: .3rem;
+    }
+
+    .chat-avatar {
+      width: 1.5rem;
+    }
+
+    .chat-avatar span {
+      width: .7rem;
+      height: .45rem;
+    }
+
+    .chat-copy {
+      min-width: 0;
+      padding: .45rem .5rem;
+    }
+
+    .chat-copy > span {
+      font-size: .375rem;
+    }
+
+    .chat-copy p {
+      display: -webkit-box;
+      overflow: hidden;
+      margin-block: .3rem;
+      font-size: .5625rem;
+      line-height: 1.25;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 4;
+    }
+
+    .chat-copy i {
+      display: none;
+    }
+
+    .card-one { left: 1.35rem; }
+    .card-two { left: 2.6rem; }
+    .poker-chip { right: .75rem; }
+    .poker-table p { right: .5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-artifact {
+      transition: none;
+    }
+  }
+</style>

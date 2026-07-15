@@ -2,16 +2,16 @@ import { test, expect } from '@playwright/test';
 
 test('story renders 4 beats and advances on scroll', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#roam-story .beat-sentence')).toHaveCount(4);
-  await expect(page.locator('#roam-story .beat-sentence[data-beat="0"]')).toHaveClass(/active/);
+  await expect(page.locator('#work .beat-sentence')).toHaveCount(4);
+  await expect(page.locator('#work .beat-sentence[data-beat="0"]')).toHaveClass(/active/);
   // scroll to ~75% through the story track (instant: override CSS scroll-behavior at the call site)
   await page.evaluate(() => {
-    const el = document.querySelector('#roam-story')!;
+    const el = document.querySelector('#work .story-track')!;
     const r = el.getBoundingClientRect();
     scrollTo({ top: scrollY + r.top + (el as HTMLElement).offsetHeight * 0.75, behavior: 'instant' });
   });
   await page.waitForTimeout(300);
-  const active = page.locator('#roam-story .beat-sentence.active');
+  const active = page.locator('#work .beat-sentence.active');
   await expect(active).toHaveCount(1);
   expect(Number(await active.getAttribute('data-beat'))).toBeGreaterThanOrEqual(2);
 });
@@ -23,16 +23,31 @@ test('story initializes after resizing across the 720px breakpoint', async ({ pa
   await page.goto('/');
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.evaluate(() => {
-    const el = document.querySelector('#roam-story')!;
+    const el = document.querySelector('#work .story-track')!;
     const r = el.getBoundingClientRect();
     scrollTo({ top: scrollY + r.top + (el as HTMLElement).offsetHeight * 0.5, behavior: 'instant' });
   });
   await page.waitForTimeout(300);
-  await expect(page.locator('#roam-story .beat-sentence.active')).toHaveCount(1);
+  await expect(page.locator('#work .beat-sentence.active')).toHaveCount(1);
 });
-test('metric chips show the real numbers', async ({ page }) => {
+
+test('story names concrete AI product work without unverified brag metrics', async ({ page }) => {
   await page.goto('/');
-  for (const m of ['419 PRs/yr', '3–4× merge velocity', '13× completion lift', '87%+ eval positivity']) {
-    await expect(page.locator('#roam-story')).toContainText(m);
+  const story = page.locator('#work');
+  for (const phrase of ['AI realtor', 'chat and tool UI', 'polygon home search', 'evals and conversation analytics']) {
+    await expect(story).toContainText(phrase);
+  }
+  for (const phrase of ['419 PRs', 'merge velocity', '13× completion', 'eval positivity']) {
+    await expect(story).not.toContainText(phrase);
+  }
+});
+
+test('mobile story keeps each sentence paired with its visual', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await expect(page.locator('#work .story-beat')).toHaveCount(4);
+  for (const beat of await page.locator('#work .story-beat').all()) {
+    await expect(beat.locator('.beat-sentence')).toBeVisible();
+    await expect(beat.locator('.beat-visual')).toBeVisible();
   }
 });

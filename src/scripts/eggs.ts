@@ -1,7 +1,7 @@
 // src/scripts/eggs.ts
 import { createKeywordDetector } from './keyword';
 
-// Egg 1: darkroom mode
+// A quiet nod to the old darkroom version of the site.
 const feed = createKeywordDetector('grain', () => {
   const root = document.documentElement;
   if (root.dataset.grain === 'on') delete root.dataset.grain;
@@ -12,12 +12,5 @@ addEventListener('keydown', (e) => {
   feed(e.key);
 });
 
-// Egg 3: console note (Egg 2, the facedown print, lives in lighttable.ts)
-console.log('%cdeveloped in the darkroom — try typing "grain"', 'font-family: monospace; color: #2F6B39;');
-console.log('%cjordanblum19@gmail.com', 'font-family: monospace; color: #888;');
-
-// Global reveal observer for .reveal outside the light table
-const io = new IntersectionObserver((entries) => {
-  for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
-}, { rootMargin: '0px 0px -60px 0px', threshold: 0.1 });
-document.querySelectorAll('.reveal:not(.print)').forEach((el) => io.observe(el));
+console.log('%cthe darkroom is still down here — try typing "grain"', 'font-family: monospace; color: #9C4037;');
+console.log('%cjordanblum16@gmail.com', 'font-family: monospace; color: #888;');

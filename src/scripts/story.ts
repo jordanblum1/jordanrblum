@@ -1,34 +1,66 @@
-// src/scripts/story.ts
-const track = document.querySelector<HTMLElement>('.story-track');
-if (track) {
-  const mql = matchMedia('(min-width: 721px)');
-  let initialized = false;
-  const init = () => {
-    if (initialized) return;
-    initialized = true;
-    const beats = Number(track.dataset.beats ?? 4);
-    track.style.setProperty('--beats', String(beats));
-    const sentences = [...track.querySelectorAll('.beat-sentence')];
-    const visuals = [...track.querySelectorAll('.beat-visual')];
-    let current = -1;
-    const setBeat = (i: number) => {
-      if (i === current) return;
-      current = i;
-      sentences.forEach((s, j) => s.classList.toggle('active', j === i));
-      visuals.forEach((v, j) => v.classList.toggle('active', j === i));
-    };
-    const onScroll = () => {
-      const r = track.getBoundingClientRect();
-      const progress = Math.min(0.999, Math.max(0, -r.top / (track.offsetHeight - innerHeight)));
-      setBeat(Math.floor(progress * beats));
-    };
-    addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+const desktop = matchMedia('(min-width: 721px)');
+
+document.querySelectorAll<HTMLElement>('.story-track').forEach((track) => {
+  const beats = [...track.querySelectorAll<HTMLElement>('[data-story-beat]')];
+  let active = -1;
+  let frame = 0;
+  let listening = false;
+
+  const setActive = (next: number) => {
+    if (next === active) return;
+    active = next;
+
+    beats.forEach((beat, index) => {
+      const isActive = index === next;
+      beat.classList.toggle('is-active', isActive);
+      beat.querySelector('.beat-sentence')?.classList.toggle('active', isActive);
+      beat.querySelector('.beat-visual')?.classList.toggle('active', isActive);
+    });
   };
-  // Loading at ≤720px must not attach the scroll listener (mobile CSS forces static/visible
-  // beats regardless); but if the window is later resized/rotated across the 720px boundary,
-  // the desktop scroll-scrub must come alive without a reload — otherwise the story is left
-  // permanently un-initialized (desktop CSS positions/hides beats but nothing ever sets .active).
-  mql.addEventListener('change', (e) => { if (e.matches) init(); });
-  if (mql.matches) init();
-}
+
+  const update = () => {
+    frame = 0;
+    if (!desktop.matches || beats.length === 0) return;
+
+    const rect = track.getBoundingClientRect();
+    const travel = Math.max(track.offsetHeight - window.innerHeight, 1);
+    const progress = Math.min(0.999, Math.max(0, -rect.top / travel));
+    setActive(Math.floor(progress * beats.length));
+  };
+
+  const requestUpdate = () => {
+    if (frame === 0) frame = requestAnimationFrame(update);
+  };
+
+  const enable = () => {
+    if (listening) return;
+    listening = true;
+    track.classList.add('is-enhanced');
+    update();
+    addEventListener('scroll', requestUpdate, { passive: true });
+    addEventListener('resize', requestUpdate, { passive: true });
+  };
+
+  const disable = () => {
+    if (frame !== 0) cancelAnimationFrame(frame);
+    frame = 0;
+    listening = false;
+    active = -1;
+    track.classList.remove('is-enhanced');
+    removeEventListener('scroll', requestUpdate);
+    removeEventListener('resize', requestUpdate);
+    beats.forEach((beat) => {
+      beat.classList.remove('is-active');
+      beat.querySelector('.beat-sentence')?.classList.remove('active');
+      beat.querySelector('.beat-visual')?.classList.remove('active');
+    });
+  };
+
+  const sync = () => {
+    if (desktop.matches) enable();
+    else disable();
+  };
+
+  desktop.addEventListener('change', sync);
+  sync();
+});
