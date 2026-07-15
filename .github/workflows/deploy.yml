@@ -3,6 +3,7 @@ name: Deploy to S3
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -33,32 +34,10 @@ jobs:
             --delete
 
       - name: Invalidate CloudFront cache
+        if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
         env:
-          CONFIGURED_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
-          distribution_id="$CONFIGURED_DISTRIBUTION_ID"
-
-          if [ -z "$distribution_id" ]; then
-            distribution_id="$(
-              aws cloudfront list-distributions --output json |
-                jq -r --arg bucket "$S3_BUCKET" '
-                  .DistributionList.Items[]?
-                  | select(
-                      ((.Aliases.Items // []) | index("blumjordan.com"))
-                      or any(.Origins.Items[]?; .DomainName | contains($bucket))
-                    )
-                  | .Id
-                ' |
-                head -n 1
-            )"
-          fi
-
-          if [ -z "$distribution_id" ]; then
-            echo "::error::No CloudFront distribution found for blumjordan.com"
-            exit 1
-          fi
-
           aws cloudfront create-invalidation \
-            --distribution-id "$distribution_id" \
+            --distribution-id "$DISTRIBUTION_ID" \
             --paths "/*"
