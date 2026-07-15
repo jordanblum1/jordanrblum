@@ -1,4 +1,4 @@
-# jordanrblum.com
+# blumjordan.com
 
 Jordan Blum's personal site, built with Astro 7, Tailwind 4, and Motion.
 

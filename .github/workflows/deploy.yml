@@ -33,10 +33,24 @@ jobs:
             --delete
 
       - name: Invalidate CloudFront cache
-        if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
         env:
-          DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+          CONFIGURED_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
+          distribution_id="$CONFIGURED_DISTRIBUTION_ID"
+
+          if [ -z "$distribution_id" ]; then
+            distribution_id="$(
+              aws cloudfront list-distributions --output json |
+                jq -r '.DistributionList.Items[]? | select((.Aliases.Items // []) | index("blumjordan.com")) | .Id' |
+                head -n 1
+            )"
+          fi
+
+          if [ -z "$distribution_id" ]; then
+            echo "::error::No CloudFront distribution found for blumjordan.com"
+            exit 1
+          fi
+
           aws cloudfront create-invalidation \
-            --distribution-id "$DISTRIBUTION_ID" \
+            --distribution-id "$distribution_id" \
             --paths "/*"

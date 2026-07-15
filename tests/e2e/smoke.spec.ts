@@ -14,8 +14,8 @@ test('shell renders with nav, sections, footer', async ({ page }) => {
 test('document metadata and keyboard skip link are present', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle('Jordan Blum — Product Engineer in New York');
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jordanrblum.com/');
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://jordanrblum.com/og-image.png');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://blumjordan.com/');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://blumjordan.com/og-image.png');
 
   await page.keyboard.press('Tab');
   await expect(page.locator('.skip-link')).toBeFocused();
