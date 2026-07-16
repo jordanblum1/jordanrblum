@@ -1,0 +1,669 @@
+---
+import { Image } from 'astro:assets';
+import ArchiveList from '../components/ArchiveList.astro';
+import Base from '../layouts/Base.astro';
+import RoamWorkSamples from '../components/RoamWorkSamples.astro';
+import blumCollage from '../assets/identity/blum-collage.png';
+import { about, education, experience, projectArchive, toolkit } from '../data/site';
+---
+
+<Base
+  title="About & Experience — Jordan Blum"
+  description="Jordan Blum is a New York product engineer with experience across consumer products, developer platforms, AI tools, release systems, and independent apps."
+>
+  <main id="main-content" tabindex="-1">
+    <header class="about-hero wide" id="about">
+      <div class="hero-narrative">
+        <h1>{about.title}</h1>
+        <a class="jump-link" href="#work">
+          <span>Experience</span>
+          <span aria-hidden="true">↓</span>
+        </a>
+        <figure class="lifestyle-panel">
+          <Image
+            src={blumCollage}
+            alt="A collage of Jordan biking, traveling, at concerts, and around New York and Chicago"
+            loading="eager"
+            fetchpriority="high"
+            widths={[480, 720, 960, 1280]}
+            sizes="(max-width: 768px) calc(100vw - 32px), (max-width: 1120px) 52vw, 34rem"
+          />
+        </figure>
+        <div class="hero-prose">
+          {about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+      </div>
+    </header>
+
+    <section class="resume-section wide" id="work" aria-labelledby="experience-heading">
+      <header class="section-intro">
+        <h2 id="experience-heading">Experience</h2>
+        <p>Eight years across consumer products, AI agents, internal platforms, and release systems.</p>
+      </header>
+
+      <div class="experience-list">
+        {experience.map((item) => (
+          <article class:list={['experience-item', { 'experience-item--split': item.tracks }]} id={item.company.toLowerCase()}>
+            <div class="experience-heading">
+              <a
+                class="company-link"
+                href={item.href}
+                target="_blank"
+                rel="noopener"
+                aria-label={`Visit ${item.company} (opens in a new tab)`}
+              >
+                <span class:list={['company-logo', `company-logo--${item.logo}`]} aria-hidden="true">
+                  <img src={`/company/${item.logo}.svg`} alt="" width="112" height="32" loading="lazy" />
+                </span>
+                <span class="company-arrow" aria-hidden="true">↗</span>
+              </a>
+              <h3 class="role">{item.role}</h3>
+              <p class="mono-meta experience-date">{item.date}</p>
+            </div>
+            <div class:list={['experience-copy', { 'experience-copy--split': item.tracks }]}>
+              <p class="company-context">{item.context}</p>
+              {item.tracks ? (
+                <>
+                  <p class="summary split-bridge">{item.bridge}</p>
+                  <div class="experience-tracks">
+                    {item.tracks.map((track) => (
+                      <section class="experience-track">
+                        <p class="track-label mono-meta">{track.label}</p>
+                        <h4>{track.title}</h4>
+                        <p class="track-summary">{track.summary}</p>
+                        <ul>
+                          {track.highlights.map((highlight) => <li>{highlight}</li>)}
+                        </ul>
+                      </section>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p class="summary">{item.summary}</p>
+                  <ul>
+                    {item.highlights.map((highlight) => <li>{highlight}</li>)}
+                  </ul>
+                </>
+              )}
+            </div>
+            {item.company === 'Roam' && <RoamWorkSamples />}
+          </article>
+        ))}
+      </div>
+
+      <div class="resume-notes">
+        <div class="resume-note">
+          <p class="resume-note-label mono-meta">Things I’ve worked with</p>
+          <ul class="toolkit-list" aria-label="Technologies Jordan has worked with">
+            {toolkit.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+        <div class="resume-note education-note">
+          <p class="resume-note-label mono-meta">Education</p>
+          <p class="education-degree">
+            <a
+              class="scu-link"
+              href="https://www.scu.edu"
+              target="_blank"
+              rel="noopener"
+              aria-label="Visit Santa Clara University (opens in a new tab)"
+            >
+              <span class="scu-emblem" aria-hidden="true">
+                <img src="/company/scu-broncos.svg" alt="" width="192" height="249" loading="lazy" />
+              </span>
+              <strong>{education.school}</strong>
+            </a>
+            <span class="education-details">
+              <span aria-hidden="true">·</span><span class="visually-hidden">, </span> {education.degree}
+              <span aria-hidden="true">·</span><span class="visually-hidden">, </span> {education.date}
+            </span>
+          </p>
+          <div class="campus-work">
+            <p class="mono-meta">Campus work · {education.campusRoleDate}</p>
+            <ul>
+              {education.campusRoles.map((role) => <li>{role}</li>)}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="archive-section wide" id="projects" aria-labelledby="archive-heading">
+      <header class="section-intro">
+        <h2 id="archive-heading">Public project archive</h2>
+        <p>Apps, maps, and small experiments I’ve made outside work.</p>
+      </header>
+      <ArchiveList items={projectArchive} />
+    </section>
+  </main>
+</Base>
+
+<style>
+  .about-hero {
+    display: grid;
+    grid-template-columns: minmax(25rem, 0.9fr) minmax(30rem, 1.1fr);
+    grid-template-rows: auto auto 1fr;
+    gap: 0 var(--space-12);
+    padding-block: clamp(var(--space-16), 8vw, var(--space-24));
+    scroll-margin-top: var(--space-8);
+  }
+
+  .hero-narrative {
+    display: contents;
+  }
+
+  h1 {
+    grid-row: 1;
+    grid-column: 1;
+    max-width: 14ch;
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+
+  .hero-prose {
+    display: grid;
+    grid-row: 3;
+    grid-column: 1;
+    gap: var(--space-6);
+    max-width: var(--measure);
+    margin-top: var(--space-10);
+  }
+
+  .hero-prose p {
+    color: var(--ink-muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  .hero-prose p:first-child {
+    max-width: var(--measure);
+    color: var(--heading);
+    font-size: 1.125rem;
+  }
+
+  .jump-link {
+    display: inline-flex;
+    grid-row: 2;
+    grid-column: 1;
+    gap: var(--space-2);
+    align-items: baseline;
+    margin-top: var(--space-8);
+    color: var(--heading);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--accent) 45%, transparent);
+    text-underline-offset: 0.35em;
+    transition: color var(--duration-default) var(--ease), text-decoration-color var(--duration-default) var(--ease);
+  }
+
+  .lifestyle-panel {
+    position: relative;
+    grid-row: 1 / span 3;
+    grid-column: 2;
+    width: 100%;
+    aspect-ratio: 1280 / 1252;
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-small);
+  }
+
+  .lifestyle-panel::after {
+    position: absolute;
+    inset: 0;
+    border: 1px solid color-mix(in oklab, var(--hairline) 75%, transparent);
+    border-radius: inherit;
+    content: '';
+    pointer-events: none;
+  }
+
+  .lifestyle-panel :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .resume-section,
+  .archive-section {
+    padding-block: clamp(var(--space-24), 12vw, var(--space-32));
+  }
+
+  .resume-section {
+    border-top: 1px solid var(--hairline);
+    scroll-margin-top: var(--space-8);
+  }
+
+  .section-intro {
+    display: grid;
+    gap: var(--space-3);
+    max-width: var(--measure);
+    margin-bottom: var(--space-12);
+  }
+
+  .section-intro h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .section-intro > p {
+    max-width: var(--measure);
+    color: var(--ink-muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  .experience-list {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .experience-item {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.4fr) minmax(0, 1fr);
+    gap: var(--space-12);
+    padding-block: var(--space-12);
+    border-bottom: 1px solid var(--hairline);
+    scroll-margin-top: var(--space-8);
+  }
+
+  .experience-item--split {
+    grid-template-columns: minmax(14rem, 0.32fr) minmax(0, 1fr);
+    padding-block: var(--space-16);
+  }
+
+  .experience-heading {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+  }
+
+  .company-link {
+    display: inline-flex;
+    min-height: var(--space-12);
+    gap: var(--space-2);
+    align-items: center;
+    margin-bottom: var(--space-1);
+  }
+
+  .company-logo {
+    display: flex;
+    width: 7rem;
+    height: var(--space-8);
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .company-logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .company-logo--workday {
+    width: 5.5rem;
+  }
+
+  .company-arrow {
+    color: var(--accent);
+    font-size: 0.8rem;
+    transition: translate var(--duration-fast) var(--ease);
+  }
+
+  .role {
+    max-width: 17rem;
+    color: var(--ink-muted);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .experience-date {
+    margin-top: var(--space-4);
+  }
+
+  .experience-copy {
+    display: grid;
+    gap: var(--space-6);
+    max-width: 42rem;
+  }
+
+  .experience-copy--split {
+    gap: var(--space-8);
+    max-width: none;
+  }
+
+  .company-context {
+    max-width: 44rem;
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .summary {
+    color: var(--heading);
+    font-size: 1.125rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  .split-bridge {
+    max-width: 46rem;
+  }
+
+  .experience-copy ul {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    color: var(--ink-muted);
+    list-style: none;
+  }
+
+  .experience-copy li {
+    display: grid;
+    grid-template-columns: var(--space-4) minmax(0, 1fr);
+    gap: var(--space-2);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .experience-copy li::before {
+    color: var(--accent);
+    content: '—';
+  }
+
+  .experience-tracks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--hairline);
+  }
+
+  .experience-track {
+    min-width: 0;
+    padding: var(--space-8) var(--space-8) 0 0;
+  }
+
+  .experience-track + .experience-track {
+    padding-right: 0;
+    padding-left: var(--space-8);
+    border-left: 1px solid var(--hairline);
+  }
+
+  .track-label {
+    color: var(--accent);
+  }
+
+  .experience-track h4 {
+    margin-top: var(--space-2);
+    color: var(--heading);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .track-summary {
+    margin-top: var(--space-4);
+    color: var(--heading);
+    font-size: 1rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .experience-track > ul {
+    margin-top: var(--space-6);
+  }
+
+  .resume-notes {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: var(--space-12);
+    padding-block: var(--space-8);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .resume-note {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+  }
+
+  .resume-note-label {
+    color: var(--accent);
+  }
+
+  .toolkit-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) 0;
+    margin: 0;
+    padding: 0;
+    color: var(--heading);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    list-style: none;
+  }
+
+  .toolkit-list li:not(:last-child)::after {
+    margin-inline: var(--space-2);
+    color: var(--hairline);
+    content: '·';
+  }
+
+  .education-note { gap: var(--space-3); }
+
+  .scu-link {
+    display: inline-flex;
+    flex: none;
+    gap: var(--space-2);
+    align-items: center;
+    width: fit-content;
+    min-height: var(--space-12);
+    padding-inline: var(--space-1);
+    border-radius: var(--radius-xs);
+    transition: color var(--duration-default) var(--ease);
+  }
+
+  .scu-emblem {
+    display: block;
+    flex: none;
+    width: auto;
+    height: var(--space-8);
+    aspect-ratio: 192 / 249.2179;
+  }
+
+  .scu-emblem img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .education-degree {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-2);
+    align-items: center;
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .education-degree strong {
+    color: var(--heading);
+    font-weight: 500;
+  }
+
+  .campus-work {
+    display: grid;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--hairline);
+  }
+
+  .campus-work > p {
+    color: var(--ink-muted);
+  }
+
+  .campus-work ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: 0;
+    color: var(--heading);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    list-style: none;
+  }
+
+  .campus-work li:not(:last-child)::after {
+    margin-left: var(--space-4);
+    color: var(--hairline);
+    content: '·';
+  }
+
+  .archive-section {
+    scroll-margin-top: var(--space-8);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .jump-link:hover {
+      color: var(--accent);
+      text-decoration-color: var(--accent);
+    }
+
+    .company-link:hover .company-arrow,
+    .company-link:focus-visible .company-arrow {
+      translate: var(--space-1) calc(var(--space-1) * -1);
+    }
+
+    .scu-link:hover,
+    .scu-link:focus-visible {
+      color: var(--accent);
+    }
+
+    .scu-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: var(--space-1);
+    }
+  }
+
+  :global(:root[data-theme='dark']) .company-logo--roam img,
+  :global(:root[data-theme='dark']) .company-logo--procore img {
+    filter: brightness(0) invert(1);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .company-logo--roam img,
+    :global(:root:not([data-theme='light'])) .company-logo--procore img {
+      filter: brightness(0) invert(1);
+    }
+  }
+
+  @media (max-width: 70rem) and (min-width: 48.001rem) {
+    .about-hero {
+      grid-template-columns: minmax(0, 0.88fr) minmax(24rem, 1.12fr);
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .about-hero {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+
+    .about-hero {
+      padding-block: var(--space-16) var(--space-24);
+    }
+
+    h1 {
+      grid-row: auto;
+      font-size: clamp(2.75rem, 13vw, 4.5rem);
+    }
+
+    .hero-narrative {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+
+    .hero-narrative > :global(*) {
+      grid-column: 1;
+    }
+
+    .lifestyle-panel {
+      grid-row: auto;
+      grid-column: 1;
+      aspect-ratio: 1.08 / 1;
+      margin-top: var(--space-8);
+      border-radius: var(--radius-xl);
+    }
+
+    .hero-prose {
+      grid-row: auto;
+      gap: var(--space-6);
+      margin-top: var(--space-8);
+    }
+
+    .jump-link {
+      grid-row: auto;
+    }
+
+    .resume-section,
+    .archive-section {
+      padding-block: var(--space-24);
+    }
+
+    .section-intro {
+      margin-bottom: var(--space-8);
+    }
+
+    .experience-item,
+    .resume-notes {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+
+    .experience-item--split {
+      padding-block: var(--space-12);
+    }
+
+    .experience-tracks {
+      grid-template-columns: 1fr;
+    }
+
+    .experience-track {
+      padding: var(--space-8) 0;
+    }
+
+    .experience-track + .experience-track {
+      padding-left: 0;
+      border-top: 1px solid var(--hairline);
+      border-left: 0;
+    }
+
+    .experience-date {
+      margin-top: var(--space-3);
+    }
+
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jump-link,
+    .company-arrow {
+      transition: none;
+    }
+  }
+</style>

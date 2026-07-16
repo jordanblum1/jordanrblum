@@ -1,0 +1,372 @@
+---
+import WorkVisual from './WorkVisual.astro';
+import type { SelectedWorkItem } from '../data/site';
+
+interface Props {
+  items: SelectedWorkItem[];
+}
+
+const { items } = Astro.props;
+const workItems = items.filter(
+  (item): item is Extract<SelectedWorkItem, { group: 'work' }> => item.group === 'work',
+);
+const projectItems = items.filter(
+  (item): item is Extract<SelectedWorkItem, { group: 'project' }> => item.group === 'project',
+);
+---
+
+<div class="work-groups">
+  <section class="work-group experience-group" aria-labelledby="places-heading">
+    <h3 class="visually-hidden" id="places-heading">Places I’ve worked</h3>
+    <ol class="experience-list">
+      {workItems.map((item, index) => (
+        <li>
+          <a
+            class="experience-link"
+            href={item.href}
+            aria-label={`Read about Jordan’s work at ${item.company}`}
+          >
+            <span class="experience-index" aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <div class="experience-identity">
+              <h4>{item.company}</h4>
+              <p class="experience-meta">
+                <span>{item.focus}</span>
+                <span>{item.date}</span>
+              </p>
+            </div>
+            <p class="experience-blurb">{item.blurb}</p>
+            <span class="row-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="work-group project-group" aria-labelledby="projects-heading">
+    <h3 class="visually-hidden" id="projects-heading">Things I’ve built</h3>
+    <ul class="project-grid" role="list">
+      {projectItems.map((item, index) => (
+        <li class:list={['project-item', `project-item-${index + 1}`]}>
+          <article class="project-card">
+            <a
+              class="project-link"
+              href={item.href}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener noreferrer' : undefined}
+            >
+              <div class="visual-shell">
+                <WorkVisual visual={item.visual} size={item.size} />
+              </div>
+
+              <div class="project-copy">
+                <h4>
+                  <span>{item.title}</span>
+                  {item.external && <span class="external-mark" aria-hidden="true">↗</span>}
+                  {item.external && <span class="visually-hidden"> (opens in a new tab)</span>}
+                </h4>
+                <p>{item.blurb}</p>
+              </div>
+            </a>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </section>
+</div>
+
+<style>
+  .work-groups {
+    display: grid;
+    gap: clamp(var(--space-24), 12vw, calc(var(--space-32) * 1.4));
+  }
+
+  .work-group {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .work-group > h3 {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+  }
+
+  .experience-list,
+  .project-grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .experience-list {
+    border-top: 1px solid var(--hairline);
+  }
+
+  .experience-list li {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .experience-link {
+    display: grid;
+    grid-template-columns: 2rem minmax(12rem, 0.42fr) minmax(20rem, 1fr) auto;
+    gap: var(--space-6) var(--space-8);
+    align-items: start;
+    padding-block: clamp(var(--space-6), 2.5vw, var(--space-8));
+  }
+
+  .experience-index {
+    padding-top: 0.32rem;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1;
+  }
+
+  .experience-identity {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .experience-identity h4 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    transition: color var(--duration-default) var(--ease);
+  }
+
+  .experience-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) 0;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .experience-meta span:last-child {
+    display: inline-flex;
+    gap: var(--space-3);
+    color: var(--accent);
+  }
+
+  .experience-meta span:last-child::before {
+    color: var(--hairline);
+    content: '·';
+  }
+
+  .experience-blurb {
+    max-width: 56ch;
+    color: var(--ink-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .row-arrow {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    transition: transform var(--duration-default) var(--ease);
+  }
+
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(var(--space-16), 7vw, var(--space-24)) var(--space-6);
+  }
+
+  .project-item {
+    min-width: 0;
+  }
+
+  .project-item-1 { grid-column: 1 / span 7; }
+  .project-item-2 { grid-column: 8 / span 5; padding-top: var(--space-16); }
+  .project-item-3 { grid-column: 3 / span 8; }
+
+  .project-card,
+  .project-link {
+    height: 100%;
+  }
+
+  .project-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+
+  .visual-shell {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--paper-raised);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    transition:
+      transform var(--duration-default) var(--ease),
+      border-color var(--duration-default) var(--ease),
+      box-shadow var(--duration-default) var(--ease);
+  }
+
+  .project-item-2 .visual-shell {
+    aspect-ratio: 1 / 1.04;
+  }
+
+  .project-item-3 .visual-shell {
+    aspect-ratio: 16 / 9;
+  }
+
+  .project-copy {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+  }
+
+  .project-copy h4 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    max-width: 25ch;
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    transition: color var(--duration-default) var(--ease);
+  }
+
+  .external-mark {
+    display: inline-block;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    transition: transform var(--duration-default) var(--ease);
+  }
+
+  .project-copy > p {
+    max-width: 50ch;
+    color: var(--ink-muted);
+    font-size: 0.95rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .experience-link:focus-visible,
+  .project-link:focus-visible {
+    outline: none;
+  }
+
+  .experience-link:focus-visible h4,
+  .project-link:focus-visible .project-copy h4 {
+    color: var(--accent);
+  }
+
+  .experience-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 5px;
+  }
+
+  .project-link:focus-visible .visual-shell {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-color: var(--accent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .experience-link:hover .experience-identity h4,
+    .project-link:hover .project-copy h4 {
+      color: var(--accent);
+    }
+
+    .experience-link:hover .row-arrow {
+      transform: translateX(var(--space-2));
+    }
+
+    .project-link:hover .visual-shell {
+      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
+      box-shadow: var(--shadow-small);
+      transform: translateY(-0.25rem);
+    }
+
+    .project-link:hover .external-mark {
+      transform: translate(0.12rem, -0.12rem);
+    }
+  }
+
+  @media (max-width: 60rem) {
+    .experience-link {
+      grid-template-columns: 2rem minmax(10rem, 0.46fr) minmax(0, 1fr) auto;
+      gap: var(--space-6);
+    }
+
+    .project-item-1,
+    .project-item-2 {
+      grid-column: span 6;
+    }
+
+    .project-item-3 {
+      grid-column: 2 / span 10;
+    }
+  }
+
+  @media (max-width: 44rem) {
+    .experience-link {
+      grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+      gap: var(--space-3) var(--space-4);
+      padding-block: var(--space-5);
+    }
+
+    .experience-index {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .experience-identity {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .experience-blurb {
+      grid-column: 2 / -1;
+    }
+
+    .project-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-16);
+    }
+
+    .project-item-1,
+    .project-item-2,
+    .project-item-3 {
+      grid-column: 1;
+      padding-top: 0;
+    }
+
+    .project-item-2 .visual-shell,
+    .project-item-3 .visual-shell {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .experience-identity h4,
+    .row-arrow,
+    .visual-shell,
+    .project-copy h4,
+    .external-mark {
+      transition-duration: 120ms;
+      transition-property: color, border-color, opacity;
+    }
+
+    .experience-link:hover .row-arrow,
+    .project-link:hover .visual-shell,
+    .project-link:hover .external-mark {
+      transform: none;
+    }
+  }
+</style>

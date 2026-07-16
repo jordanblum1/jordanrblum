@@ -69,13 +69,15 @@ main {
 h1,
 h2,
 h3,
+h4,
 p {
   margin-block: 0;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   color: var(--heading);
   font-family: var(--font-body);
   font-weight: 500;

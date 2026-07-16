@@ -1,181 +1,269 @@
-import type { ImageMetadata } from 'astro';
-import tableMountain from '../assets/photos/photo0001.jpg';
-import capetownCave from '../assets/photos/photo0020.jpg';
-import namibia from '../assets/photos/photo0030.jpg';
-import rome from '../assets/photos/photo0040.jpg';
+export type WorkVisual = 'roam' | 'alive' | 'procore' | 'chicks' | 'citibike' | 'workday';
 
-export interface Print {
-  src: ImageMetadata;
-  alt: string;
-  label: string;
-  position?: string;
+interface SelectedWorkItemBase {
+  title: string;
+  blurb: string;
+  href: string;
+  size: 'feature' | 'compact';
+  visual: WorkVisual;
 }
 
-export interface RowItem {
-  title: string;
-  meta: string;
+export type SelectedWorkItem =
+  | (SelectedWorkItemBase & {
+      group: 'work';
+      company: string;
+      focus: string;
+      date: string;
+    })
+  | (SelectedWorkItemBase & {
+      group: 'project';
+      external?: boolean;
+    });
+
+interface ExperienceItemBase {
+  company: string;
+  href: string;
+  logo: 'roam' | 'procore' | 'workday';
+  role: string;
   date: string;
-  blurb: string;
+  context: string;
+}
+
+export interface ExperienceTrack {
+  label: string;
+  title: string;
+  summary: string;
+  highlights: string[];
+}
+
+export type ExperienceItem = ExperienceItemBase & (
+  | {
+      tracks: ExperienceTrack[];
+      bridge: string;
+      summary?: never;
+      highlights?: never;
+    }
+  | {
+      tracks?: never;
+      bridge?: never;
+      summary: string;
+      highlights: string[];
+    }
+);
+
+export interface ArchiveItem {
+  title: string;
+  date: string;
+  description: string;
   href?: string;
 }
 
-export interface ProjectItem extends RowItem {
-  href: string;
-  artifact: 'alive' | 'chicks' | 'citibike' | 'flaneur' | 'wimdy' | 'roast' | 'poker';
-}
-
 export const hero = {
-  eyebrow: 'Jordan Blum · product engineer · New York',
-  statement: 'I work on Reed at Roam, and I make a lot of oddly specific things on the side.',
-  intro: 'Most days I move between product interfaces, backend systems, and the tools that help an AI agent give a useful answer instead of a confident shrug.',
-  status: 'currently: chat, search, agent tools, and evals',
+  statement: 'I’m Jordan, a product engineer in New York. I build consumer products, developer tools, and AI agents.',
+  support: 'For the last eight years, I’ve worked across product, design, frontend, backend, and analytics. Outside work, I make iPhone apps and small web projects.',
 };
 
-export const storyBeats = [
+export const selectedWork: SelectedWorkItem[] = [
   {
-    era: 'May 2025 — Feb 2026',
-    title: 'The marketplace',
-    sentence: 'I joined Roam as one of four engineers. For the first stretch I worked across the marketplace: offers, search, onboarding, growth experiments, and whatever else needed doing.',
-    visual: 'marketplace',
+    title: 'Product engineering at Roam',
+    company: 'Roam',
+    focus: 'Product engineering',
+    date: '2025—now',
+    blurb: 'Work across a home-buying marketplace and its AI agent: research, chat and search interfaces, backend tools, analytics, and evals.',
+    href: '/about#roam',
+    group: 'work',
+    size: 'feature',
+    visual: 'roam',
   },
-  {
-    era: 'Mar 2026 — now',
-    title: 'Then Reed became the job',
-    sentence: 'Reed is an AI realtor. A messy question might need home search, pricing data, listing photos, or a careful follow-up before it needs an answer.',
-    visual: 'agent',
-  },
-  {
-    era: 'Product + systems',
-    title: 'The parts people use',
-    sentence: 'I have worked on the chat and tool UI, buyer and seller flows, polygon home search, photo analysis, and pricing reports.',
-    visual: 'product',
-  },
-  {
-    era: 'Reliability',
-    title: 'And the parts that keep it honest',
-    sentence: 'I also built evals and conversation analytics that show us when the agent is useful, confused, or quietly stuck so we know what to fix next.',
-    visual: 'evals',
-  },
-] as const;
-
-export const experience: RowItem[] = [
-  {
-    title: 'Procore',
-    meta: 'Senior Software Engineer',
-    date: '2021—2025',
-    blurb: 'I built deployment and credential tooling used by 300+ engineers, then worked with teams to make new-service setup take hours instead of days.',
-  },
-  {
-    title: 'Workday',
-    meta: 'DevOps & Release Engineering',
-    date: '2018—2021',
-    blurb: 'Internal developer tools and release systems, including a test finder that saved developers about three hours a week.',
-  },
-  {
-    title: 'Santa Clara University',
-    meta: 'Computer Science · Studio Art minor',
-    date: '2014—2018',
-    blurb: 'Plus a semester at the University of Cape Town. Computer science and studio art made more sense together than they looked on paper.',
-  },
-];
-
-export const projects: ProjectItem[] = [
   {
     title: 'Alive Still',
-    meta: 'iPhone app · useful',
-    date: '2026',
     blurb: 'A daily safety check-in for people who live alone. Miss the window and it texts the people you chose.',
     href: 'https://alivestill.app',
-    artifact: 'alive',
+    external: true,
+    group: 'project',
+    size: 'feature',
+    visual: 'alive',
+  },
+  {
+    title: 'Developer platform at Procore',
+    company: 'Procore',
+    focus: 'Developer platform',
+    date: '2021—2025',
+    blurb: 'The deployment and credential tools behind hundreds of engineers’ daily work.',
+    href: '/about#procore',
+    group: 'work',
+    size: 'compact',
+    visual: 'procore',
   },
   {
     title: 'Chicks of NYC',
-    meta: 'map · rankings · wings',
-    date: '2025—',
     blurb: 'A map and ranking of chicken wings we actually ate. The data pipeline is more serious than the premise.',
     href: 'https://chicksofnyc.com',
-    artifact: 'chicks',
+    external: true,
+    group: 'project',
+    size: 'compact',
+    visual: 'chicks',
   },
   {
     title: 'Citi Bike Wrapped',
-    meta: 'local data · year in review',
-    date: '2026',
-    blurb: 'Upload your Citi Bike history and get your year in rides. The file stays on your device.',
-    href: 'https://citibikewrapped.vercel.app',
-    artifact: 'citibike',
+    blurb: 'A personal year in review for your Citi Bike rides. About three weeks after I posted mine on Reddit, Citi Bike released its own in-app recap.',
+    href: 'https://citibikewrapped.com',
+    external: true,
+    group: 'project',
+    size: 'compact',
+    visual: 'citibike',
   },
   {
-    title: 'Flâneur',
-    meta: 'restaurant discovery agent',
-    date: '2026',
-    blurb: 'For when you have a dinner vibe but not a restaurant in mind. Discovery first, reservation second.',
-    href: 'https://reservation-agent.vercel.app',
-    artifact: 'flaneur',
+    title: 'Release tools at Workday',
+    company: 'Workday',
+    focus: 'Release tools',
+    date: '2018—2021',
+    blurb: 'Tools that made tests easier to find, releases less painful, and incident work a little less manual.',
+    href: '/about#workday',
+    group: 'work',
+    size: 'feature',
+    visual: 'workday',
+  },
+];
+
+export const experience: ExperienceItem[] = [
+  {
+    company: 'Roam',
+    href: 'https://www.withroam.com',
+    logo: 'roam',
+    role: 'Product Engineer',
+    date: 'May 2025—now',
+    context: 'Joined just after its $11.5M Series A as the third engineer on a four-person engineering team. Roam is backed by Khosla Ventures and Founders Fund; early investors included Fifth Wall co-founder Brendan Wallace.',
+    bridge: 'I work across two sides of Roam: the home-buying marketplace and Reed, its AI realtor.',
+    tracks: [
+      {
+        label: '01 · Product engineering',
+        title: 'Roam marketplace',
+        summary: 'I build the core product buyers use to find homes, understand their financing, and move through an offer.',
+        highlights: [
+          'Shipped search, offer, onboarding, and growth flows, plus the internal tools that support them.',
+          'Worked end to end across product decisions, interface design, backend systems, analytics, rollout, and iteration.',
+        ],
+      },
+      {
+        label: '02 · AI product & systems',
+        title: 'Reed, the AI realtor',
+        summary: 'I’m one of two lead engineers building Reed as both a customer product and an AI system: the conversation, the research and pricing tools behind it, and the checks that show when it fails.',
+        highlights: [
+          'Built streaming chat and tool-call interfaces, multi-tool home research and pricing flows, and vision-model photo analysis.',
+          'Built evals and conversation analytics to catch regressions, find drop-off, and guide product changes.',
+          'Built the internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents, with cross-model review, crash recovery, and human approval gates.',
+        ],
+      },
+    ],
   },
   {
-    title: 'WIMDY',
-    meta: 'weather · activities',
+    company: 'Procore',
+    href: 'https://www.procore.com',
+    logo: 'procore',
+    role: 'Software Engineer → Senior Software Engineer',
+    date: 'May 2021—May 2025',
+    context: 'Four years building internal products for a 600+ person engineering organization, with a promotion to Senior Software Engineer.',
+    summary: 'I owned deployment and credential tools from user research and roadmap decisions through production React and Rails work.',
+    highlights: [
+      'Owned the deployment platform across ASG, Kubernetes, and Capistrano workflows.',
+      'Built self-service credential tooling for more than 80 teams and CI/CD patterns that cut new-service setup from days to hours.',
+      'Mentored engineers and raised accessibility, performance, and design-system standards across internal tools.',
+    ],
+  },
+  {
+    company: 'Workday',
+    href: 'https://www.workday.com',
+    logo: 'workday',
+    role: 'Associate DevOps / Release Engineer → Senior Associate Developer',
+    date: 'Aug 2018—May 2021',
+    context: 'Early in my career, I led conversations with business and engineering leaders around an org-wide release project.',
+    summary: 'I built the tools, release workflows, and rollout plans—then worked directly with teams to make sure they were useful.',
+    highlights: [
+      'Built a code-test finder that saved developers about three hours a week.',
+      'Cut release timelines by 50% by rebuilding CI/CD and release workflows with CircleCI, Docker, and Git Flow.',
+      'Built incident-response and deployment tooling, then drove adoption through demos, documentation, and hands-on pairing.',
+    ],
+  },
+];
+
+export const education = {
+  school: 'Santa Clara University',
+  degree: 'BS Computer Science · Studio Art minor (Graphic Design)',
+  date: '2018',
+  campusRoles: ['Student Ambassador (campus tour guide)', 'IT Technician'],
+  campusRoleDate: 'Sophomore—senior year',
+};
+
+export const toolkit = [
+  'React',
+  'TypeScript',
+  'Elixir / Phoenix',
+  'Python',
+  'Swift',
+  'PostgreSQL',
+  'AWS',
+  'AI agents & evals',
+  'CI/CD',
+];
+
+export const projectArchive: ArchiveItem[] = [
+  {
+    title: 'Alive Still',
     date: '2026',
-    blurb: 'Checks the weather against what you actually want to do outside.',
+    description: 'A daily safety check-in for people who live alone.',
+    href: 'https://alivestill.app',
+  },
+  {
+    title: 'Chicks of NYC',
+    date: '2025—',
+    description: 'A map and ranking of chicken wings we actually ate.',
+    href: 'https://chicksofnyc.com',
+  },
+  {
+    title: 'Citi Bike Wrapped',
+    date: '2026',
+    description: 'A personal year in review for your Citi Bike rides. About three weeks after I posted mine on Reddit, Citi Bike released its own in-app recap.',
+    href: 'https://citibikewrapped.com',
+  },
+  {
+    title: 'wimdy',
+    date: '2026',
+    description: 'Checks the weather against what you actually want to do outside.',
     href: 'https://wimdy.io',
-    artifact: 'wimdy',
   },
   {
     title: 'Roast My Friend',
-    meta: 'LLMs · questionable judgment',
     date: '2026',
-    blurb: 'Upload a friend and get a roast. A joke that escaped the group chat.',
+    description: 'A joke that escaped the group chat.',
     href: 'https://roastmyfriend.vercel.app',
-    artifact: 'roast',
   },
   {
-    title: 'Poker Night',
-    meta: 'settling up',
-    date: '2025',
-    blurb: 'Turns a table full of wins and losses into the fewest possible Venmo payments.',
-    href: 'https://poker-night-eight.vercel.app',
-    artifact: 'poker',
+    title: 'blumblumblum',
+    date: '2022—',
+    description: 'My hand-rolled version of Linktree, Beacons, and lnk.bio.',
+    href: 'https://blumblumblum.com',
+  },
+  {
+    title: 'Photo archive',
+    date: 'ongoing',
+    description: 'Travel photographs from a period when I carried a much bigger camera.',
+    href: 'https://blumblumblum-gallery.vercel.app/',
   },
 ];
 
-export const about = [
-  'I studied computer science and studio art. I still tend to bounce between the part that has to work and the part someone has to look at.',
-  'I live in New York. Outside work, I ride Citi Bikes, make small apps, and maintain opinions about chicken wings.',
-];
-
-export const contactSheet: Print[] = [
-  {
-    src: tableMountain,
-    alt: 'Five hikers looking over Cape Town from Table Mountain',
-    label: 'Table Mountain · 2016',
-    position: 'center 35%',
-  },
-  {
-    src: capetownCave,
-    alt: 'A silhouette standing inside a cave above Cape Town',
-    label: 'Cape Town · 2016',
-    position: 'center 35%',
-  },
-  {
-    src: namibia,
-    alt: 'Dead camel thorn trees in the pale clay pan at Deadvlei, Namibia',
-    label: 'Deadvlei · 2016',
-    position: 'center 24%',
-  },
-  {
-    src: rome,
-    alt: 'A dark cross silhouetted against the sky inside the Colosseum in Rome',
-    label: 'Rome · 2016',
-    position: 'center 28%',
-  },
-];
-
-export const gallery = 'https://blumblumblum-gallery.vercel.app/';
+export const about = {
+  title: 'I like making things. I like making them look good, too.',
+  paragraphs: [
+    'I studied computer science and studio art so I could do both. For the last eight years, I’ve worked across product, design, frontend, backend, and the systems behind them.',
+    'I like following an idea from the first sketch to something people actually use. Sometimes that’s a consumer product, sometimes it’s an internal tool, and sometimes it’s a side project I wanted for myself.',
+    'I live in New York. Outside work I ride bikes, make small apps, take photos, and run a chicken-wing site with friends.',
+  ],
+};
 
 export const social = [
   { label: 'Email', href: 'mailto:jordanblum16@gmail.com' },
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jordanblum1' },
   { label: 'GitHub', href: 'https://github.com/jordanblum1' },
-  { label: 'Old internet corner', href: 'https://blumblumblum.com' },
-  { label: 'Photo gallery', href: gallery },
+  { label: 'blumblumblum', href: 'https://blumblumblum.com' },
 ];

@@ -1,0 +1,587 @@
+---
+import { Image } from 'astro:assets';
+import { hero } from '../data/site';
+import jordanPortrait from '../assets/identity/jordan-portrait-blue.png';
+import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
+
+const blumMark = blumMarkSource
+  .replace(/<\?xml[^>]*>\s*/, '')
+  .replace(/<defs>[\s\S]*?<\/defs>/, '');
+---
+
+<header class="hero-showcase wide" aria-labelledby="hero-title">
+  <section class="intro-panel">
+    <h1 id="hero-title">{hero.statement}</h1>
+    <div class="hero-detail">
+      <p class="support">{hero.support}</p>
+      <ul class="profile-facts" aria-label="A few quick facts about Jordan">
+        <li>
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+            <rect x="3" y="5.5" width="14" height="10.5" rx="2.5" stroke="currentColor" stroke-width="1.5" />
+            <path d="M7 5.5V4.75C7 3.78 7.78 3 8.75 3h2.5C12.22 3 13 3.78 13 4.75v.75M3.5 9.25h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          <span>Product engineer at</span>
+          <a class="roam-fact" href="https://www.withroam.com" target="_blank" rel="noopener">
+            <img src="/company/roam.svg" alt="Roam" width="52" height="15" />
+            <span class="visually-hidden"> (opens in a new tab)</span>
+          </a>
+        </li>
+        <li>
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+            <path d="M10 17s5-4.77 5-9a5 5 0 1 0-10 0c0 4.23 5 9 5 9Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+            <circle cx="10" cy="8" r="1.75" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+          <span>New York</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <figure class="portrait-panel" data-portrait-panel>
+    <span class="portrait-ripple" aria-hidden="true"></span>
+    <span class="portrait-glint" aria-hidden="true"></span>
+    <Image
+      class="portrait"
+      src={jordanPortrait}
+      alt="Illustrated portrait of Jordan Blum"
+      widths={[512, 768, 1024]}
+      sizes="(max-width: 52rem) calc(100vw - 2rem), 58vw"
+      quality={90}
+      loading="eager"
+      fetchpriority="high"
+    />
+  </figure>
+
+  <a class="field-panel" href="#work" data-hero-field>
+    <span class="field-art" aria-hidden="true" set:html={blumMark}></span>
+    <span class="field-link">
+      See the work
+      <span aria-hidden="true">↓</span>
+    </span>
+  </a>
+</header>
+
+<script src="../scripts/hero-field.ts"></script>
+
+<style>
+  .hero-showcase {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-3);
+    padding-block: var(--space-6) clamp(var(--space-20), 10vw, var(--space-32));
+  }
+
+  .intro-panel,
+  .portrait-panel,
+  .field-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    isolation: isolate;
+  }
+
+  .intro-panel {
+    grid-column: span 5;
+    display: flex;
+    min-height: clamp(32rem, 48vw, 40rem);
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-12);
+    padding: clamp(var(--space-6), 3.4vw, var(--space-10));
+    background: var(--surface-raised);
+  }
+
+  .intro-panel h1 {
+    max-width: 14ch;
+    font-size: clamp(2.35rem, 3.75vw, 3.4rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.052em;
+    text-wrap: balance;
+  }
+
+  .hero-detail {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .support {
+    max-width: 43ch;
+    color: var(--ink-muted);
+    font-size: 0.95rem;
+    line-height: 1.58;
+    text-wrap: pretty;
+  }
+
+  .profile-facts {
+    display: grid;
+    gap: 0.42rem;
+    width: fit-content;
+    margin: 0;
+    padding: 0;
+    color: var(--ink-muted);
+    font-size: 0.74rem;
+    line-height: 1.25;
+    list-style: none;
+  }
+
+  .profile-facts li {
+    display: flex;
+    min-height: 1.15rem;
+    gap: 0.42rem;
+    align-items: center;
+  }
+
+  .profile-facts svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 auto;
+    color: color-mix(in oklab, var(--ink-muted) 82%, transparent);
+  }
+
+  .roam-fact {
+    display: inline-flex;
+    height: 0.9rem;
+    align-items: center;
+    border-radius: var(--radius-pill);
+  }
+
+  .roam-fact img {
+    display: block;
+    width: 2.85rem;
+    height: auto;
+    max-height: 0.82rem;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  :global(:root[data-theme='dark']) .roam-fact img {
+    filter: brightness(0) invert(1);
+  }
+
+  .portrait-panel {
+    --portrait-x: 0px;
+    --portrait-y: 0px;
+    --portrait-rotate: 0deg;
+    --portrait-scale: 1;
+    --portrait-ring-x: 0px;
+    --portrait-ring-y: 0px;
+    --portrait-ring-inverse-x: 0px;
+    --portrait-ring-inverse-y: 0px;
+    --portrait-size: min(61%, 25rem);
+    grid-column: span 7;
+    min-height: clamp(32rem, 48vw, 40rem);
+    margin: 0;
+    background:
+      radial-gradient(
+        circle at 72% 22%,
+        color-mix(in oklab, var(--accent) 13%, var(--surface-raised)),
+        transparent 36%
+      ),
+      radial-gradient(
+        circle at 22% 78%,
+        color-mix(in oklab, var(--success) 15%, var(--surface-raised)),
+        transparent 42%
+      ),
+      var(--surface-raised);
+  }
+
+  .portrait-panel::before,
+  .portrait-panel::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in oklab, var(--accent) 15%, transparent);
+    border-radius: 50%;
+    content: '';
+    pointer-events: none;
+    transition:
+      border-color var(--duration-slow) var(--ease),
+      transform var(--duration-slow) var(--spring);
+  }
+
+  .portrait-panel::before {
+    width: min(72%, 31rem);
+    box-shadow: 0 0 0 var(--space-12) color-mix(in oklab, var(--accent) 4%, transparent);
+    transform: translate(
+      calc(-50% + var(--portrait-ring-x)),
+      calc(-50% + var(--portrait-ring-y))
+    );
+  }
+
+  .portrait-panel::after {
+    width: min(84%, 36rem);
+    border-color: color-mix(in oklab, var(--success) 12%, transparent);
+    transform: translate(
+      calc(-50% + var(--portrait-ring-inverse-x)),
+      calc(-50% + var(--portrait-ring-inverse-y))
+    );
+  }
+
+  .portrait-panel :global(.portrait),
+  .portrait-ripple,
+  .portrait-glint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--portrait-size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform:
+      translate(calc(-50% + var(--portrait-x)), calc(-50% + var(--portrait-y)))
+      rotate(var(--portrait-rotate))
+      scale(var(--portrait-scale));
+    transition: transform var(--duration-default) var(--spring);
+  }
+
+  .portrait-panel :global(.portrait) {
+    z-index: 1;
+    display: block;
+    height: auto;
+    object-fit: cover;
+    border: 1px solid color-mix(in oklab, var(--accent) 20%, var(--hairline));
+    box-shadow: var(--shadow-lifted);
+    filter: saturate(0.92) contrast(0.99);
+    transition:
+      filter var(--duration-default) var(--ease),
+      transform var(--duration-default) var(--spring);
+  }
+
+  .portrait-ripple,
+  .portrait-glint {
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .portrait-ripple {
+    border: 1px solid color-mix(in oklab, var(--accent) 38%, transparent);
+  }
+
+  .portrait-glint {
+    overflow: hidden;
+    background:
+      linear-gradient(
+        105deg,
+        transparent 42%,
+        color-mix(in oklab, var(--paper-raised) 82%, transparent) 50%,
+        transparent 58%
+      )
+      no-repeat;
+    background-position: 180% 39%;
+    background-size: 250% 12%;
+    filter: blur(var(--radius-xs));
+    mix-blend-mode: screen;
+  }
+
+  .portrait-panel.is-portrait-reacting {
+    --portrait-scale: 1.012;
+  }
+
+  .portrait-panel.is-portrait-reacting::before {
+    border-color: color-mix(in oklab, var(--accent) 25%, transparent);
+  }
+
+  .portrait-panel.is-portrait-reacting::after {
+    border-color: color-mix(in oklab, var(--success) 22%, transparent);
+  }
+
+  .portrait-panel.is-portrait-reacting :global(.portrait) {
+    filter: saturate(0.98) contrast(1);
+  }
+
+  .portrait-panel.is-portrait-reacting .portrait-ripple {
+    animation: portrait-ripple calc(var(--duration-slow) + var(--duration-default)) var(--ease) both;
+  }
+
+  .portrait-panel.is-portrait-reacting .portrait-glint {
+    animation: portrait-glint calc(var(--duration-slow) + var(--duration-default)) var(--ease) both;
+  }
+
+  @keyframes portrait-ripple {
+    0% {
+      opacity: 0.32;
+      transform:
+        translate(calc(-50% + var(--portrait-x)), calc(-50% + var(--portrait-y)))
+        rotate(var(--portrait-rotate))
+        scale(0.99);
+    }
+
+    100% {
+      opacity: 0;
+      transform:
+        translate(calc(-50% + var(--portrait-x)), calc(-50% + var(--portrait-y)))
+        rotate(var(--portrait-rotate))
+        scale(1.09);
+    }
+  }
+
+  @keyframes portrait-glint {
+    0% {
+      background-position: 180% 39%;
+      opacity: 0;
+    }
+
+    20% {
+      opacity: 0.38;
+    }
+
+    100% {
+      background-position: -80% 39%;
+      opacity: 0;
+    }
+  }
+
+  .field-panel {
+    --field-x: 58%;
+    --field-y: 38%;
+    --field-inverse-x: 18%;
+    --field-inverse-y: 82%;
+    --mark-x: 0px;
+    --mark-y: 0px;
+    --mark-rotate: 0deg;
+    --mark-scale: 1;
+    grid-column: 1 / -1;
+    display: grid;
+    min-height: clamp(34rem, 56vw, 48rem);
+    place-items: center;
+    padding: var(--space-6);
+    color: var(--heading);
+    background:
+      radial-gradient(
+        circle at var(--field-x) var(--field-y),
+        color-mix(in oklab, var(--accent) 88%, transparent),
+        transparent 46%
+      ),
+      linear-gradient(145deg, var(--surface-raised), var(--accent-soft));
+  }
+
+  .field-panel::before,
+  .field-panel::after {
+    position: absolute;
+    content: '';
+    pointer-events: none;
+  }
+
+  .field-panel::before {
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      circle at var(--field-inverse-x) var(--field-inverse-y),
+      var(--accent),
+      transparent 42%
+    );
+    filter: hue-rotate(210deg) saturate(0.82) brightness(1.16);
+    opacity: 0.78;
+    transition: opacity var(--duration-slow) var(--ease);
+  }
+
+  .field-panel::after {
+    inset: var(--space-3);
+    border: 1px solid color-mix(in oklab, var(--paper-raised) 42%, transparent);
+    border-radius: calc(var(--radius-xl) - var(--space-2));
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 18%, transparent);
+  }
+
+  .field-link,
+  .field-art {
+    z-index: 1;
+  }
+
+  .field-art {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    width: min(76%, 58rem);
+    transform:
+      translate(calc(-50% + var(--mark-x)), calc(-50% + var(--mark-y)))
+      rotate(calc(-2deg + var(--mark-rotate)))
+      scale(var(--mark-scale));
+    transition: transform var(--duration-slow) var(--ease);
+    filter: drop-shadow(var(--shadow-small));
+  }
+
+  .field-art :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .field-art :global(path) {
+    fill: var(--accent);
+  }
+
+  :global(html.js) .field-art :global(#Layer_1),
+  :global(html.js) .field-art :global(#Layer_2),
+  :global(html.js) .field-art :global(#Layer_3),
+  :global(html.js) .field-art :global(#Layer_4) {
+    animation: blum-settle 720ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-origin: center;
+  }
+
+  :global(html.js) .field-art :global(#Layer_2) { animation-delay: 70ms; }
+  :global(html.js) .field-art :global(#Layer_3) { animation-delay: 140ms; }
+  :global(html.js) .field-art :global(#Layer_4) { animation-delay: 210ms; }
+
+  @keyframes blum-settle {
+    0% { opacity: 0; transform: translateY(var(--space-6)) rotate(-2deg) scale(0.96); }
+    72% { opacity: 1; transform: translateY(calc(var(--space-1) * -1)) rotate(0.5deg) scale(1.01); }
+    100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .field-link {
+    position: absolute;
+    bottom: var(--space-6);
+    left: 50%;
+    display: inline-flex;
+    gap: var(--space-3);
+    align-items: center;
+    padding: 0.68rem 0.9rem 0.68rem 1rem;
+    border: 1px solid color-mix(in oklab, var(--paper-raised) 68%, var(--hairline));
+    border-radius: var(--radius-pill);
+    background: color-mix(in oklab, var(--surface-raised) 74%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 55%, transparent),
+      0 0.5rem 1.5rem color-mix(in oklab, var(--heading) 11%, transparent);
+    backdrop-filter: blur(var(--space-3)) saturate(1.2);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transform: translateX(-50%);
+    transition:
+      background-color var(--duration-default) var(--ease),
+      border-color var(--duration-default) var(--ease),
+      transform var(--duration-default) var(--ease);
+  }
+
+  .field-link span {
+    transition: transform var(--duration-default) var(--ease);
+  }
+
+  :global(html.pointer-moved) .field-panel:hover::before {
+    opacity: 0.94;
+  }
+
+  :global(html.pointer-moved) .field-panel:hover {
+    --mark-scale: 1.025;
+  }
+
+  :global(html.pointer-moved) .field-panel:hover .field-link span {
+    transform: translateY(var(--space-1));
+  }
+
+  :global(html.pointer-moved) .field-panel:hover .field-link {
+    border-color: color-mix(in oklab, var(--paper-raised) 86%, var(--hairline));
+    background: color-mix(in oklab, var(--surface-raised) 84%, transparent);
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  @media (max-width: 64rem) {
+    .intro-panel,
+    .portrait-panel {
+      min-height: 34rem;
+    }
+
+    .intro-panel h1 {
+      font-size: clamp(2.25rem, 4.4vw, 3.15rem);
+    }
+  }
+
+  @media (max-width: 52rem) {
+    .hero-showcase {
+      grid-template-columns: 1fr;
+      padding-top: var(--space-4);
+    }
+
+    .intro-panel,
+    .portrait-panel,
+    .field-panel {
+      grid-column: 1;
+    }
+
+    .intro-panel {
+      min-height: 31rem;
+    }
+
+    .portrait-panel {
+      --portrait-size: min(66%, 25rem);
+      min-height: min(34rem, 92vw);
+    }
+
+    .intro-panel h1 {
+      max-width: 18ch;
+      font-size: clamp(2.4rem, 9vw, 4.5rem);
+    }
+
+    .field-panel {
+      min-height: min(38rem, 100vw);
+    }
+
+    .field-art {
+      width: min(84%, 40rem);
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .hero-showcase {
+      width: min(100% - var(--space-4), var(--wide));
+    }
+
+    .intro-panel {
+      min-height: 34rem;
+      padding: var(--space-6);
+    }
+
+    .intro-panel h1 {
+      font-size: clamp(2.25rem, 10.8vw, 3.15rem);
+    }
+
+    .portrait-panel {
+      --portrait-size: min(72%, 21rem);
+      min-height: 27rem;
+    }
+
+    .field-panel {
+      min-height: 30rem;
+      padding: var(--space-4);
+    }
+
+    .field-link {
+      bottom: var(--space-4);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .roam-fact img {
+      filter: brightness(0) invert(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .portrait-panel::before,
+    .portrait-panel::after,
+    .portrait-panel :global(.portrait),
+    .portrait-ripple,
+    .portrait-glint,
+    .field-art,
+    .field-panel::before,
+    .field-link span {
+      transition-duration: 0.01ms;
+    }
+
+    .portrait-panel.is-portrait-reacting .portrait-ripple,
+    .portrait-panel.is-portrait-reacting .portrait-glint {
+      animation: none;
+    }
+
+    :global(html.js) .field-art :global(#Layer_1),
+    :global(html.js) .field-art :global(#Layer_2),
+    :global(html.js) .field-art :global(#Layer_3),
+    :global(html.js) .field-art :global(#Layer_4) {
+      animation: none;
+    }
+  }
+</style>

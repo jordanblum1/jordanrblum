@@ -6,6 +6,11 @@ The current system is an editorial portfolio with one expressive workbench, a tw
 
 The visual tokens in `src/styles/tokens.css` are generated from the canonical Obsidian brand book at `Design/brands/jordanrblum.md`. Older design specs under `docs/superpowers/` are implementation history, not the current source of truth.
 
+## Design contract
+
+- Major visual and interactive surfaces use `--radius-xl`: a restrained 32px Apple-like corner that stays proportional at mobile breakpoints.
+- Nested cards use `--radius-lg` (24px); compact controls and device chrome use tighter radii. Reserve `--radius-pill` for UI that is actually pill-shaped, and keep true circles fully round.
+
 ## Commands
 
 - `pnpm dev` — local development

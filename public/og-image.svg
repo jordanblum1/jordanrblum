@@ -1,24 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">Jordan Blum — Product Engineer</title>
-  <desc id="desc">A warm paper-colored card with Jordan Blum's name and small workbench artifacts.</desc>
+  <title id="title">Jordan Blum — Product Engineer in New York</title>
+  <desc id="desc">A warm two-panel portfolio card introducing Jordan Blum alongside his hand-drawn BLUM mark.</desc>
+  <defs>
+    <radialGradient id="field" cx="62%" cy="34%" r="82%">
+      <stop offset="0" stop-color="#C97B70"/>
+      <stop offset="0.44" stop-color="#E8C5C0"/>
+      <stop offset="1" stop-color="#C8D4DC"/>
+    </radialGradient>
+    <radialGradient id="field-inverse" cx="18%" cy="82%" r="72%">
+      <stop offset="0" stop-color="#9BAFC3" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#9BAFC3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft-shadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#2B2521" flood-opacity="0.1"/>
+    </filter>
+    <clipPath id="left-panel"><rect x="48" y="108" width="430" height="474" rx="18"/></clipPath>
+    <clipPath id="right-panel"><rect x="494" y="108" width="658" height="474" rx="18"/></clipPath>
+  </defs>
+
   <rect width="1200" height="630" fill="#F7F3ED"/>
-  <rect x="56" y="52" width="1088" height="526" rx="18" fill="#FCFAF6" stroke="#DDD5CB"/>
-  <text x="104" y="112" fill="#9C4037" font-family="ui-monospace, monospace" font-size="18" letter-spacing="1.5">PRODUCT ENGINEER · NEW YORK</text>
-  <text x="100" y="270" fill="#2B2521" font-family="Arial, Helvetica, sans-serif" font-size="94" font-weight="600" letter-spacing="-5">Jordan Blum</text>
-  <text x="104" y="330" fill="#746960" font-family="Arial, Helvetica, sans-serif" font-size="28">AI products, useful systems, and oddly specific side projects.</text>
-  <g transform="translate(732 382) rotate(-2)">
-    <rect width="270" height="132" rx="9" fill="#F7F3ED" stroke="#DDD5CB"/>
-    <text x="18" y="28" fill="#746960" font-family="ui-monospace, monospace" font-size="11">REED / TRACE</text>
-    <circle cx="24" cy="58" r="4" fill="none" stroke="#9C4037"/>
-    <circle cx="24" cy="84" r="4" fill="none" stroke="#9C4037"/>
-    <circle cx="24" cy="110" r="4" fill="none" stroke="#9C4037"/>
-    <path d="M24 62V80M24 88V106" stroke="#DDD5CB"/>
-    <path d="M42 58H210M42 84H236M42 110H188" stroke="#746960" stroke-opacity=".5"/>
+
+  <g filter="url(#soft-shadow)">
+    <rect x="360" y="28" width="480" height="56" rx="28" fill="#FCFAF6" fill-opacity="0.94" stroke="#DDD5CB"/>
+    <circle cx="390" cy="56" r="17" fill="none" stroke="#9C4037" stroke-width="1.5"/>
+    <text x="390" y="61" text-anchor="middle" fill="#9C4037" font-family="Georgia, serif" font-size="13" font-weight="700">JRB</text>
+    <text x="658" y="61" fill="#746960" font-family="Arial, Helvetica, sans-serif" font-size="14">Work</text>
+    <text x="716" y="61" fill="#746960" font-family="Arial, Helvetica, sans-serif" font-size="14">About</text>
+    <text x="773" y="61" fill="#746960" font-family="Arial, Helvetica, sans-serif" font-size="14">Email</text>
+    <text x="811" y="61" fill="#9C4037" font-family="Arial, Helvetica, sans-serif" font-size="14">↗</text>
   </g>
-  <g transform="translate(1018 405) rotate(5)">
-    <rect width="80" height="105" rx="4" fill="#9C4037"/>
-    <text x="12" y="24" fill="#FCFAF6" font-family="ui-monospace, monospace" font-size="9">SIDE</text>
-    <text x="12" y="38" fill="#FCFAF6" font-family="ui-monospace, monospace" font-size="9">QUESTS</text>
-    <path d="M12 58H64M12 72H55M12 86H61" stroke="#FCFAF6" stroke-opacity=".65"/>
+
+  <g clip-path="url(#left-panel)">
+    <rect x="48" y="108" width="430" height="474" fill="#FCFAF6"/>
+    <text x="84" y="176" fill="#2B2521" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="600" letter-spacing="-2.4">I’m Jordan,</text>
+    <text x="84" y="235" fill="#2B2521" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="600" letter-spacing="-2.4">a product</text>
+    <text x="84" y="294" fill="#2B2521" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="600" letter-spacing="-2.4">engineer in</text>
+    <text x="84" y="353" fill="#2B2521" font-family="Arial, Helvetica, sans-serif" font-size="53" font-weight="600" letter-spacing="-2.4">New York.</text>
+
+    <text x="84" y="427" fill="#746960" font-family="Arial, Helvetica, sans-serif" font-size="18">Consumer products, developer tools,</text>
+    <text x="84" y="455" fill="#746960" font-family="Arial, Helvetica, sans-serif" font-size="18">and AI agents.</text>
+
+    <line x1="84" y1="510" x2="154" y2="510" stroke="#DDD5CB"/>
+    <text x="84" y="545" fill="#2B2521" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600">Currently at Roam.</text>
   </g>
+  <rect x="48" y="108" width="430" height="474" rx="18" fill="none" stroke="#DDD5CB"/>
+
+  <g clip-path="url(#right-panel)">
+    <rect x="494" y="108" width="658" height="474" fill="url(#field)"/>
+    <rect x="494" y="108" width="658" height="474" fill="url(#field-inverse)"/>
+    <text x="1116" y="144" text-anchor="end" fill="#5F504A" font-family="ui-monospace, monospace" font-size="12" letter-spacing="0.7">JORDANBLUM.COM</text>
+
+    <g transform="translate(540 190) scale(.98) rotate(-2 288 145)" fill="#9C4037">
+      <path d="M40.1,50.45C9.92,177.58-5.18,241.14,13.38,258.41c32.98,30.7,110.83,18.19,125.55-13.9,4.95-10.79,5.09-28.86-1.25-44.39-1.44-3.52-6.21-14.25-17.15-23.74-21.28-18.45-50.18-18.54-50.05-19.4.13-.87,27.86,10.32,46.92.02,27.5-14.85,39.89-75.95,11.46-110.33C110.69,24.7,74.84,12.47,55.33,25.09c-10.66,6.9-13.84,19.53-15.23,25.36Z"/>
+      <path d="M178.6,79.07c.33,89.68-51.25,146.98-18.3,183.82,23.04,25.76,72.82,25.22,104.33,8.33,21.86-11.72,41.55-34.85,36.45-44.7-7.44-14.39-67.76,28.41-95.41,5.95-27.08-22-20.84-105.75,7.7-146.75,5.61-8.05,15.14-18.78,11.61-28.15-4.16-11.02-25.3-17.23-36.43-9.95-10.4,6.8-9.98,23.99-9.95,31.46Z"/>
+      <path d="M235.09,80.92c-35.31,39.13-47.18,110.13-16.62,134.14,19.6,15.4,49.28,5.69,51.34,4.99,60.69-20.76,78.86-131.03,54.72-147.37-6.24-4.22-16.42-2.93-23.19,1.65-26.34,17.81,5.2,81.17-19.92,99.36-10.74,7.78-30.31,6.18-38.09-3.33-21.15-25.85,48.57-105.56,36.48-115.91-5.97-5.12-29.08,9.14-44.73,26.48Z"/>
+      <path d="M313.19,268.57c-31.48-26.84,56.66-203.68,92.83-195.39,27.5,6.31,17.71,105.85,39.25,106.68,25.87,1,49.98-111.97,78.34-109.94,35.12,2.52,78.76,232.66,34.69,208.69-9.34-5.08-17.17-82.39-37.33-96.8-26.82-19.18-60.17,69.16-72.86,70.88-24.29,3.3-47.24-74.35-66.09-70.94-14.94,2.7-32.1,48.39-20.8,78.56,2.87,7.67-37.82,16.97-48.03,8.26Z"/>
+    </g>
+
+    <line x1="530" y1="526" x2="1116" y2="526" stroke="#2B2521" stroke-opacity="0.18"/>
+    <text x="530" y="556" fill="#2B2521" font-family="ui-monospace, monospace" font-size="13" letter-spacing="0.4">THINGS I’VE BUILT · PLACES I’VE WORKED</text>
+  </g>
+  <rect x="494" y="108" width="658" height="474" rx="18" fill="none" stroke="#DDD5CB"/>
 </svg>

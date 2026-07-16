@@ -1,0 +1,163 @@
+---
+import type { ArchiveItem } from '../data/site';
+
+interface Props {
+  items: ArchiveItem[];
+  compact?: boolean;
+}
+
+const { items, compact = false } = Astro.props;
+---
+
+<div class:list={['archive-wrap', { compact }]}>
+  <table class="archive-table">
+    <caption class="visually-hidden">Public side projects by year</caption>
+    <colgroup>
+      <col class="archive-year-col" />
+      <col class="archive-title-col" />
+      <col />
+    </colgroup>
+    <tbody>
+      {items.map((item) => (
+        <tr>
+          <td class="archive-date mono-meta">{item.date}</td>
+          <th scope="row" class="archive-title">
+            {item.href ? (
+              <a href={item.href} target="_blank" rel="noopener">
+                <span>{item.title}</span>
+                <span class="archive-arrow" aria-hidden="true">↗</span>
+                <span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            ) : item.title}
+          </th>
+          <td class="archive-description">{item.description}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .archive-wrap {
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    overflow-x: auto;
+  }
+
+  .archive-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  th,
+  td {
+    padding: var(--space-4) var(--space-4) var(--space-4) 0;
+    border-bottom: 1px solid var(--hairline);
+    text-align: left;
+    vertical-align: baseline;
+  }
+
+  .archive-year-col {
+    width: var(--space-24);
+  }
+
+  .archive-title-col {
+    width: calc(var(--space-24) * 2);
+  }
+
+  tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  .archive-title {
+    color: var(--heading);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  .archive-title a {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: baseline;
+  }
+
+  .compact th,
+  .compact td {
+    padding-block: var(--space-3);
+  }
+
+  .archive-arrow {
+    color: var(--accent);
+    font-size: 0.8rem;
+    transition: translate var(--duration-fast) var(--ease);
+  }
+
+  .archive-description {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .archive-title a:hover .archive-arrow,
+    .archive-title a:focus-visible .archive-arrow {
+      translate: var(--space-1) calc(var(--space-1) * -1);
+    }
+  }
+
+  @media (max-width: 46rem) {
+    .archive-wrap {
+      overflow: visible;
+    }
+
+    .archive-table,
+    .archive-table tbody {
+      display: block;
+    }
+
+    .archive-table tr {
+      display: grid;
+      grid-template-columns: var(--space-16) minmax(0, 1fr);
+      column-gap: var(--space-4);
+      padding-block: var(--space-4);
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .compact .archive-table tr {
+      padding-block: var(--space-3);
+    }
+
+    .archive-table tr:last-child {
+      border-bottom: 0;
+    }
+
+    .archive-table th,
+    .archive-table td {
+      display: block;
+      padding: 0;
+      border: 0;
+    }
+
+    .archive-date {
+      grid-row: 1 / span 2;
+    }
+
+    .archive-title,
+    .archive-description {
+      grid-column: 2;
+    }
+
+    .archive-description {
+      margin-top: var(--space-2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .archive-arrow {
+      transition: none;
+    }
+  }
+</style>
