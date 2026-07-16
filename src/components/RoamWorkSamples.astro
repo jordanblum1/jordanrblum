@@ -62,66 +62,145 @@ const groups = [
 ];
 ---
 
-<section class="experience-media" aria-labelledby="roam-samples-heading">
-  <header class="experience-media-heading">
-    <h4 id="roam-samples-heading">Selected product screens</h4>
-    <p>Marketplace, Reed, and the agent tooling behind them.</p>
-  </header>
+<details class="experience-media" data-roam-samples>
+  <summary class="experience-media-summary">
+    <span class="experience-media-summary-copy">
+      <span class="experience-media-title">Selected work from Roam</span>
+      <span class="experience-media-description">Marketplace, Reed, and the agent tooling behind them.</span>
+    </span>
+    <span class="experience-media-action mono-meta" aria-hidden="true">
+      <span class="when-closed">View 6 screens</span>
+      <span class="when-open">Hide screens</span>
+      <svg class="experience-media-chevron" viewBox="0 0 16 16" fill="none">
+        <path d="m3 6 5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </span>
+  </summary>
 
-  <div class="experience-media-grid">
-    {groups.map((group) => (
-      <article class="media-card" aria-labelledby={`${group.id}-title`}>
-        <header class="media-caption">
-          <h5 id={`${group.id}-title`}>{group.title}</h5>
-          <p>{group.description}</p>
-        </header>
+  <div class="experience-media-panel">
+    <div class="experience-media-panel-inner">
+      <div class="experience-media-grid">
+        {groups.map((group) => (
+          <article class="media-card" aria-labelledby={`${group.id}-title`}>
+            <header class="media-caption">
+              <h5 id={`${group.id}-title`}>{group.title}</h5>
+              <p>{group.description}</p>
+            </header>
 
-        <div class="media-pair">
-          {group.shots.map((shot) => (
-            <figure class="media-shot">
-              <div class="media-frame">
-                <Image
-                  src={shot.src}
-                  alt={shot.alt}
-                  loading="lazy"
-                  widths={[360, 480, 640, 960, 1440]}
-                  sizes="(max-width: 48rem) calc(100vw - 32px), min(30rem, 38vw)"
-                />
-              </div>
-              <figcaption class="shot-label mono-meta">{shot.label}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </article>
-    ))}
+            <div class="media-pair">
+              {group.shots.map((shot) => (
+                <figure class="media-shot">
+                  <div class="media-frame">
+                    <Image
+                      src={shot.src}
+                      alt={shot.alt}
+                      loading="lazy"
+                      widths={[360, 480, 640, 960, 1440]}
+                      sizes="(max-width: 48rem) calc(100vw - 32px), min(30rem, 38vw)"
+                    />
+                  </div>
+                  <figcaption class="shot-label mono-meta">{shot.label}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
   </div>
-</section>
+</details>
 
 <style>
   .experience-media {
-    display: grid;
     grid-column: 1 / -1;
-    gap: var(--space-6);
-    padding-top: var(--space-4);
+    margin-top: var(--space-4);
+    border-top: 1px solid var(--hairline);
   }
 
-  .experience-media-heading {
+  .experience-media-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: var(--space-16);
+    gap: var(--space-6);
+    align-items: center;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    list-style: none;
+    transition: background-color var(--duration-default) var(--ease);
+  }
+
+  .experience-media-summary::marker,
+  .experience-media-summary::-webkit-details-marker {
+    display: none;
+    content: '';
+  }
+
+  .experience-media-summary-copy {
     display: grid;
     gap: var(--space-2);
     max-width: var(--measure);
   }
 
-  .experience-media-heading h4 {
+  .experience-media-title {
     color: var(--heading);
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.25;
   }
 
-  .experience-media-heading p {
+  .experience-media-description {
     color: var(--ink-muted);
-    font-size: 0.875rem;
-    line-height: 1.6;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .experience-media-action {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .experience-media-chevron {
+    display: block;
+    width: var(--space-4);
+    height: var(--space-4);
+    transition: transform var(--duration-default) var(--ease);
+  }
+
+  .when-open,
+  .experience-media[open] .when-closed {
+    display: none;
+  }
+
+  .experience-media[open] .when-open {
+    display: inline;
+  }
+
+  .experience-media[open] .experience-media-chevron {
+    transform: rotate(180deg);
+  }
+
+  .experience-media > .experience-media-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows var(--duration-slow) var(--ease),
+      opacity var(--duration-default) var(--ease);
+  }
+
+  .experience-media[open] > .experience-media-panel {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .experience-media-panel-inner {
+    min-height: 0;
+    overflow: hidden;
   }
 
   .experience-media-grid {
@@ -197,7 +276,22 @@ const groups = [
     line-height: 1.4;
   }
 
+  @media (hover: hover) and (pointer: fine) {
+    .experience-media-summary:hover {
+      background: var(--hover-fill);
+    }
+  }
+
   @media (max-width: 48rem) {
+    .experience-media-summary {
+      gap: var(--space-4);
+      padding-inline: var(--space-2);
+    }
+
+    .experience-media-action {
+      font-size: 0.6875rem;
+    }
+
     .media-card {
       grid-template-columns: 1fr;
       gap: var(--space-4);
@@ -207,6 +301,13 @@ const groups = [
     .media-pair {
       grid-template-columns: 1fr;
       gap: var(--space-6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .experience-media-chevron,
+    .experience-media > .experience-media-panel {
+      transition: none;
     }
   }
 </style>

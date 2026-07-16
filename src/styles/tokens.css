@@ -1,6 +1,10 @@
 /* Generated from Design/brands/jordanrblum.md — edit the brand book, not this file. */
 
 :root {
+  /* The portfolio is intentionally light-only. Keep browser chrome and native
+     controls in the light color scheme, even when the OS prefers dark mode. */
+  color-scheme: only light;
+
   --paper: #F7F3ED;
   --paper-raised: #FCFAF6;
   --ink: #2B2521;
@@ -59,38 +63,6 @@
 
   --measure: 42rem;
   --wide: 72rem;
-}
-
-:root[data-theme="dark"] {
-  --paper: #191614;
-  --paper-raised: #221E1B;
-  --ink: #F2E9DE;
-  --ink-muted: #B8ACA2;
-  --hairline: #443B35;
-  --accent: #E19A91;
-  --accent-contrast: #191614;
-  --success: #91B49B;
-  --warning: #D2A36D;
-  --error: #E19A91;
-  --shadow-small: 0 1px 2px rgb(0 0 0 / 0.24);
-  --shadow-lifted: 0 18px 50px rgb(0 0 0 / 0.36);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="dark"]) {
-    --paper: #191614;
-    --paper-raised: #221E1B;
-    --ink: #F2E9DE;
-    --ink-muted: #B8ACA2;
-    --hairline: #443B35;
-    --accent: #E19A91;
-    --accent-contrast: #191614;
-    --success: #91B49B;
-    --warning: #D2A36D;
-    --error: #E19A91;
-    --shadow-small: 0 1px 2px rgb(0 0 0 / 0.24);
-    --shadow-lifted: 0 18px 50px rgb(0 0 0 / 0.36);
-  }
 }
 
 :root[data-grain="on"] {

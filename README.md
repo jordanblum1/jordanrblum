@@ -8,6 +8,7 @@ The visual tokens in `src/styles/tokens.css` are generated from the canonical Ob
 
 ## Design contract
 
+- The color system is intentionally light-only. Do not add dark token branches, persisted `data-theme` overrides, or `prefers-color-scheme: dark` styling.
 - Major visual and interactive surfaces use `--radius-xl`: a restrained 32px Apple-like corner that stays proportional at mobile breakpoints.
 - Nested cards use `--radius-lg` (24px); compact controls and device chrome use tighter radii. Reserve `--radius-pill` for UI that is actually pill-shaped, and keep true circles fully round.
 

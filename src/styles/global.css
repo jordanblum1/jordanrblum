@@ -184,6 +184,35 @@ html.pointer-moved .text-link:hover {
   border: 0;
 }
 
+@keyframes page-develop-in {
+  from {
+    opacity: 0;
+    filter: blur(var(--space-1));
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+html.js [data-page-reveal] {
+  animation: page-develop-in var(--duration-slow) var(--ease) both;
+}
+
+html.js [data-page-reveal='2'] {
+  animation-delay: calc(var(--duration-fast) / 2);
+}
+
+html.js [data-page-reveal='3'] {
+  animation-delay: var(--duration-fast);
+}
+
 :root[data-grain="on"] body::after {
   content: "";
   position: fixed;
@@ -217,6 +246,12 @@ html.pointer-moved .text-link:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+  }
+
+  html.js [data-page-reveal] {
+    animation-name: page-fade-in;
+    animation-duration: 120ms !important;
+    animation-delay: 0ms !important;
   }
 
 }

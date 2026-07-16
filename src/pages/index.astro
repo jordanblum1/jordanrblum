@@ -206,10 +206,6 @@ import { about, projectArchive, selectedWork } from '../data/site';
     transform-origin: 48% 54%;
   }
 
-  :global(:root[data-theme='dark']) .note-plaque :global(.note-logo) {
-    filter: brightness(0) invert(1);
-  }
-
   .note-arrow {
     position: absolute;
     top: var(--space-4);
@@ -283,12 +279,6 @@ import { about, projectArchive, selectedWork } from '../data/site';
 
     .personal-note {
       min-height: min(38rem, 118vw);
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) .note-plaque :global(.note-logo) {
-      filter: brightness(0) invert(1);
     }
   }
 

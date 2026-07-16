@@ -39,8 +39,8 @@ const personSchema = {
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F3ED" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#191614" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#F7F3ED" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Jordan Blum" />
     <meta property="og:title" content={title} />
@@ -58,10 +58,6 @@ const personSchema = {
     <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
     <script is:inline>
       document.documentElement.classList.add('js');
-      try {
-        const theme = localStorage.getItem('theme');
-        if (theme) document.documentElement.dataset.theme = theme;
-      } catch {}
       addEventListener('pointermove', () => document.documentElement.classList.add('pointer-moved'), { once: true });
     </script>
   </head>

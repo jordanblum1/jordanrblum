@@ -10,7 +10,7 @@ const blumMark = blumMarkSource
 ---
 
 <header class="hero-showcase wide" aria-labelledby="hero-title">
-  <section class="intro-panel">
+  <section class="intro-panel" data-page-reveal="1">
     <h1 id="hero-title">{hero.statement}</h1>
     <div class="hero-detail">
       <p class="support">{hero.support}</p>
@@ -37,7 +37,7 @@ const blumMark = blumMarkSource
     </div>
   </section>
 
-  <figure class="portrait-panel" data-portrait-panel>
+  <figure class="portrait-panel" data-portrait-panel data-page-reveal="2">
     <span class="portrait-ripple" aria-hidden="true"></span>
     <span class="portrait-glint" aria-hidden="true"></span>
     <Image
@@ -154,10 +154,6 @@ const blumMark = blumMarkSource
     max-height: 0.82rem;
     object-fit: contain;
     object-position: left center;
-  }
-
-  :global(:root[data-theme='dark']) .roam-fact img {
-    filter: brightness(0) invert(1);
   }
 
   .portrait-panel {
@@ -551,12 +547,6 @@ const blumMark = blumMarkSource
 
     .field-link {
       bottom: var(--space-4);
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) .roam-fact img {
-      filter: brightness(0) invert(1);
     }
   }
 

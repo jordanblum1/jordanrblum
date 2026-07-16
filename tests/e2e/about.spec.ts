@@ -36,12 +36,22 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(page.locator('#roam')).toContainText('02 · AI product & systems');
   await expect(page.locator('#roam')).toContainText('one of two lead engineers building Reed');
   await expect(page.locator('#roam')).toContainText('internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents');
-  await expect(page.locator('#roam .experience-media')).toContainText('Selected product screens');
+  const mediaDisclosure = page.locator('#roam [data-roam-samples]');
+  const mediaSummary = mediaDisclosure.locator('summary');
+  await expect(mediaDisclosure).toContainText('Selected work from Roam');
+  await expect(mediaDisclosure).toContainText('View 6 screens');
+  await expect(mediaDisclosure).not.toHaveAttribute('open', '');
   await expect(page.locator('#roam .experience-media .media-card')).toHaveCount(3);
   await expect(page.locator('#roam .experience-media .media-shot')).toHaveCount(6);
   await expect(page.locator('#roam .experience-media img')).toHaveCount(6);
   await expect(page.locator('#roam .experience-media a')).toHaveCount(0);
   await expect(page.locator('#roam .experience-media')).toContainText('synthetic demo data');
+  await expect(page.locator('#roam .experience-media .media-card').first()).not.toBeVisible();
+  await mediaSummary.focus();
+  await page.keyboard.press('Enter');
+  await expect(mediaDisclosure).toHaveAttribute('open', '');
+  await expect(mediaDisclosure.locator('.experience-media-panel')).toHaveCSS('opacity', '1');
+  await page.waitForTimeout(300);
   const desktopMediaCards = page.locator('#roam .experience-media .media-card');
   const marketplaceMediaBox = await desktopMediaCards.nth(0).boundingBox();
   const reedMediaBox = await desktopMediaCards.nth(1).boundingBox();
@@ -75,6 +85,9 @@ test('about page carries the broader story, experience, and education', async ({
     expect(metrics.displayedRatio).toBeCloseTo(metrics.naturalRatio, 2);
     expect(metrics.sameOrigin).toBe(true);
   }
+  await mediaSummary.click();
+  await expect(mediaDisclosure).not.toHaveAttribute('open', '');
+  await expect(desktopMediaCards.first()).not.toBeVisible();
   await expect(page.locator('#procore')).toContainText('600+ person engineering organization');
   await expect(page.locator('#workday')).toContainText('Associate DevOps / Release Engineer → Senior Associate Developer');
   await expect(page.locator('.resume-notes')).toContainText('BS Computer Science · Studio Art minor (Graphic Design)');
@@ -115,6 +128,12 @@ test('about page carries the broader story, experience, and education', async ({
 test('about hero and education stay compact on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/about');
+
+  const mediaDisclosure = page.locator('#roam [data-roam-samples]');
+  await mediaDisclosure.locator('summary').click();
+  await expect(mediaDisclosure).toHaveAttribute('open', '');
+  await expect(mediaDisclosure.locator('.experience-media-panel')).toHaveCSS('opacity', '1');
+  await page.waitForTimeout(300);
 
   const collage = page.locator('.about-hero .lifestyle-panel');
   await expect(collage).toBeVisible();
@@ -180,12 +199,16 @@ test('about metadata is route-specific', async ({ page }) => {
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /consumer products, developer platforms, AI tools/);
 });
 
-test('company wordmarks remain legible in dark mode', async ({ page }) => {
+test('company wordmarks and screenshots stay unchanged under a dark system preference', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/about');
 
-  await expect(page.locator('#roam .company-logo img')).toHaveCSS('filter', 'brightness(0) invert(1)');
-  await expect(page.locator('#procore .company-logo img')).toHaveCSS('filter', 'brightness(0) invert(1)');
+  const mediaDisclosure = page.locator('#roam [data-roam-samples]');
+  await mediaDisclosure.locator('summary').click();
+  await expect(mediaDisclosure).toHaveAttribute('open', '');
+
+  await expect(page.locator('#roam .company-logo img')).toHaveCSS('filter', 'none');
+  await expect(page.locator('#procore .company-logo img')).toHaveCSS('filter', 'none');
   for (const image of await page.locator('#roam .experience-media img').all()) {
     await expect(image).toHaveCSS('filter', 'none');
   }

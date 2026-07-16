@@ -14,12 +14,12 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
   <main id="main-content" tabindex="-1">
     <header class="about-hero wide" id="about">
       <div class="hero-narrative">
-        <h1>{about.title}</h1>
-        <a class="jump-link" href="#work">
+        <h1 data-page-reveal="1">{about.title}</h1>
+        <a class="jump-link" href="#work" data-page-reveal="3">
           <span>Experience</span>
           <span aria-hidden="true">↓</span>
         </a>
-        <figure class="lifestyle-panel">
+        <figure class="lifestyle-panel" data-page-reveal="2">
           <Image
             src={blumCollage}
             alt="A collage of Jordan biking, traveling, at concerts, and around New York and Chicago"
@@ -29,7 +29,7 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
             sizes="(max-width: 768px) calc(100vw - 32px), (max-width: 1120px) 52vw, 34rem"
           />
         </figure>
-        <div class="hero-prose">
+        <div class="hero-prose" data-page-reveal="3">
           {about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
         </div>
       </div>
@@ -558,18 +558,6 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
     .scu-link:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: var(--space-1);
-    }
-  }
-
-  :global(:root[data-theme='dark']) .company-logo--roam img,
-  :global(:root[data-theme='dark']) .company-logo--procore img {
-    filter: brightness(0) invert(1);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) .company-logo--roam img,
-    :global(:root:not([data-theme='light'])) .company-logo--procore img {
-      filter: brightness(0) invert(1);
     }
   }
 

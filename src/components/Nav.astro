@@ -2,7 +2,6 @@
 import { Image } from 'astro:assets';
 import jrbBlue from '../assets/identity/jrb-logo-blue.png';
 import jrbRed from '../assets/identity/jrb-logo-red.png';
-import jrbWhite from '../assets/identity/jrb-logo-white.png';
 
 const onHome = Astro.url.pathname === '/';
 const onAbout = Astro.url.pathname.startsWith('/about');
@@ -15,7 +14,6 @@ const workHref = onHome ? '#work' : '/#work';
       <span class="mark-stack" data-nav-mark aria-hidden="true">
         <Image class="mark-image mark-red" src={jrbRed} alt="" width={56} height={56} loading="eager" />
         <Image class="mark-image mark-blue" src={jrbBlue} alt="" width={56} height={56} loading="eager" />
-        <Image class="mark-image mark-white" src={jrbWhite} alt="" width={56} height={56} loading="eager" />
       </span>
       <span class="visually-hidden">Jordan Blum</span>
     </a>
@@ -288,8 +286,7 @@ const workHref = onHome ? '#work' : '/#work';
     transition: opacity var(--duration-default) var(--ease), transform var(--duration-default) var(--ease);
   }
 
-  .mark-stack :global(.mark-blue),
-  .mark-stack :global(.mark-white) {
+  .mark-stack :global(.mark-blue) {
     opacity: 0;
   }
 
@@ -302,19 +299,6 @@ const workHref = onHome ? '#work' : '/#work';
   .wordmark:focus-visible .mark-stack :global(.mark-blue) {
     opacity: 1;
     transform: rotate(4deg);
-  }
-
-  :global(:root[data-theme='dark']) .mark-stack :global(.mark-red) {
-    opacity: 0;
-  }
-
-  :global(:root[data-theme='dark']) .mark-stack :global(.mark-white) {
-    opacity: 1;
-  }
-
-  :global(:root[data-theme='dark'].pointer-moved) .wordmark:hover .mark-stack :global(.mark-white),
-  :global(:root[data-theme='dark']) .wordmark:focus-visible .mark-stack :global(.mark-white) {
-    opacity: 0;
   }
 
   .nav-links {
@@ -378,21 +362,6 @@ const workHref = onHome ? '#work' : '/#work';
   @media (max-width: 45rem) {
     .nav-pill {
       width: min(100%, 20.5rem);
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :global(:root:not([data-theme='light'])) .mark-stack :global(.mark-red) {
-      opacity: 0;
-    }
-
-    :global(:root:not([data-theme='light'])) .mark-stack :global(.mark-white) {
-      opacity: 1;
-    }
-
-    :global(:root:not([data-theme='light']).pointer-moved) .wordmark:hover .mark-stack :global(.mark-white),
-    :global(:root:not([data-theme='light'])) .wordmark:focus-visible .mark-stack :global(.mark-white) {
-      opacity: 0;
     }
   }
 

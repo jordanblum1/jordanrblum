@@ -28,6 +28,27 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
   await expect(page.locator('.personal-note')).not.toContainText('old internet corner');
 });
 
+test('home and About heroes develop in without double-animating the work field', async ({ page }) => {
+  await page.goto('/');
+
+  const intro = page.locator('.intro-panel');
+  const portrait = page.locator('.portrait-panel');
+  await expect(intro).toHaveAttribute('data-page-reveal', '1');
+  await expect(intro).toHaveCSS('animation-name', 'page-develop-in');
+  await expect(intro).toHaveCSS('animation-duration', '0.48s');
+  await expect(portrait).toHaveCSS('animation-delay', '0.07s');
+  await expect(page.locator('.field-panel')).toHaveCSS('animation-name', 'none');
+  await expect(page.locator('.field-art #Layer_1')).toHaveCSS('animation-name', 'blum-settle');
+
+  await page.goto('/about');
+  await expect(page.locator('[data-page-reveal]')).toHaveCount(4);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAttribute('data-page-reveal', '1');
+  await expect(page.locator('.lifestyle-panel')).toHaveAttribute('data-page-reveal', '2');
+  await expect(page.locator('.jump-link')).toHaveAttribute('data-page-reveal', '3');
+  await expect(page.locator('.hero-prose')).toHaveAttribute('data-page-reveal', '3');
+  await expect(page.locator('.hero-prose')).toHaveCSS('animation-delay', '0.14s');
+});
+
 test('centered nav keeps winding past one full turn and preserves direction through release', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 760 });
   await page.goto('/');
@@ -125,14 +146,39 @@ test('document metadata, structured data, and keyboard skip link are present', a
   await expect(page.locator('#main-content')).toBeFocused();
 });
 
-test('the authentic JRB stamp keeps a legible dark-mode variant', async ({ page }) => {
+test('the site stays light when the operating system prefers dark mode', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
+  await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
   await page.goto('/');
 
+  const root = page.locator('html');
+  await expect(root).not.toHaveAttribute('data-theme');
+
+  const palette = await root.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return {
+      colorScheme: styles.colorScheme,
+      paper: styles.getPropertyValue('--paper').trim(),
+      ink: styles.getPropertyValue('--ink').trim(),
+    };
+  });
+  expect(palette.colorScheme).toContain('light');
+  expect(palette.colorScheme).not.toContain('dark');
+  expect(palette.paper.toLowerCase()).toBe('#f7f3ed');
+  expect(palette.ink.toLowerCase()).toBe('#2b2521');
+
   const home = page.getByRole('link', { name: 'Jordan Blum — home' });
-  await expect(home.locator('.mark-red')).toHaveCSS('opacity', '0');
-  await expect(home.locator('.mark-white')).toHaveCSS('opacity', '1');
-  await expect(page.locator('.personal-note .note-logo')).toHaveCSS('filter', 'brightness(0) invert(1)');
+  await expect(home.locator('.mark-red')).toHaveCSS('opacity', '1');
+  await expect(home.locator('.mark-blue')).toHaveCSS('opacity', '0');
+  await expect(home.locator('.mark-white')).toHaveCount(0);
+  await expect(page.locator('.roam-fact img')).toHaveCSS('filter', 'none');
+  await expect(page.locator('.personal-note .note-logo')).toHaveCSS('filter', 'none');
+
+  const themeColors = page.locator('meta[name="theme-color"]');
+  await expect(themeColors).toHaveCount(1);
+  await expect(themeColors).toHaveAttribute('content', '#F7F3ED');
+  await expect(themeColors).not.toHaveAttribute('media');
+  await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute('content', 'light');
 });
 
 test('retired v3 portfolio structures are absent', async ({ page }) => {

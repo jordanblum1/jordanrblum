@@ -34,6 +34,21 @@ test('surface radii stay Apple-like without turning cards into capsules', () => 
   expect(readmeSource).toContain('Nested cards use `--radius-lg` (24px)');
 });
 
+test('the site remains light-only regardless of saved or system theme preferences', () => {
+  for (const source of [tokenSource, layoutSource, navSource, heroSource, homeSource, aboutSource]) {
+    expect(source).not.toContain('data-theme');
+    expect(source).not.toContain('prefers-color-scheme: dark');
+  }
+
+  expect(layoutSource).not.toContain("localStorage.getItem('theme')");
+  expect(layoutSource).toContain('<meta name="color-scheme" content="light" />');
+  expect(layoutSource.match(/<meta name="theme-color"/g) ?? []).toHaveLength(1);
+  expect(layoutSource).toContain('<meta name="theme-color" content="#F7F3ED" />');
+  expect(tokenSource).toContain('color-scheme: only light');
+  expect(navSource).not.toContain('mark-white');
+  expect(readmeSource).toContain('color system is intentionally light-only');
+});
+
 test('S3 deployment publishes Astro pages at clean extensionless routes', () => {
   expect(deploySource).toContain('find dist -mindepth 2 -name index.html -print0');
   expect(deploySource).toContain('--key "$route"');
@@ -176,7 +191,11 @@ test('the redesign uses Jordan and project-owned imagery', () => {
 
 test('Roam experience media uses public product screens and a sanitized harness demo', () => {
   expect(aboutSource).toContain("item.company === 'Roam' && <RoamWorkSamples />");
-  expect(roamWorkSamplesSource).toContain('Selected product screens');
+  expect(roamWorkSamplesSource).toContain('<details class="experience-media" data-roam-samples>');
+  expect(roamWorkSamplesSource).toContain('<summary class="experience-media-summary">');
+  expect(roamWorkSamplesSource.match(/<details[^>]*>/)?.[0]).not.toMatch(/\sopen(?:\s|=|>)/);
+  expect(roamWorkSamplesSource).toContain('Selected work from Roam');
+  expect(roamWorkSamplesSource).toContain('View 6 screens');
   expect(roamWorkSamplesSource).toContain('roam-marketplace.jpg');
   expect(roamWorkSamplesSource).toContain('roam-listing.jpg');
   expect(roamWorkSamplesSource).toContain('reed-home.jpg');

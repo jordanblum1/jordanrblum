@@ -16,6 +16,11 @@ test.describe('no JavaScript', () => {
     await expect(page.locator('.personal-note img.personal-note-image')).toBeVisible();
     await expect(page.locator('.personal-note img.note-logo')).toBeVisible();
     await expect(page.locator('footer .social a')).toHaveCount(4);
+    await expect(page.locator('html')).not.toHaveClass(/\bjs\b/);
+    for (const revealTarget of await page.locator('[data-page-reveal]').all()) {
+      await expect(revealTarget).toBeVisible();
+      await expect(revealTarget).toHaveCSS('animation-name', 'none');
+    }
   });
 
   test('resume and public archive remain readable without JavaScript', async ({ page }) => {
@@ -24,11 +29,22 @@ test.describe('no JavaScript', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('.experience-item')).toHaveCount(3);
     await expect(page.locator('.experience-item').first()).toBeVisible();
-    await expect(page.locator('#roam .experience-media .media-card')).toHaveCount(3);
-    await expect(page.locator('#roam .experience-media .media-shot')).toHaveCount(6);
-    await expect(page.locator('#roam .experience-media img')).toHaveCount(6);
-    await expect(page.locator('#roam .experience-media .media-card').first()).toBeVisible();
+    const mediaDisclosure = page.locator('#roam [data-roam-samples]');
+    await expect(mediaDisclosure.locator('.media-card')).toHaveCount(3);
+    await expect(mediaDisclosure.locator('.media-shot')).toHaveCount(6);
+    await expect(mediaDisclosure.locator('img')).toHaveCount(6);
+    await expect(mediaDisclosure).not.toHaveAttribute('open', '');
+    await expect(mediaDisclosure.locator('.media-card').first()).not.toBeVisible();
+    await mediaDisclosure.locator('summary').click();
+    await expect(mediaDisclosure).toHaveAttribute('open', '');
+    await expect(mediaDisclosure.locator('.experience-media-panel')).toHaveCSS('opacity', '1');
+    await expect(mediaDisclosure.locator('.media-card').first()).toBeVisible();
     await expect(page.locator('#projects .archive-table tbody tr')).toHaveCount(7);
+    await expect(page.locator('html')).not.toHaveClass(/\bjs\b/);
+    for (const revealTarget of await page.locator('[data-page-reveal]').all()) {
+      await expect(revealTarget).toBeVisible();
+      await expect(revealTarget).toHaveCSS('animation-name', 'none');
+    }
   });
 });
 
@@ -96,6 +112,23 @@ test.describe('reduced motion', () => {
       await card.hover();
       await expect(card.locator(reaction.selector)).toHaveCSS('animation-name', 'none');
     }
+  });
+
+  test('page entry uses a short opacity-only reveal', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const intro = page.locator('.intro-panel');
+    await expect(intro).toHaveCSS('animation-name', 'page-fade-in');
+    await expect(intro).toHaveCSS('animation-duration', '0.12s');
+    await expect(intro).toHaveCSS('animation-delay', '0s');
+    await expect(intro).toHaveCSS('filter', 'none');
+
+    await page.goto('/about');
+    const aboutHeading = page.getByRole('heading', { level: 1 });
+    await expect(aboutHeading).toHaveCSS('animation-name', 'page-fade-in');
+    await expect(aboutHeading).toHaveCSS('animation-duration', '0.12s');
+    await expect(aboutHeading).toHaveCSS('filter', 'none');
   });
 });
 
