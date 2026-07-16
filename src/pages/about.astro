@@ -65,16 +65,35 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
               {item.tracks ? (
                 <>
                   <p class="summary split-bridge">{item.bridge}</p>
-                  <div class="experience-tracks">
+                  <div class="experience-tracks" data-roam-samples={item.company === 'Roam' ? 'true' : undefined}>
                     {item.tracks.map((track) => (
-                      <section class="experience-track">
-                        <p class="track-label mono-meta">{track.label}</p>
-                        <h4>{track.title}</h4>
-                        <p class="track-summary">{track.summary}</p>
-                        <ul>
-                          {track.highlights.map((highlight) => <li>{highlight}</li>)}
-                        </ul>
-                      </section>
+                      <details class="experience-track" id={`roam-${track.mediaGroup}`} data-roam-track={track.mediaGroup}>
+                        <summary class="experience-track-summary">
+                          <span class="experience-track-identity">
+                            <span class="track-label mono-meta">{track.label}</span>
+                            <span class="track-title">{track.title}</span>
+                          </span>
+                          <span class="track-glance">{track.glance}</span>
+                          <span class="track-action mono-meta" aria-hidden="true">
+                            <span class="track-chevron-shell">
+                              <svg class="track-chevron" viewBox="0 0 16 16" fill="none">
+                                <path d="m3 6 5 5 5-5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+                              </svg>
+                            </span>
+                          </span>
+                        </summary>
+                        <div class="experience-track-panel">
+                          <div class="experience-track-panel-inner">
+                            <div class="experience-track-detail">
+                              <p class="track-summary">{track.summary}</p>
+                              <ul>
+                                {track.highlights.map((highlight) => <li>{highlight}</li>)}
+                              </ul>
+                            </div>
+                            {track.mediaGroup && <RoamWorkSamples group={track.mediaGroup} />}
+                          </div>
+                        </div>
+                      </details>
                     ))}
                   </div>
                 </>
@@ -87,7 +106,6 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
                 </>
               )}
             </div>
-            {item.company === 'Roam' && <RoamWorkSamples />}
           </article>
         ))}
       </div>
@@ -138,6 +156,75 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
     </section>
   </main>
 </Base>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const rootStyles = getComputedStyle(document.documentElement);
+
+  const parseDuration = (value: string, fallback: number) => {
+    const duration = Number.parseFloat(value);
+
+    if (!Number.isFinite(duration)) return fallback;
+    return value.trim().endsWith('s') && !value.trim().endsWith('ms') ? duration * 1000 : duration;
+  };
+
+  const duration = parseDuration(rootStyles.getPropertyValue('--duration-slow'), 480);
+  const easing = rootStyles.getPropertyValue('--ease').trim() || 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+  document.querySelectorAll<HTMLDetailsElement>('[data-roam-track]').forEach((details) => {
+    const summary = details.querySelector<HTMLElement>(':scope > summary');
+    const panel = details.querySelector<HTMLElement>(':scope > .experience-track-panel');
+
+    if (!summary || !panel) return;
+
+    let animation: Animation | null = null;
+    let closing = false;
+    let generation = 0;
+
+    const settle = (open: boolean, token: number) => {
+      if (token !== generation) return;
+
+      const completedAnimation = animation;
+      animation = null;
+      closing = false;
+      delete details.dataset.trackMotion;
+
+      if (!open) details.open = false;
+      completedAnimation?.cancel();
+    };
+
+    const animatePanel = (opening: boolean) => {
+      const token = ++generation;
+      const wasOpen = details.open;
+      const startHeight = wasOpen ? panel.getBoundingClientRect().height : 0;
+      const computedOpacity = wasOpen ? Number.parseFloat(getComputedStyle(panel).opacity) : 0;
+      const startOpacity = Number.isFinite(computedOpacity) ? computedOpacity : opening ? 0 : 1;
+
+      if (!wasOpen) details.open = true;
+
+      const endHeight = opening ? panel.scrollHeight : 0;
+
+      animation?.cancel();
+      details.dataset.trackMotion = opening ? 'opening' : 'closing';
+      closing = !opening;
+      animation = panel.animate(
+        [
+          { height: `${startHeight}px`, opacity: startOpacity },
+          { height: `${endHeight}px`, opacity: opening ? 1 : 0 },
+        ],
+        { duration, easing, fill: 'forwards' },
+      );
+      animation.onfinish = () => settle(opening, token);
+    };
+
+    summary.addEventListener('click', (event) => {
+      if (reducedMotion.matches) return;
+
+      event.preventDefault();
+      animatePanel(!details.open || closing);
+    });
+  });
+</script>
 
 <style>
   .about-hero {
@@ -386,43 +473,140 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
 
   .experience-tracks {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: var(--space-2);
     border-top: 1px solid var(--hairline);
   }
 
   .experience-track {
     min-width: 0;
-    padding: var(--space-8) var(--space-8) 0 0;
+    border-bottom: 1px solid var(--hairline);
   }
 
-  .experience-track + .experience-track {
-    padding-right: 0;
-    padding-left: var(--space-8);
-    border-left: 1px solid var(--hairline);
+  .experience-track-summary {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.36fr) minmax(0, 1fr) auto;
+    gap: var(--space-8);
+    align-items: center;
+    min-height: var(--space-24);
+    padding-block: var(--space-5);
+    cursor: pointer;
+    list-style: none;
+    transition:
+      color var(--duration-default) var(--ease),
+      background-color var(--duration-default) var(--ease);
+  }
+
+  .experience-track-summary::marker,
+  .experience-track-summary::-webkit-details-marker {
+    display: none;
+    content: '';
+  }
+
+  .experience-track-summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: var(--space-1);
+    border-radius: var(--radius-md);
+  }
+
+  .experience-track-identity {
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
   }
 
   .track-label {
     color: var(--accent);
   }
 
-  .experience-track h4 {
-    margin-top: var(--space-2);
+  .track-title {
     color: var(--heading);
     font-size: 1.25rem;
     font-weight: 500;
     line-height: 1.25;
+    text-wrap: balance;
   }
 
-  .track-summary {
-    margin-top: var(--space-4);
+  .track-glance {
+    color: var(--ink-muted);
+    font-size: 1rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .track-action {
+    display: inline-flex;
+    align-items: center;
+    justify-self: end;
+    color: var(--accent);
+  }
+
+  .track-chevron-shell {
+    display: grid;
+    width: var(--space-8);
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--hairline));
+    border-radius: var(--radius-pill);
+    background: color-mix(in oklab, var(--accent) 7%, var(--paper-raised));
+    transition:
+      border-color var(--duration-default) var(--ease),
+      background-color var(--duration-default) var(--ease);
+  }
+
+  .track-chevron {
+    display: block;
+    width: var(--space-4);
+    height: var(--space-4);
+    transition: transform var(--duration-default) var(--ease);
+  }
+
+  .experience-track[open] .track-chevron {
+    transform: rotate(180deg);
+  }
+
+  .experience-track-panel {
+    opacity: 0;
+  }
+
+  .experience-track[open] > .experience-track-panel {
+    opacity: 1;
+  }
+
+  .experience-track[data-track-motion] > .experience-track-panel {
+    overflow: hidden;
+  }
+
+  .experience-track-panel-inner {
+    min-height: 0;
+  }
+
+  .experience-track-detail {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.36fr) minmax(0, 1fr);
+    gap: var(--space-6);
+    padding-block: var(--space-2) var(--space-6);
+  }
+
+  .experience-track-detail > * {
+    grid-column: 2;
+  }
+
+  .experience-track-detail .track-summary {
     color: var(--heading);
     font-size: 1rem;
     line-height: 1.6;
     text-wrap: pretty;
   }
 
-  .experience-track > ul {
-    margin-top: var(--space-6);
+  @media (hover: hover) and (pointer: fine) {
+    .experience-track-summary:hover {
+      color: var(--accent);
+    }
+
+    .experience-track-summary:hover .track-chevron-shell {
+      border-color: color-mix(in oklab, var(--accent) 48%, var(--hairline));
+      background: color-mix(in oklab, var(--accent) 12%, var(--paper-raised));
+    }
   }
 
   .resume-notes {
@@ -628,18 +812,31 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
       padding-block: var(--space-12);
     }
 
-    .experience-tracks {
+    .experience-track-summary {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-3) var(--space-4);
+      min-height: var(--space-20);
+      padding-block: var(--space-5);
+    }
+
+    .track-glance {
+      grid-row: 2;
+      grid-column: 1 / -1;
+    }
+
+    .track-action {
+      grid-row: 1;
+      grid-column: 2;
+    }
+
+    .experience-track-detail {
       grid-template-columns: 1fr;
+      gap: var(--space-4);
+      padding-bottom: var(--space-6);
     }
 
-    .experience-track {
-      padding: var(--space-8) 0;
-    }
-
-    .experience-track + .experience-track {
-      padding-left: 0;
-      border-top: 1px solid var(--hairline);
-      border-left: 0;
+    .experience-track-detail > * {
+      grid-column: 1;
     }
 
     .experience-date {
@@ -650,8 +847,23 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
 
   @media (prefers-reduced-motion: reduce) {
     .jump-link,
-    .company-arrow {
+    .company-arrow,
+    .experience-track-summary,
+    .track-chevron-shell,
+    .track-chevron,
+    .experience-track-panel {
       transition: none;
+    }
+  }
+
+  @media print {
+    .experience-track-panel {
+      display: block !important;
+      opacity: 1 !important;
+    }
+
+    .track-action {
+      display: none;
     }
   }
 </style>

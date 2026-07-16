@@ -29,16 +29,29 @@ test.describe('no JavaScript', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('.experience-item')).toHaveCount(3);
     await expect(page.locator('.experience-item').first()).toBeVisible();
-    const mediaDisclosure = page.locator('#roam [data-roam-samples]');
-    await expect(mediaDisclosure.locator('.media-card')).toHaveCount(3);
-    await expect(mediaDisclosure.locator('.media-shot')).toHaveCount(6);
-    await expect(mediaDisclosure.locator('img')).toHaveCount(6);
-    await expect(mediaDisclosure).not.toHaveAttribute('open', '');
-    await expect(mediaDisclosure.locator('.media-card').first()).not.toBeVisible();
-    await mediaDisclosure.locator('summary').click();
-    await expect(mediaDisclosure).toHaveAttribute('open', '');
-    await expect(mediaDisclosure.locator('.experience-media-panel')).toHaveCSS('opacity', '1');
-    await expect(mediaDisclosure.locator('.media-card').first()).toBeVisible();
+    const mediaRegion = page.locator('#roam [data-roam-samples]');
+    const disclosures = mediaRegion.locator('details[data-roam-track]');
+    await expect(disclosures).toHaveCount(3);
+    await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
+    await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
+    await expect(mediaRegion.locator('img')).toHaveCount(6);
+    await expect(mediaRegion).not.toContainText('2 screens');
+    for (const disclosure of await disclosures.all()) {
+      await expect(disclosure).not.toHaveAttribute('open', '');
+      await expect(disclosure.locator('.media-shot')).toHaveCount(2);
+      await expect(disclosure.locator('summary')).toBeVisible();
+      await expect(disclosure.locator('.experience-track-detail')).not.toBeVisible();
+      await expect(disclosure.locator('.media-shot').first()).not.toBeVisible();
+    }
+    await disclosures.nth(0).locator('summary').evaluate((element) => (element as HTMLElement).click());
+    await disclosures.nth(1).locator('summary').evaluate((element) => (element as HTMLElement).click());
+    await expect(disclosures.nth(0)).toHaveAttribute('open', '');
+    await expect(disclosures.nth(1)).toHaveAttribute('open', '');
+    await expect(disclosures.nth(0).locator('.media-shot').first()).toBeVisible();
+    await expect(disclosures.nth(1).locator('.media-shot').first()).toBeVisible();
+    await disclosures.nth(0).locator('summary').evaluate((element) => (element as HTMLElement).click());
+    await expect(disclosures.nth(0)).not.toHaveAttribute('open', '');
+    await expect(disclosures.nth(1)).toHaveAttribute('open', '');
     await expect(page.locator('#projects .archive-table tbody tr')).toHaveCount(7);
     await expect(page.locator('html')).not.toHaveClass(/\bjs\b/);
     for (const revealTarget of await page.locator('[data-page-reveal]').all()) {

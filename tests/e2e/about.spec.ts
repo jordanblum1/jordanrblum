@@ -27,44 +27,78 @@ test('about page carries the broader story, experience, and education', async ({
 
   const roles = page.locator('.experience-item');
   await expect(roles).toHaveCount(3);
-  await expect(page.locator('#roam')).toContainText('the third engineer on a four-person engineering team');
+  await expect(page.locator('#roam')).toContainText('the third engineer on a four-person team');
   await expect(page.locator('#roam')).toContainText('Fifth Wall co-founder Brendan Wallace');
-  await expect(page.locator('#roam .experience-track')).toHaveCount(2);
+  await expect(page.locator('#roam .experience-track')).toHaveCount(3);
   await expect(page.locator('#roam')).toContainText('Roam marketplace');
   await expect(page.locator('#roam')).toContainText('Reed, the AI realtor');
   await expect(page.locator('#roam')).toContainText('01 · Product engineering');
-  await expect(page.locator('#roam')).toContainText('02 · AI product & systems');
+  await expect(page.locator('#roam')).toContainText('02 · AI product');
+  await expect(page.locator('#roam')).toContainText('03 · Agent systems');
   await expect(page.locator('#roam')).toContainText('one of two lead engineers building Reed');
   await expect(page.locator('#roam')).toContainText('internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents');
-  const mediaDisclosure = page.locator('#roam [data-roam-samples]');
-  const mediaSummary = mediaDisclosure.locator('summary');
-  await expect(mediaDisclosure).toContainText('Selected work from Roam');
-  await expect(mediaDisclosure).toContainText('View 6 screens');
-  await expect(mediaDisclosure).not.toHaveAttribute('open', '');
-  await expect(page.locator('#roam .experience-media .media-card')).toHaveCount(3);
-  await expect(page.locator('#roam .experience-media .media-shot')).toHaveCount(6);
-  await expect(page.locator('#roam .experience-media img')).toHaveCount(6);
-  await expect(page.locator('#roam .experience-media a')).toHaveCount(0);
-  await expect(page.locator('#roam .experience-media')).toContainText('synthetic demo data');
-  await expect(page.locator('#roam .experience-media .media-card').first()).not.toBeVisible();
-  await mediaSummary.focus();
-  await page.keyboard.press('Enter');
-  await expect(mediaDisclosure).toHaveAttribute('open', '');
-  await expect(mediaDisclosure.locator('.experience-media-panel')).toHaveCSS('opacity', '1');
-  await page.waitForTimeout(300);
-  const desktopMediaCards = page.locator('#roam .experience-media .media-card');
-  const marketplaceMediaBox = await desktopMediaCards.nth(0).boundingBox();
-  const reedMediaBox = await desktopMediaCards.nth(1).boundingBox();
-  const harnessMediaBox = await desktopMediaCards.nth(2).boundingBox();
-  expect(marketplaceMediaBox).not.toBeNull();
-  expect(reedMediaBox).not.toBeNull();
-  expect(harnessMediaBox).not.toBeNull();
-  expect(Math.abs(reedMediaBox!.x - marketplaceMediaBox!.x)).toBeLessThanOrEqual(1);
-  expect(reedMediaBox!.y).toBeGreaterThan(marketplaceMediaBox!.y);
-  expect(harnessMediaBox!.y).toBeGreaterThan(reedMediaBox!.y);
+  const mediaRegion = page.locator('#roam [data-roam-samples]');
+  const disclosures = mediaRegion.locator('details[data-roam-track]');
+  await expect(disclosures).toHaveCount(3);
+  await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
+  await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
+  await expect(mediaRegion.locator('img')).toHaveCount(6);
+  await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
+  await expect(mediaRegion).toContainText('synthetic demo data');
+  await expect(mediaRegion).not.toContainText('2 screens');
 
-  for (const mediaCard of await desktopMediaCards.all()) {
-    const shots = mediaCard.locator('.media-shot');
+  const trackContracts = [
+    ['roam-marketplace', 'Roam marketplace', 'Search, offers, onboarding, and the tools behind them.'],
+    ['reed', 'Reed, the AI realtor', 'Buyer conversations, home research, pricing, and evals.'],
+    ['agent-harness', 'Agent harness', 'Parallel coding agents with review, recovery, and approval gates.'],
+  ] as const;
+
+  for (const [index, [id, title, glance]] of trackContracts.entries()) {
+    const disclosure = disclosures.nth(index);
+    await expect(disclosure).toHaveAttribute('data-roam-track', id);
+    await expect(disclosure).not.toHaveAttribute('open', '');
+    await expect(disclosure.locator('summary')).toContainText(title);
+    await expect(disclosure.locator('summary')).toContainText(glance);
+    await expect(disclosure.locator('.track-action')).toHaveText('');
+    await expect(disclosure.locator('.experience-track-detail')).not.toBeVisible();
+    await expect(disclosure.locator('.media-shot').first()).not.toBeVisible();
+    const summaryBox = await disclosure.locator('summary').boundingBox();
+    expect(summaryBox).not.toBeNull();
+    expect(summaryBox!.height).toBeGreaterThanOrEqual(80);
+    expect(summaryBox!.height).toBeLessThan(150);
+    await expect(disclosure.locator(`[data-roam-sample="${id}"] .media-shot`)).toHaveCount(2);
+  }
+
+  const roamBox = await page.locator('#roam').boundingBox();
+  const procoreBox = await page.locator('#procore').boundingBox();
+  expect(roamBox).not.toBeNull();
+  expect(procoreBox).not.toBeNull();
+  expect(procoreBox!.y - roamBox!.y).toBeLessThan(900);
+
+  const marketplaceDisclosure = disclosures.nth(0);
+  const reedDisclosure = disclosures.nth(1);
+  const harnessDisclosure = disclosures.nth(2);
+  const marketplaceSummary = marketplaceDisclosure.locator('summary');
+  await marketplaceSummary.focus();
+  await page.keyboard.press('Enter');
+  await expect(marketplaceDisclosure).toHaveAttribute('open', '');
+  await expect(marketplaceDisclosure).toHaveAttribute('data-track-motion', 'opening');
+  await expect(marketplaceDisclosure.locator('.experience-track-detail')).toBeVisible();
+  await expect(marketplaceDisclosure.locator('.media-shot').first()).toBeVisible();
+
+  const reedSummary = reedDisclosure.locator('summary');
+  await reedSummary.focus();
+  await page.keyboard.press('Space');
+  await expect(reedDisclosure).toHaveAttribute('open', '');
+  await expect(marketplaceDisclosure).toHaveAttribute('open', '');
+  await expect(harnessDisclosure).not.toHaveAttribute('open', '');
+
+  await harnessDisclosure.locator('summary').click();
+  await expect(harnessDisclosure).toHaveAttribute('open', '');
+  await expect(page.locator('#roam details[data-track-motion]')).toHaveCount(0);
+
+  for (const disclosure of await disclosures.all()) {
+    const shots = disclosure.locator('.media-shot');
     const firstShotBox = await shots.nth(0).boundingBox();
     const secondShotBox = await shots.nth(1).boundingBox();
     expect(firstShotBox).not.toBeNull();
@@ -72,7 +106,7 @@ test('about page carries the broader story, experience, and education', async ({
     expect(secondShotBox!.x).toBeGreaterThan(firstShotBox!.x + firstShotBox!.width);
   }
 
-  const mediaImages = page.locator('#roam .experience-media img');
+  const mediaImages = mediaRegion.locator('img');
   for (const image of await mediaImages.all()) {
     const metrics = await image.evaluate((element) => {
       const img = element as HTMLImageElement;
@@ -85,9 +119,14 @@ test('about page carries the broader story, experience, and education', async ({
     expect(metrics.displayedRatio).toBeCloseTo(metrics.naturalRatio, 2);
     expect(metrics.sameOrigin).toBe(true);
   }
-  await mediaSummary.click();
-  await expect(mediaDisclosure).not.toHaveAttribute('open', '');
-  await expect(desktopMediaCards.first()).not.toBeVisible();
+  await marketplaceSummary.focus();
+  await page.keyboard.press('Enter');
+  await expect(marketplaceDisclosure).toHaveAttribute('data-track-motion', 'closing');
+  await expect(marketplaceDisclosure).toHaveAttribute('open', '');
+  await expect(marketplaceDisclosure).not.toHaveAttribute('open', '', { timeout: 1_500 });
+  await expect(marketplaceDisclosure.locator('.media-shot').first()).not.toBeVisible();
+  await expect(reedDisclosure).toHaveAttribute('open', '');
+  await expect(harnessDisclosure).toHaveAttribute('open', '');
   await expect(page.locator('#procore')).toContainText('600+ person engineering organization');
   await expect(page.locator('#workday')).toContainText('Associate DevOps / Release Engineer → Senior Associate Developer');
   await expect(page.locator('.resume-notes')).toContainText('BS Computer Science · Studio Art minor (Graphic Design)');
@@ -129,12 +168,6 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/about');
 
-  const mediaDisclosure = page.locator('#roam [data-roam-samples]');
-  await mediaDisclosure.locator('summary').click();
-  await expect(mediaDisclosure).toHaveAttribute('open', '');
-  await expect(mediaDisclosure.locator('.experience-media-panel')).toHaveCSS('opacity', '1');
-  await page.waitForTimeout(300);
-
   const collage = page.locator('.about-hero .lifestyle-panel');
   await expect(collage).toBeVisible();
   const collageBox = await collage.boundingBox();
@@ -142,33 +175,55 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   expect(collageBox!.x).toBeGreaterThanOrEqual(0);
   expect(collageBox!.x + collageBox!.width).toBeLessThanOrEqual(390);
 
-  const roamTracks = page.locator('#roam .experience-track');
-  await expect(roamTracks).toHaveCount(2);
+  const roamTracks = page.locator('#roam details[data-roam-track]');
+  await expect(roamTracks).toHaveCount(3);
   const firstTrackBox = await roamTracks.nth(0).boundingBox();
   const secondTrackBox = await roamTracks.nth(1).boundingBox();
+  const thirdTrackBox = await roamTracks.nth(2).boundingBox();
   expect(firstTrackBox).not.toBeNull();
   expect(secondTrackBox).not.toBeNull();
+  expect(thirdTrackBox).not.toBeNull();
   expect(secondTrackBox!.y).toBeGreaterThan(firstTrackBox!.y);
+  expect(thirdTrackBox!.y).toBeGreaterThan(secondTrackBox!.y);
+  expect(thirdTrackBox!.y + thirdTrackBox!.height - firstTrackBox!.y).toBeLessThan(520);
 
-  const mediaCards = page.locator('#roam .experience-media .media-card');
-  await expect(mediaCards).toHaveCount(3);
-  const firstMediaBox = await mediaCards.nth(0).boundingBox();
-  const secondMediaBox = await mediaCards.nth(1).boundingBox();
-  const thirdMediaBox = await mediaCards.nth(2).boundingBox();
-  expect(firstMediaBox).not.toBeNull();
-  expect(secondMediaBox).not.toBeNull();
-  expect(thirdMediaBox).not.toBeNull();
-  expect(secondMediaBox!.y).toBeGreaterThan(firstMediaBox!.y);
-  expect(thirdMediaBox!.y).toBeGreaterThan(secondMediaBox!.y);
-
-  for (const mediaCard of await mediaCards.all()) {
-    const shots = mediaCard.locator('.media-shot');
-    const firstShotBox = await shots.nth(0).boundingBox();
-    const secondShotBox = await shots.nth(1).boundingBox();
-    expect(firstShotBox).not.toBeNull();
-    expect(secondShotBox).not.toBeNull();
-    expect(secondShotBox!.y).toBeGreaterThan(firstShotBox!.y + firstShotBox!.height);
+  for (const disclosure of await roamTracks.all()) {
+    await expect(disclosure).not.toHaveAttribute('open', '');
+    const summaryBox = await disclosure.locator('summary').boundingBox();
+    expect(summaryBox).not.toBeNull();
+    expect(summaryBox!.height).toBeGreaterThanOrEqual(80);
+    expect(summaryBox!.height).toBeLessThan(180);
+    await expect(disclosure.locator('.experience-track-detail')).not.toBeVisible();
   }
+
+  const marketplaceTrack = roamTracks.nth(0);
+  const marketplaceCollapsedHeight = (await marketplaceTrack.boundingBox())!.height;
+  await marketplaceTrack.locator('summary').click();
+  await expect(marketplaceTrack).toHaveAttribute('open', '');
+  await expect(marketplaceTrack.locator('.experience-track-detail')).toBeVisible();
+  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(2);
+  await expect(marketplaceTrack).not.toHaveAttribute('data-track-motion', 'opening');
+  const marketplaceExpandedHeight = (await marketplaceTrack.boundingBox())!.height;
+  expect(marketplaceExpandedHeight).toBeGreaterThan(marketplaceCollapsedHeight + 200);
+  const mediaRail = marketplaceTrack.locator('.media-pair');
+  expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  const firstShotBox = await marketplaceTrack.locator('.media-shot').nth(0).boundingBox();
+  const secondShotBox = await marketplaceTrack.locator('.media-shot').nth(1).boundingBox();
+  expect(firstShotBox).not.toBeNull();
+  expect(secondShotBox).not.toBeNull();
+  expect(Math.abs(secondShotBox!.y - firstShotBox!.y)).toBeLessThanOrEqual(1);
+  expect(secondShotBox!.x).toBeGreaterThan(firstShotBox!.x + firstShotBox!.width);
+
+  const reedTrack = roamTracks.nth(1);
+  await reedTrack.locator('summary').click();
+  await expect(reedTrack).toHaveAttribute('open', '');
+  await expect(marketplaceTrack).toHaveAttribute('open', '');
+  await marketplaceTrack.locator('summary').click();
+  await expect(marketplaceTrack).toHaveAttribute('data-track-motion', 'closing');
+  await expect(marketplaceTrack).toHaveAttribute('open', '');
+  await expect(marketplaceTrack).not.toHaveAttribute('open', '', { timeout: 1_500 });
+  await expect(reedTrack).toHaveAttribute('open', '');
+  expect((await marketplaceTrack.boundingBox())!.height).toBeCloseTo(marketplaceCollapsedHeight, 0);
 
   const emblem = page.locator('.education-note .scu-emblem');
   await emblem.scrollIntoViewIfNeeded();
@@ -203,13 +258,15 @@ test('company wordmarks and screenshots stay unchanged under a dark system prefe
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/about');
 
-  const mediaDisclosure = page.locator('#roam [data-roam-samples]');
-  await mediaDisclosure.locator('summary').click();
-  await expect(mediaDisclosure).toHaveAttribute('open', '');
+  const disclosures = page.locator('#roam details[data-roam-track]');
+  for (const disclosure of await disclosures.all()) {
+    await disclosure.locator('summary').click();
+    await expect(disclosure).toHaveAttribute('open', '');
+  }
 
   await expect(page.locator('#roam .company-logo img')).toHaveCSS('filter', 'none');
   await expect(page.locator('#procore .company-logo img')).toHaveCSS('filter', 'none');
-  for (const image of await page.locator('#roam .experience-media img').all()) {
+  for (const image of await page.locator('#roam .work-samples img').all()) {
     await expect(image).toHaveCSS('filter', 'none');
   }
 });

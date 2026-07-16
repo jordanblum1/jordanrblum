@@ -32,8 +32,10 @@ interface ExperienceItemBase {
 export interface ExperienceTrack {
   label: string;
   title: string;
+  glance: string;
   summary: string;
   highlights: string[];
+  mediaGroup?: 'roam-marketplace' | 'reed' | 'agent-harness';
 }
 
 export type ExperienceItem = ExperienceItemBase & (
@@ -133,27 +135,40 @@ export const experience: ExperienceItem[] = [
     logo: 'roam',
     role: 'Product Engineer',
     date: 'May 2025—now',
-    context: 'Joined just after its $11.5M Series A as the third engineer on a four-person engineering team. Roam is backed by Khosla Ventures and Founders Fund; early investors included Fifth Wall co-founder Brendan Wallace.',
-    bridge: 'I work across two sides of Roam: the home-buying marketplace and Reed, its AI realtor.',
+    context: 'Joined just after Roam’s $11.5M Series A as the third engineer on a four-person team. Backed by Khosla Ventures and Founders Fund; early investors included Fifth Wall co-founder Brendan Wallace.',
+    bridge: 'I work across the marketplace, Reed, and the agent tooling behind both.',
     tracks: [
       {
         label: '01 · Product engineering',
         title: 'Roam marketplace',
+        glance: 'Search, offers, onboarding, and the tools behind them.',
         summary: 'I build the core product buyers use to find homes, understand their financing, and move through an offer.',
         highlights: [
           'Shipped search, offer, onboarding, and growth flows, plus the internal tools that support them.',
           'Worked end to end across product decisions, interface design, backend systems, analytics, rollout, and iteration.',
         ],
+        mediaGroup: 'roam-marketplace',
       },
       {
-        label: '02 · AI product & systems',
+        label: '02 · AI product',
         title: 'Reed, the AI realtor',
+        glance: 'Buyer conversations, home research, pricing, and evals.',
         summary: 'I’m one of two lead engineers building Reed as both a customer product and an AI system: the conversation, the research and pricing tools behind it, and the checks that show when it fails.',
         highlights: [
           'Built streaming chat and tool-call interfaces, multi-tool home research and pricing flows, and vision-model photo analysis.',
           'Built evals and conversation analytics to catch regressions, find drop-off, and guide product changes.',
-          'Built the internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents, with cross-model review, crash recovery, and human approval gates.',
         ],
+        mediaGroup: 'reed',
+      },
+      {
+        label: '03 · Agent systems',
+        title: 'Agent harness',
+        glance: 'Parallel coding agents with review, recovery, and approval gates.',
+        summary: 'I built the internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents.',
+        highlights: [
+          'Added cross-model review, crash recovery, and human approval gates so parallel work stays observable and recoverable.',
+        ],
+        mediaGroup: 'agent-harness',
       },
     ],
   },

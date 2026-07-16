@@ -92,10 +92,14 @@ test('the resume covers all three roles without making Roam the whole story', ()
   expect(experienceBlock).toContain('Fifth Wall co-founder Brendan Wallace');
   expect(experienceBlock).toContain("label: '01 · Product engineering'");
   expect(experienceBlock).toContain("title: 'Roam marketplace'");
-  expect(experienceBlock).toContain("label: '02 · AI product & systems'");
+  expect(experienceBlock).toContain("glance: 'Search, offers, onboarding, and the tools behind them.'");
+  expect(experienceBlock).toContain("label: '02 · AI product'");
   expect(experienceBlock).toContain("title: 'Reed, the AI realtor'");
+  expect(experienceBlock).toContain("label: '03 · Agent systems'");
+  expect(experienceBlock).toContain("title: 'Agent harness'");
   expect(experienceBlock).toContain('one of two lead engineers building Reed');
   expect(experienceBlock).toContain('internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents');
+  expect((experienceBlock.match(/mediaGroup:/g) ?? [])).toHaveLength(3);
   expect(experienceBlock).toContain('Associate DevOps / Release Engineer → Senior Associate Developer');
 });
 
@@ -190,12 +194,17 @@ test('the redesign uses Jordan and project-owned imagery', () => {
 });
 
 test('Roam experience media uses public product screens and a sanitized harness demo', () => {
-  expect(aboutSource).toContain("item.company === 'Roam' && <RoamWorkSamples />");
-  expect(roamWorkSamplesSource).toContain('<details class="experience-media" data-roam-samples>');
-  expect(roamWorkSamplesSource).toContain('<summary class="experience-media-summary">');
-  expect(roamWorkSamplesSource.match(/<details[^>]*>/)?.[0]).not.toMatch(/\sopen(?:\s|=|>)/);
-  expect(roamWorkSamplesSource).toContain('Selected work from Roam');
-  expect(roamWorkSamplesSource).toContain('View 6 screens');
+  expect(aboutSource).toContain('<RoamWorkSamples group={track.mediaGroup} />');
+  expect(aboutSource).toContain('data-roam-samples=');
+  expect(aboutSource).toContain('data-roam-track={track.mediaGroup}');
+  expect(aboutSource).toContain('<summary class="experience-track-summary">');
+  expect(aboutSource.match(/<details[^>]*>/)?.[0]).not.toMatch(/\sopen(?:\s|=|>)/);
+  expect(roamWorkSamplesSource).toContain('<section class="work-samples" data-roam-sample={selectedGroup.id}');
+  expect(roamWorkSamplesSource).not.toMatch(/<details|<summary/);
+  expect(roamWorkSamplesSource).not.toContain('2 screens');
+  for (const id of ['roam-marketplace', 'reed', 'agent-harness']) {
+    expect(roamWorkSamplesSource).toContain(`id: '${id}'`);
+  }
   expect(roamWorkSamplesSource).toContain('roam-marketplace.jpg');
   expect(roamWorkSamplesSource).toContain('roam-listing.jpg');
   expect(roamWorkSamplesSource).toContain('reed-home.jpg');
