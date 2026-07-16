@@ -38,7 +38,10 @@ test('home and About heroes develop in without double-animating the work field',
   await expect(intro).toHaveCSS('animation-duration', '0.48s');
   await expect(portrait).toHaveCSS('animation-delay', '0.07s');
   await expect(page.locator('.field-panel')).toHaveCSS('animation-name', 'none');
-  await expect(page.locator('.field-art #Layer_1')).toHaveCSS('animation-name', 'blum-settle');
+  const firstBlumPiece = page.locator('.field-art #Layer_1');
+  await expect(firstBlumPiece).toHaveCSS('animation-name', 'blum-assemble');
+  await expect(firstBlumPiece.locator('path')).toHaveCSS('animation-name', 'blum-ink');
+  await expect(firstBlumPiece.locator('path')).toHaveAttribute('pathLength', '1');
 
   await page.goto('/about');
   await expect(page.locator('[data-page-reveal]')).toHaveCount(4);
