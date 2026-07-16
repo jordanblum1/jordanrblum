@@ -176,7 +176,7 @@ test('about metadata is route-specific', async ({ page }) => {
   await page.goto('/about');
 
   await expect(page).toHaveTitle('About & Experience — Jordan Blum');
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://blumjordan.com/about/');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://blumjordan.com/about');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /consumer products, developer platforms, AI tools/);
 });
 

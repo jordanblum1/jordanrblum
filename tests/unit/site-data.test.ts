@@ -17,6 +17,8 @@ const globalSource = readFileSync('src/styles/global.css', 'utf8');
 const tokenSource = readFileSync('src/styles/tokens.css', 'utf8');
 const readmeSource = readFileSync('README.md', 'utf8');
 const ogSource = readFileSync('public/og-image.svg', 'utf8');
+const deploySource = readFileSync('.github/workflows/deploy.yml', 'utf8');
+const layoutSource = readFileSync('src/layouts/Base.astro', 'utf8');
 
 const block = (start: string, end: string) => src.slice(src.indexOf(start), src.indexOf(end));
 const selectedWorkBlock = block('export const selectedWork', 'export const experience');
@@ -30,6 +32,14 @@ test('surface radii stay Apple-like without turning cards into capsules', () => 
   expect(aboutSource).toContain('border-radius: var(--radius-xl)');
   expect(readmeSource).toContain('restrained 32px Apple-like corner');
   expect(readmeSource).toContain('Nested cards use `--radius-lg` (24px)');
+});
+
+test('S3 deployment publishes Astro pages at clean extensionless routes', () => {
+  expect(deploySource).toContain('find dist -mindepth 2 -name index.html -print0');
+  expect(deploySource).toContain('--key "$route"');
+  expect(deploySource).toContain('--key "$route/"');
+  expect(deploySource).toContain('--content-type "text/html; charset=utf-8"');
+  expect(layoutSource).toContain("Astro.url.pathname.replace(/\\/+$/, '')");
 });
 
 test('selected work balances three professional chapters with three independent products', () => {

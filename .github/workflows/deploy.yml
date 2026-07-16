@@ -33,6 +33,32 @@ jobs:
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }} \
             --delete
 
+      # Astro emits nested pages as route/index.html. An S3 REST origin does not
+      # resolve /route or /route/ to that object, so publish both clean URL forms.
+      - name: Publish clean page routes
+        shell: bash
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          set -euo pipefail
+
+          while IFS= read -r -d '' file; do
+            route="${file#dist/}"
+            route="${route%/index.html}"
+
+            aws s3api put-object \
+              --bucket "$S3_BUCKET" \
+              --key "$route" \
+              --body "$file" \
+              --content-type "text/html; charset=utf-8"
+
+            aws s3api put-object \
+              --bucket "$S3_BUCKET" \
+              --key "$route/" \
+              --body "$file" \
+              --content-type "text/html; charset=utf-8"
+          done < <(find dist -mindepth 2 -name index.html -print0)
+
       - name: Invalidate CloudFront cache
         if: vars.CLOUDFRONT_DISTRIBUTION_ID != ''
         env:
