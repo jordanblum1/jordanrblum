@@ -17,6 +17,7 @@ const globalSource = readFileSync('src/styles/global.css', 'utf8');
 const tokenSource = readFileSync('src/styles/tokens.css', 'utf8');
 const readmeSource = readFileSync('README.md', 'utf8');
 const ogSource = readFileSync('public/og-image.svg', 'utf8');
+const llmsSource = readFileSync('public/llms.txt', 'utf8');
 const deploySource = readFileSync('.github/workflows/deploy.yml', 'utf8');
 const layoutSource = readFileSync('src/layouts/Base.astro', 'utf8');
 
@@ -137,6 +138,17 @@ test('public resume facts stay aligned with the canonical resume', () => {
   expect(src).not.toContain('two majors');
   expect(src).toContain('mailto:jordanblum16@gmail.com');
   expect(src.toLowerCase()).toContain('eight years');
+});
+
+test('llms.txt publishes a detailed resume with explicit team attribution', () => {
+  expect(llmsSource).toContain('# Jordan Blum');
+  expect(llmsSource).toContain('engineer #3 on a four-person engineering team');
+  expect(llmsSource).toContain('the core engineering team became two people');
+  expect(llmsSource).toContain('primary responsibility for most of the AI infrastructure');
+  expect(llmsSource).toContain('should not be represented as the sole builder of Roam');
+  expect(llmsSource).toContain('more than 300 engineers');
+  expect(llmsSource).toContain('Reduced release timelines by 50%');
+  expect(llmsSource).toContain('https://blumjordan.com/about');
 });
 
 test('about keeps experience prominent and removes the awkward taxonomy', () => {
