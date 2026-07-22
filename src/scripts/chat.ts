@@ -385,13 +385,37 @@ function initChatWidget(): void {
     scroller!.scrollTop = previousScrollTop;
   }
 
+  // Opt-in follow: clicking "Jump to latest" during a stream sticks the view
+  // to the bottom until the visitor scrolls up again — still no forced
+  // auto-follow. The pill also lingers briefly after streaming ends when the
+  // reply's tail (and its chips) sit below the fold.
+  let follow = false;
+  let jumpLinger = false;
+  let jumpLingerTimer = 0;
+
   function syncJump(): void {
-    jumpButton!.hidden = !(isStreaming() && distanceFromLatest() > 56);
+    jumpButton!.hidden = !(distanceFromLatest() > 56 && (isStreaming() || jumpLinger));
   }
 
-  scroller.addEventListener('scroll', syncJump);
+  scroller.addEventListener('scroll', () => {
+    // A scroll that leaves the bottom is the visitor's — programmatic follow
+    // scrolls always land flush at the bottom.
+    if (follow && distanceFromLatest() > 72) follow = false;
+    syncJump();
+  });
+  scroller.addEventListener(
+    'wheel',
+    (event) => {
+      if (event.deltaY < 0) follow = false;
+    },
+    { passive: true },
+  );
   jumpButton.addEventListener('click', () => {
-    scrollToLatest(true);
+    follow = isStreaming();
+    jumpLinger = false;
+    // Instant when entering follow so the smooth animation's intermediate
+    // positions don't read as the visitor scrolling away.
+    scrollToLatest(!follow);
     jumpButton!.hidden = true;
   });
 
@@ -497,6 +521,7 @@ function initChatWidget(): void {
     // grows. The spacer makes the anchor reachable from the first frame.
     sizeSpacerFor(userBubble);
     scroller!.scrollTop = anchorTarget;
+    follow = false;
     stopButton!.hidden = false;
 
     let firstDelta = true;
@@ -509,13 +534,15 @@ function initChatWidget(): void {
         // shifted between send time and the first delta.
         firstDelta = false;
         scroller!.scrollTop = anchorTarget;
+      } else if (follow) {
+        scrollToLatest();
       }
       syncJump();
     });
 
     controller = null;
     stopButton!.hidden = true;
-    jumpButton!.hidden = true;
+    follow = false;
 
     if (result.ok) {
       state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
@@ -545,6 +572,20 @@ function initChatWidget(): void {
     // Chips or an error bubble changed the content below the question —
     // re-balance the spacer (and keep it last) so the anchor stays valid.
     sizeSpacerFor(userBubble);
+
+    // Keep "Jump to latest" available briefly when the reply's tail and its
+    // chips ended up below the fold, then let it fade away.
+    if (distanceFromLatest() > 56) {
+      jumpLinger = true;
+      window.clearTimeout(jumpLingerTimer);
+      jumpLingerTimer = window.setTimeout(() => {
+        jumpLinger = false;
+        syncJump();
+      }, 6000);
+    } else {
+      jumpLinger = false;
+    }
+    syncJump();
 
     updateComposerAvailability();
     if (!input!.disabled && !panel!.hidden) input!.focus();
