@@ -36,6 +36,18 @@ test('the footer CTA opens the same widget panel', async ({ page }) => {
   await expect(page.locator('[data-chat-panel]')).toBeVisible();
 });
 
+test('the nav chat trigger opens the same widget panel', async ({ page }) => {
+  const navChat = page.locator('nav[aria-label="Primary"] button[data-nav-chat]');
+  await expect(navChat).toBeVisible();
+  await expect(navChat).toContainText('Chat');
+  await expect(page.locator('nav[aria-label="Primary"] a[href^="mailto:"]')).toBeHidden();
+
+  await navChat.click();
+
+  await expect(page.locator('[data-chat-panel]')).toBeVisible();
+  await expect(page.locator('[data-chat-launcher]')).toHaveAttribute('aria-expanded', 'true');
+});
+
 test('sends a message and streams a mocked assistant reply', async ({ page }) => {
   await page.route('**/api/chat', async (route) => {
     await route.fulfill({

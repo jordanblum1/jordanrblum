@@ -22,6 +22,9 @@ test.describe('no JavaScript', () => {
     );
     await expect(page.locator('[data-chat-widget]')).toBeHidden();
     await expect(page.locator('[data-footer-chat-cta]')).toBeHidden();
+    await expect(page.locator('nav[aria-label="Primary"] button[data-nav-chat]')).toBeHidden();
+    await expect(page.locator('nav[aria-label="Primary"] a[href="mailto:jordanblum16@gmail.com"]')).toContainText('Email');
+    await expect(page.locator('nav[aria-label="Primary"] a[href="mailto:jordanblum16@gmail.com"]')).toBeVisible();
     await expect(page.locator('html')).not.toHaveClass(/\bjs\b/);
     for (const revealTarget of await page.locator('[data-page-reveal]').all()) {
       await expect(revealTarget).toBeVisible();

@@ -5,7 +5,8 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
 
   await expect(page.locator('nav[aria-label="Primary"] a[href="#work"]')).toHaveText('Work');
   await expect(page.locator('nav[aria-label="Primary"] a[href="/about"]')).toHaveText('About');
-  await expect(page.locator('nav[aria-label="Primary"] a[href="mailto:jordanblum16@gmail.com"]')).toContainText('Email');
+  await expect(page.locator('nav[aria-label="Primary"] button[data-nav-chat]')).toContainText('Chat');
+  await expect(page.locator('nav[aria-label="Primary"] a[href="mailto:jordanblum16@gmail.com"]')).toBeHidden();
   const home = page.getByRole('link', { name: 'Jordan Blum — home' });
   await expect(home).toBeVisible();
   await expect(home.locator('.mark-red')).toHaveCSS('opacity', '1');

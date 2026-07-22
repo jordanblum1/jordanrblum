@@ -37,7 +37,20 @@ const workHref = onHome ? '#work' : '/#work';
         </span>
         <span class="nav-label">About</span>
       </a>
-      <a href="mailto:jordanblum16@gmail.com">
+      <button class="nav-chat" type="button" data-nav-chat>
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path
+              d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v6a2.5 2.5 0 0 1-2.5 2.5H8l-3.5 3v-3H5.5A2.5 2.5 0 0 1 3 11.5v-6Z"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <span class="nav-label">Chat</span>
+      </button>
+      <a class="nav-email" href="mailto:jordanblum16@gmail.com">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none">
             <rect x="2.75" y="4.5" width="14.5" height="11" rx="2.5" stroke="currentColor" stroke-width="1.5" />
@@ -51,6 +64,14 @@ const workHref = onHome ? '#work' : '/#work';
 </nav>
 
 <script>
+  // Same glue as the footer CTA: the floating widget owns its open/close state,
+  // the nav trigger just pokes its launcher.
+  const navChat = document.querySelector<HTMLButtonElement>('[data-nav-chat]');
+  navChat?.addEventListener('click', () => {
+    const launcher = document.querySelector<HTMLButtonElement>('[data-chat-launcher]');
+    if (launcher?.getAttribute('aria-expanded') !== 'true') launcher?.click();
+  });
+
   const navPill = document.querySelector<HTMLElement>('[data-nav-pill]');
   const navMark = document.querySelector<HTMLElement>('[data-nav-mark]');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -229,7 +250,8 @@ const workHref = onHome ? '#work' : '/#work';
   }
 
   .wordmark,
-  .nav-links a {
+  .nav-links a,
+  .nav-links button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -253,7 +275,8 @@ const workHref = onHome ? '#work' : '/#work';
   }
 
   .nav-pill[data-scrolling] .wordmark,
-  .nav-pill[data-scrolling] .nav-links a {
+  .nav-pill[data-scrolling] .nav-links a,
+  .nav-pill[data-scrolling] .nav-links button {
     width: 1.75rem;
     min-height: 1.75rem;
     padding: 0;
@@ -307,12 +330,33 @@ const workHref = onHome ? '#work' : '/#work';
     gap: var(--space-1);
   }
 
-  .nav-links a {
+  .nav-links a,
+  .nav-links button {
     position: relative;
     width: 3.7rem;
     overflow: hidden;
     padding-inline: var(--space-2);
     color: var(--ink-muted);
+  }
+
+  .nav-links button {
+    padding-block: 0;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* Same progressive enhancement as the footer CTA and widget launcher: without
+     JS the chat widget never appears, so the nav shows the mailto fallback
+     instead of a dead chat button. Either way the pill holds exactly 3 items,
+     keeping the tuned collapse animation untouched. */
+  :global(html:not(.js)) .nav-chat {
+    display: none;
+  }
+
+  :global(html.js) .nav-email {
+    display: none;
   }
 
   .nav-label,
@@ -354,7 +398,8 @@ const workHref = onHome ? '#work' : '/#work';
   }
 
   :global(html.pointer-moved) .wordmark:hover,
-  :global(html.pointer-moved) .nav-links a:hover {
+  :global(html.pointer-moved) .nav-links a:hover,
+  :global(html.pointer-moved) .nav-links button:hover {
     color: var(--heading);
     background: var(--hover-fill);
   }
@@ -370,6 +415,7 @@ const workHref = onHome ? '#work' : '/#work';
     .nav-pill[data-scrolling],
     .wordmark,
     .nav-links a,
+    .nav-links button,
     .nav-label,
     .nav-icon {
       transform: none;
