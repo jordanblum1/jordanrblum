@@ -3,10 +3,47 @@ name: Deploy to S3
 on:
   push:
     branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - run: pnpm test:unit
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm test:e2e
+
+      - name: Build and test the chat backend
+        working-directory: server
+        run: |
+          pnpm build
+          pnpm test
+
+  # Never deploy from a pull_request event — that trigger exists only to run
+  # the test job as a PR check. push (to master) and workflow_dispatch (manual
+  # re-deploy) both still deploy, unchanged from before.
   deploy:
+    needs: test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

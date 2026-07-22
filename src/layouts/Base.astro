@@ -4,6 +4,7 @@ import '@fontsource/geist-mono';
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import ChatWidget from '../components/ChatWidget.astro';
 
 interface Props {
   title: string;
@@ -66,6 +67,7 @@ const personSchema = {
     <Nav />
     <slot />
     <Footer />
+    <ChatWidget />
     <script is:inline>
       const focusMain = () => requestAnimationFrame(() => {
         document.getElementById('main-content')?.focus({ preventScroll: true });
