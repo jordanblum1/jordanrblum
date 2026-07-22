@@ -1,4 +1,6 @@
 ---
+// Latin-400 subset only: one 35KB woff2 for the chat's personality surfaces.
+import '@fontsource/sedgwick-ave/latin-400.css';
 import { social } from '../data/site';
 
 const [email] = social;
@@ -125,6 +127,11 @@ const starters = [
        3.54:1, below WCAG AA. Mixing 70% warning into ink yields ~#80572f,
        5.3:1 on that surface, while staying inside the token system. */
     --warning-ink: color-mix(in oklab, var(--warning) 70%, var(--ink));
+    /* Chat-only personality font: Sedgwick Ave — hand-tagged Bronx graffiti
+       letterforms tuned for text legibility, matching the BLUM hero mark's
+       bouncy hand-painted energy. Personality surfaces only (Jordy header,
+       intro heading, chips); message text stays in the readable site stack. */
+    --font-fun: 'Sedgwick Ave', 'Marker Felt', 'Comic Sans MS', cursive;
     position: fixed;
     right: var(--space-6);
     bottom: var(--space-6);
@@ -165,12 +172,11 @@ const starters = [
   }
 
   .chat-name {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 480;
-    font-size: 1.3rem;
-    line-height: 1.1;
-    letter-spacing: 0;
+    font-family: var(--font-fun);
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
   }
 
   .chat-tagline {
@@ -234,14 +240,21 @@ const starters = [
   }
 
   .chat-intro-title {
-    font-size: 1.05rem;
-    font-weight: 500;
+    font-family: var(--font-fun);
+    font-size: 1.18rem;
+    font-weight: 400;
+    line-height: 1.4;
     color: var(--heading);
     text-wrap: balance;
   }
 
+  /* The name pops in accent, in the same hand as the rest of the line —
+     .serif's global Fraunces would clash with the marker letterforms. */
   .chat-intro-title .serif {
-    font-size: 1.15em;
+    font-family: inherit;
+    font-style: normal;
+    font-size: 1.12em;
+    color: var(--accent);
   }
 
   .chat-intro-copy {
@@ -269,9 +282,9 @@ const starters = [
     border-radius: var(--radius-pill);
     background: var(--paper-raised);
     color: var(--ink);
-    font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 500;
+    font-family: var(--font-fun);
+    font-size: 0.85rem;
+    font-weight: 400;
     line-height: 1.35;
     text-align: left;
     cursor: pointer;
