@@ -44,8 +44,14 @@ const starters = [
           {starters.map((starter) => <button type="button" class="chat-chip" data-chat-chip>{starter}</button>)}
         </div>
       </div>
-      <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions" data-chat-log></div>
+      <div class="chat-log" data-chat-log></div>
     </div>
+
+    <!-- The transcript above is deliberately not a live region (streaming
+         re-renders the growing block per delta and reopening re-renders
+         history, both of which would spam screen readers). This hidden region
+         announces only completed replies and error/limit notices. -->
+    <div class="visually-hidden" aria-live="polite" data-chat-announce></div>
 
     <div class="chat-float">
       <button type="button" class="chat-pill chat-jump" data-chat-jump hidden>

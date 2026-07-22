@@ -232,3 +232,53 @@ test('the close button returns focus to the footer CTA when it opened the panel'
   );
   await expect(cta).toBeFocused();
 });
+
+test('the transcript is not a live region; exactly one announcement per completed reply', async ({ page }) => {
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: sseBody([
+        { type: 'delta', text: 'Hi there' },
+        { type: 'delta', text: ', I can help.' },
+        { type: 'done' },
+      ]),
+    });
+  });
+
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+
+  // The visual log must carry no live semantics (role="log" implies aria-live).
+  const log = page.locator('[data-chat-log]');
+  expect(await log.getAttribute('aria-live')).toBeNull();
+  expect(await log.getAttribute('role')).toBeNull();
+
+  // Record every non-empty text the hidden announcer ever receives.
+  await page.evaluate(() => {
+    const announcer = document.querySelector('[data-chat-announce]')!;
+    const seen: string[] = [];
+    (window as unknown as { __announced: string[] }).__announced = seen;
+    new MutationObserver(() => {
+      const text = announcer.textContent ?? '';
+      if (text) seen.push(text);
+    }).observe(announcer, { childList: true, characterData: true, subtree: true });
+  });
+
+  await page.locator('[data-chat-input]').fill('What does Jordan do?');
+  await page.locator('[data-chat-send]').click();
+
+  await expect(page.locator('[data-chat-announce]')).toHaveText('Hi there, I can help.');
+  // Exactly one announcement: the completed reply — never the user's message,
+  // never per-delta partials.
+  expect(await page.evaluate(() => (window as unknown as { __announced: string[] }).__announced)).toEqual([
+    'Hi there, I can help.',
+  ]);
+
+  // Reopening the panel re-renders history but must not re-announce it.
+  await page.keyboard.press('Escape');
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  await page.waitForTimeout(250);
+  expect(await page.evaluate(() => (window as unknown as { __announced: string[] }).__announced)).toEqual([
+    'Hi there, I can help.',
+  ]);
+});

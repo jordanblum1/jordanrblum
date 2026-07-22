@@ -278,10 +278,11 @@ function initChatWidget(): void {
   const stopButton = document.querySelector<HTMLButtonElement>('[data-chat-stop]');
   const jumpButton = document.querySelector<HTMLButtonElement>('[data-chat-jump]');
   const notice = document.querySelector<HTMLElement>('[data-chat-notice]');
+  const announcer = document.querySelector<HTMLElement>('[data-chat-announce]');
 
   if (
     !panel || !closeButton || !scroller || !intro || !log || !form ||
-    !input || !sendButton || !stopButton || !jumpButton || !notice
+    !input || !sendButton || !stopButton || !jumpButton || !notice || !announcer
   ) {
     return;
   }
@@ -312,6 +313,28 @@ function initChatWidget(): void {
 
   function setTriggersExpanded(expanded: boolean): void {
     for (const trigger of triggers) trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  }
+
+  // --- Screen-reader announcements -------------------------------------------
+  // The visual transcript is deliberately NOT a live region: streaming re-renders
+  // the growing block on every delta, which would re-announce the whole
+  // accumulated paragraph each time, and reopening the panel re-renders history.
+  // Instead this visually-hidden region announces exactly two things: a
+  // completed assistant reply (its rendered plain text, once) and error/limit
+  // notices. The visitor's own message, chips, and restored history are never
+  // announced.
+
+  let announceTimer = 0;
+
+  function announce(text: string): void {
+    if (!text) return;
+    // Clear, then set in a separate tick, so assistive tech reliably reports a
+    // fresh addition even when consecutive notices carry identical text.
+    announcer!.textContent = '';
+    window.clearTimeout(announceTimer);
+    announceTimer = window.setTimeout(() => {
+      announcer!.textContent = text;
+    }, 30);
   }
 
   // --- Scroll behavior -------------------------------------------------------
@@ -393,12 +416,22 @@ function initChatWidget(): void {
     input!.style.height = `${input!.scrollHeight}px`;
   }
 
+  // Announce the limit notice only when the conversation fills during this
+  // session — a restored already-full conversation is history, not news.
+  let announcedFull = !hasRoomForTurn(state.messages, MAX_MESSAGES);
+
   function updateComposerAvailability(): void {
     const full = !hasRoomForTurn(state!.messages, MAX_MESSAGES);
     input!.disabled = full;
     sendButton!.disabled = full;
     notice!.hidden = !full;
-    if (full) notice!.textContent = LIMIT_NOTICE;
+    if (full) {
+      notice!.textContent = LIMIT_NOTICE;
+      if (!announcedFull) {
+        announcedFull = true;
+        announce(LIMIT_NOTICE);
+      }
+    }
   }
 
   function renderHistory(): void {
@@ -447,6 +480,8 @@ function initChatWidget(): void {
       state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
       persist();
       showFollowUps(detectTopic(`${content} ${result.text}`));
+      // One announcement per completed reply, as rendered plain text.
+      announce(assistantBubble.textContent ?? '');
     } else if (result.aborted) {
       if (result.text) {
         // Keep the partial reply (on screen and in history) with a quiet marker.
@@ -456,12 +491,14 @@ function initChatWidget(): void {
         note.className = 'chat-stopped-note';
         note.textContent = '— stopped';
         assistantBubble.appendChild(note);
+        announce(assistantBubble.textContent ?? '');
       } else {
         assistantBubble.remove();
       }
     } else {
       assistantBubble.textContent = result.message;
       assistantBubble.classList.add('role-system');
+      announce(result.message);
     }
 
     updateComposerAvailability();
