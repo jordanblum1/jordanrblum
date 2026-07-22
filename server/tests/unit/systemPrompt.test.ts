@@ -48,12 +48,14 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('aim under 50 words');
     expect(prompt).toContain('add a quick offer to go deeper');
     expect(prompt).toContain('Want the longer version?');
+    // List-shaped questions still get a one-sentence answer by default.
+    expect(prompt).toContain('name two or three highlights inside one sentence');
   });
 
   it('includes few-shot examples of the target reply length', () => {
     const prompt = buildSystemPrompt();
     expect(prompt).toContain('Visitor: "What does Jordan do?"');
-    expect(prompt).toContain('Visitor: "What\'s his go-to tech?"');
+    expect(prompt).toContain('Visitor: "What has he built on his own?"');
     // Examples defer facts to the biography so they cannot go stale.
     expect(prompt).toContain(
       'always draw the facts in your real answers from the biography below',
