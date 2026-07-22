@@ -43,6 +43,31 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(panel.locator('a[href^="mailto:"]')).toHaveCount(0);
 });
 
+test('a decorative doodle sits beside the title without shifting the layout', async ({ page }) => {
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  const panel = page.locator('[data-chat-panel]');
+  await expect(panel).toBeVisible();
+  // Let the 240ms open transition settle before measuring geometry.
+  await page.waitForTimeout(500);
+
+  // The squiggle is pure decoration: an aria-hidden inline SVG in the header
+  // that must not leak into the accessible title text.
+  const doodle = panel.locator('.chat-header [data-chat-doodle]');
+  await expect(doodle).toBeVisible();
+  await expect(doodle).toHaveAttribute('aria-hidden', 'true');
+  await expect(doodle.locator('svg path')).toHaveCount(1);
+  await expect(panel.locator('#chat-panel-title')).toHaveText('ask Jordy');
+
+  // Fixed-size slot: the animation is stroke-dashoffset only, so the title
+  // and doodle boxes hold perfectly still across the loop.
+  const title = panel.locator('#chat-panel-title');
+  const titleBefore = await title.boundingBox();
+  const doodleBefore = await doodle.boundingBox();
+  await page.waitForTimeout(1500);
+  expect(await title.boundingBox()).toEqual(titleBefore);
+  expect(await doodle.boundingBox()).toEqual(doodleBefore);
+});
+
 test('the empty state shows four starter chips with the suggested questions', async ({ page }) => {
   await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
 
