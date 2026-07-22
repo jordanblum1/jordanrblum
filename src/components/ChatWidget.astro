@@ -2,6 +2,13 @@
 import { social } from '../data/site';
 
 const [email] = social;
+
+const starters = [
+  'What does Jordan do at Roam?',
+  'Tell me about his side projects',
+  "What's his tech stack?",
+  'How can I get in touch?',
+];
 ---
 
 <div class="chat-widget" data-chat-widget>
@@ -15,7 +22,10 @@ const [email] = social;
     hidden
   >
     <header class="chat-header">
-      <h2 id="chat-panel-title">Jordan’s assistant</h2>
+      <div class="chat-heading">
+        <h2 id="chat-panel-title" class="chat-name">Jordy</h2>
+        <p class="chat-tagline">Jordan’s assistant</p>
+      </div>
       <button type="button" class="chat-close" data-chat-close aria-label="Close chat">
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
           <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -23,21 +33,47 @@ const [email] = social;
       </button>
     </header>
 
-    <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions" data-chat-log></div>
+    <div class="chat-body" data-chat-scroll>
+      <div class="chat-intro" data-chat-intro>
+        <p class="chat-intro-title">Hi, I’m <span class="serif">Jordy</span> — Jordan’s assistant.</p>
+        <p class="chat-intro-copy">
+          Ask me about his work, his projects, or his background. Pick a question below, or type your own to get
+          started.
+        </p>
+        <div class="chat-starters" role="group" aria-label="Suggested questions">
+          {starters.map((starter) => <button type="button" class="chat-chip" data-chat-chip>{starter}</button>)}
+        </div>
+      </div>
+      <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions" data-chat-log></div>
+    </div>
+
+    <div class="chat-float">
+      <button type="button" class="chat-pill chat-jump" data-chat-jump hidden>
+        Jump to latest <span aria-hidden="true">↓</span>
+      </button>
+      <button type="button" class="chat-pill chat-stop" data-chat-stop hidden>
+        <svg aria-hidden="true" viewBox="0 0 20 20"><rect x="6" y="6" width="8" height="8" rx="1.5" fill="currentColor" /></svg>
+        Stop
+      </button>
+    </div>
 
     <p class="chat-notice" data-chat-notice hidden></p>
 
     <form class="chat-form" data-chat-form>
-      <label class="visually-hidden" for="chat-input">Message Jordan’s assistant</label>
+      <label class="visually-hidden" for="chat-input">Message Jordy, Jordan’s assistant</label>
       <textarea
         id="chat-input"
         class="chat-input"
         data-chat-input
         rows="1"
         maxlength="2000"
-        placeholder="Ask about Jordan…"
+        placeholder="Ask Jordy about Jordan…"
         autocomplete="off"
+        aria-describedby="chat-input-hint"
       ></textarea>
+      <span id="chat-input-hint" class="visually-hidden">
+        Press Enter to send, Shift and Enter for a new line. Messages can be up to 2000 characters.
+      </span>
       <button type="submit" class="chat-send" data-chat-send aria-label="Send message">
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
           <path
@@ -83,38 +119,71 @@ const [email] = social;
   .chat-panel {
     position: fixed;
     right: var(--space-6);
-    bottom: calc(var(--space-6) + 4.25rem);
+    bottom: var(--space-6);
     display: flex;
-    width: min(380px, calc(100vw - var(--space-8)));
-    max-height: min(32rem, calc(100vh - 7rem));
+    width: min(25.5rem, calc(100vw - var(--space-8)));
+    max-height: min(37rem, calc(100vh - 6.5rem));
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-xl);
     background: var(--paper-raised);
     box-shadow: var(--shadow-lifted);
+    transition: opacity 240ms var(--ease), transform 240ms var(--ease);
+  }
+
+  /* Enter/exit: a short ease-out rise + fade, driven by chat.ts toggling
+     `.is-open` around the `hidden` attribute. */
+  .chat-panel:not(.is-open) {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.985);
+    pointer-events: none;
   }
 
   .chat-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4) var(--space-4) var(--space-3);
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5) var(--space-3);
     border-bottom: 1px solid var(--hairline);
   }
 
-  .chat-header h2 {
-    font-size: 0.95rem;
-    font-weight: 500;
+  .chat-heading {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .chat-name {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 480;
+    font-size: 1.3rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  .chat-tagline {
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
   }
 
   .chat-close {
     display: grid;
     width: 1.9rem;
     aspect-ratio: 1;
+    flex: 0 0 auto;
     place-items: center;
+    padding: 0;
+    border: 0;
     border-radius: 50%;
+    background: none;
     color: var(--ink-muted);
+    cursor: pointer;
     transition: color var(--duration-default) var(--ease), background-color var(--duration-default) var(--ease);
   }
 
@@ -128,43 +197,220 @@ const [email] = social;
     background: var(--hover-fill);
   }
 
-  .chat-log {
+  .chat-body {
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     overflow-y: auto;
-    padding: var(--space-4);
-    font-size: 0.85rem;
-    line-height: 1.5;
+    overscroll-behavior: contain;
+    /* Extra bottom padding keeps the floating stop/jump pills clear of the
+       last line of a streaming reply. */
+    padding: var(--space-5) var(--space-5) var(--space-8);
+    min-height: 16rem;
   }
 
-  /* Chat bubbles are appended by chat.ts via document.createElement, so they never
-     receive Astro's scoped data-astro-cid attribute — these rules must be global. */
-  :global(.chat-log .chat-bubble) {
-    max-width: 85%;
-    padding: 0.6rem 0.85rem;
-    border-radius: var(--radius-lg);
+  /* --- Empty state ---------------------------------------------------------- */
+
+  .chat-intro[hidden] {
+    display: none;
+  }
+
+  .chat-intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-block: auto;
+    padding-block: var(--space-2);
+  }
+
+  .chat-intro-title {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--heading);
+    text-wrap: balance;
+  }
+
+  .chat-intro-title .serif {
+    font-size: 1.15em;
+  }
+
+  .chat-intro-copy {
+    color: var(--ink-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+    max-width: 30ch;
     text-wrap: pretty;
-    white-space: pre-wrap;
   }
 
-  :global(.chat-log .chat-bubble.role-assistant) {
-    align-self: flex-start;
+  .chat-starters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: flex-start;
+    margin-top: var(--space-2);
+  }
+
+  /* Chips are shared between the build-time starters and the runtime follow-ups
+     chat.ts creates with document.createElement — the runtime ones never get
+     Astro's scoped attribute, so the class must be global. */
+  :global(.chat-panel .chat-chip) {
+    padding: 0.42rem 0.85rem;
     border: 1px solid var(--hairline);
-    background: var(--surface);
+    border-radius: var(--radius-pill);
+    background: var(--paper-raised);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      color var(--duration-default) var(--ease),
+      border-color var(--duration-default) var(--ease),
+      background-color var(--duration-default) var(--ease);
+  }
+
+  :global(html.pointer-moved .chat-panel .chat-chip:hover) {
+    color: var(--accent);
+    border-color: color-mix(in oklab, var(--accent) 55%, var(--hairline));
+    background: var(--accent-soft);
+  }
+
+  /* --- Messages ------------------------------------------------------------- */
+
+  .chat-log {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+
+  /* Everything inside the log is created at runtime by chat.ts (bubbles) and
+     chat-markdown.ts (p/strong/em/code/pre/ul/ol/a), so none of it carries
+     Astro's scoped data attribute — all of these rules must be global. */
+  :global(.chat-log .chat-bubble) {
+    max-width: 100%;
+    text-wrap: pretty;
   }
 
   :global(.chat-log .chat-bubble.role-user) {
     align-self: flex-end;
+    max-width: 85%;
+    padding: 0.55rem 0.9rem;
+    border-radius: var(--radius-md);
+    border-end-end-radius: var(--radius-xs);
     background: var(--accent);
     color: var(--accent-contrast);
+    white-space: pre-wrap;
+  }
+
+  :global(.chat-log .chat-bubble.role-assistant) {
+    align-self: stretch;
+    color: var(--ink);
+  }
+
+  :global(.chat-log .role-assistant p) {
+    margin: 0 0 var(--space-2);
+  }
+
+  :global(.chat-log .role-assistant > :last-child) {
+    margin-bottom: 0;
+  }
+
+  :global(.chat-log .role-assistant strong) {
+    font-weight: 600;
+    color: var(--heading);
+  }
+
+  :global(.chat-log .role-assistant em) {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 450;
+  }
+
+  :global(.chat-log .role-assistant code) {
+    padding: 0.08em 0.32em;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xs);
+    background: var(--hover-fill);
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+  }
+
+  :global(.chat-log .role-assistant pre) {
+    margin: 0 0 var(--space-2);
+    padding: var(--space-3);
+    overflow-x: auto;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--ink) 4%, var(--paper-raised));
+  }
+
+  :global(.chat-log .role-assistant pre code) {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 0.76rem;
+    line-height: 1.55;
+  }
+
+  /* Tailwind's preflight strips list styles, so restore real markers. */
+  :global(.chat-log .role-assistant ul),
+  :global(.chat-log .role-assistant ol) {
+    margin: 0 0 var(--space-2);
+    padding-left: 1.25rem;
+  }
+
+  :global(.chat-log .role-assistant ul) {
+    list-style: disc outside;
+  }
+
+  :global(.chat-log .role-assistant ol) {
+    list-style: decimal outside;
+  }
+
+  :global(.chat-log .role-assistant li) {
+    margin-block: 0.15em;
+  }
+
+  :global(.chat-log .role-assistant li::marker) {
+    color: var(--ink-muted);
+  }
+
+  :global(.chat-log .role-assistant a) {
+    color: var(--heading);
+    font-weight: 500;
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklab, var(--accent) 42%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.24em;
+    transition: color var(--duration-default) var(--ease), text-decoration-color var(--duration-default) var(--ease);
+  }
+
+  :global(html.pointer-moved .chat-log .role-assistant a:hover) {
+    color: var(--accent);
+    text-decoration-color: var(--accent);
+  }
+
+  :global(.chat-log .chat-stopped-note) {
+    display: block;
+    margin-top: var(--space-1);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
   }
 
   :global(.chat-log .chat-bubble.role-system) {
     align-self: center;
     max-width: 100%;
+    padding: 0.6rem 0.85rem;
     border: 1px solid color-mix(in oklab, var(--warning) 35%, transparent);
+    border-radius: var(--radius-sm);
     background: color-mix(in oklab, var(--warning) 12%, var(--paper-raised));
     color: var(--warning);
     font-family: var(--font-mono);
@@ -172,8 +418,68 @@ const [email] = social;
     text-align: center;
   }
 
+  :global(.chat-log .chat-followups) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: calc(-1 * var(--space-2));
+  }
+
+  /* --- Floating pills (stop / jump) ----------------------------------------- */
+
+  /* A zero-height row whose pills are lifted up over the log, so stop and
+     jump never collide with each other. */
+  .chat-float {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    height: 0;
+  }
+
+  .chat-pill {
+    display: inline-flex;
+    transform: translateY(calc(-100% - var(--space-3)));
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.34rem 0.75rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-small);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-default) var(--ease), border-color var(--duration-default) var(--ease);
+  }
+
+  .chat-pill[hidden] {
+    display: none;
+  }
+
+  .chat-pill svg {
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+
+  :global(html.pointer-moved) .chat-pill:hover {
+    color: var(--heading);
+    border-color: var(--ink-muted);
+  }
+
+  :global(html.pointer-moved) .chat-stop:hover {
+    color: var(--accent);
+    border-color: color-mix(in oklab, var(--accent) 55%, var(--hairline));
+  }
+
+  /* --- Composer -------------------------------------------------------------- */
+
   .chat-notice {
-    margin: 0 var(--space-4) var(--space-2);
+    margin: 0 var(--space-5) var(--space-2);
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-sm);
     background: color-mix(in oklab, var(--warning) 12%, var(--paper-raised));
@@ -189,20 +495,35 @@ const [email] = social;
   .chat-form {
     display: flex;
     gap: var(--space-2);
-    padding: var(--space-3);
+    align-items: flex-end;
+    padding: var(--space-3) var(--space-4);
     border-top: 1px solid var(--hairline);
   }
 
   .chat-input {
     flex: 1;
-    max-height: 6rem;
-    padding: 0.55rem 0.75rem;
+    /* ~4 lines of 0.86rem/1.5 text plus padding; past that the field scrolls. */
+    max-height: 6.1rem;
+    padding: 0.55rem 0.8rem;
     resize: none;
+    overflow-y: auto;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
     background: var(--surface);
-    font-size: 0.85rem;
-    line-height: 1.4;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    transition: border-color var(--duration-default) var(--ease);
+  }
+
+  .chat-input:focus-visible {
+    outline: none;
+    border-color: color-mix(in oklab, var(--accent) 60%, var(--hairline));
+  }
+
+  .chat-input::placeholder {
+    color: var(--ink-muted);
   }
 
   .chat-input:disabled {
@@ -215,10 +536,12 @@ const [email] = social;
     aspect-ratio: 1;
     flex: 0 0 auto;
     place-items: center;
+    padding: 0;
     border: 1px solid var(--hairline);
     border-radius: 50%;
     background: var(--accent);
     color: var(--accent-contrast);
+    cursor: pointer;
     transition: opacity var(--duration-default) var(--ease), transform var(--duration-default) var(--spring);
   }
 
@@ -229,6 +552,7 @@ const [email] = social;
 
   .chat-send:disabled {
     opacity: 0.5;
+    cursor: default;
   }
 
   :global(html.pointer-moved) .chat-send:not(:disabled):hover {
@@ -237,7 +561,6 @@ const [email] = social;
 
   .chat-footer {
     padding: var(--space-2) var(--space-3) var(--space-3);
-    border-top: 1px solid var(--hairline);
     color: var(--ink-muted);
     font-family: var(--font-mono);
     font-size: 0.7rem;
@@ -262,12 +585,24 @@ const [email] = social;
       border: none;
       border-radius: 0;
     }
+
+    .chat-panel:not(.is-open) {
+      transform: translateY(var(--space-6));
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .chat-panel,
     .chat-close,
-    .chat-send {
+    .chat-send,
+    .chat-pill,
+    .chat-input,
+    :global(.chat-panel .chat-chip) {
       transition: none;
+    }
+
+    .chat-panel:not(.is-open) {
+      transform: none;
     }
 
     :global(html.pointer-moved) .chat-send:not(:disabled):hover {
