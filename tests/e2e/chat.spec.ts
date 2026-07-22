@@ -46,8 +46,8 @@ test('the empty state shows four starter chips with the suggested questions', as
 
   const chips = page.locator('[data-chat-intro] .chat-chip');
   await expect(chips).toHaveCount(4);
-  await expect(chips.nth(0)).toHaveText('What does Jordan do at Roam?');
-  await expect(chips.nth(1)).toHaveText('Tell me about his side projects');
+  await expect(chips.nth(0)).toHaveText("What's his recent work experience?");
+  await expect(chips.nth(1)).toHaveText('What has he built?');
   await expect(chips.nth(2)).toHaveText("What's his tech stack?");
   await expect(chips.nth(3)).toHaveText('How can I get in touch?');
 });
@@ -68,7 +68,7 @@ test('clicking a starter chip sends it as a user message and follow-up chips app
   await page.locator('[data-chat-intro] .chat-chip').first().click();
 
   await expect(page.locator('[data-chat-log] .chat-bubble.role-user').last()).toHaveText(
-    'What does Jordan do at Roam?',
+    "What's his recent work experience?",
   );
   await expect(page.locator('[data-chat-intro]')).toBeHidden();
   await expect(page.locator('[data-chat-log] .chat-bubble.role-assistant').last()).toContainText(

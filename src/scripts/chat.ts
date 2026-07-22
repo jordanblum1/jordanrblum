@@ -203,12 +203,24 @@ export function detectTopic(text: string): ChipTopic {
   return 'default';
 }
 
+// Phrased the way a recruiter or someone reaching out cold would ask —
+// generalized (no company names assumed) and limited to questions the bio can
+// actually answer.
+// The visitor's question is the stronger signal of intent — replies often
+// graze several topics (a work answer that mentions "building" a platform
+// would otherwise read as projects). Fall back to the reply only when the
+// question itself is small talk.
+export function detectExchangeTopic(question: string, reply: string): ChipTopic {
+  const topic = detectTopic(question);
+  return topic !== 'default' ? topic : detectTopic(reply);
+}
+
 export const FOLLOW_UP_CHIPS: Record<ChipTopic, string[]> = {
-  work: ['What is Roam building?', 'What did he work on before Roam?', "What's his tech stack?"],
-  projects: ['What is Chicks of NYC?', 'What powers his side projects?', 'What does Jordan do at Roam?'],
-  stack: ['What has he built with that stack?', 'Tell me about his side projects', 'What does Jordan do at Roam?'],
-  contact: ["What's the best way to reach Jordan?", 'What does Jordan do at Roam?', 'Tell me about his side projects'],
-  default: ['What does Jordan do at Roam?', 'Tell me about his side projects', "What's his tech stack?", 'How can I get in touch?'],
+  work: ['What did he do before that?', "What's his biggest win?", "What's his tech stack?"],
+  projects: ['What is Chicks of NYC?', 'What powers his side projects?', "What's his recent work experience?"],
+  stack: ['What has he built with that stack?', "What's his recent work experience?", 'What are his side projects?'],
+  contact: ["What's the best way to reach him?", "What's his recent work experience?", 'What has he built?'],
+  default: ["What's his recent work experience?", 'What has he built?', "What's his tech stack?", 'How can I get in touch?'],
 };
 
 // Picks 2-3 chips for a topic, skipping anything in `exclude` (e.g. the
@@ -625,10 +637,10 @@ function initChatWidget(): void {
     log!.querySelector('.chat-followups')?.remove();
   }
 
-  function lastExchangeText(): string {
+  function lastExchangeTopic(): ChipTopic {
     const lastUser = [...state!.messages].reverse().find((m) => m.role === 'user');
     const lastAssistant = [...state!.messages].reverse().find((m) => m.role === 'assistant');
-    return `${lastUser?.content ?? ''} ${lastAssistant?.content ?? ''}`;
+    return detectExchangeTopic(lastUser?.content ?? '', lastAssistant?.content ?? '');
   }
 
   function showFollowUps(topic: ChipTopic): void {
@@ -687,7 +699,7 @@ function initChatWidget(): void {
     intro!.hidden = state!.messages.length > 0;
     for (const message of state!.messages) renderMessageBubble(message.role, message.content);
     const last = state!.messages[state!.messages.length - 1];
-    if (last?.role === 'assistant') showFollowUps(detectTopic(lastExchangeText()));
+    if (last?.role === 'assistant') showFollowUps(lastExchangeTopic());
     updateComposerAvailability();
     scrollToLatest();
   }
@@ -734,7 +746,7 @@ function initChatWidget(): void {
       persist();
       const bubble = makeBubble('assistant');
       const blockCount = revealBlocks(bubble, buffered, true);
-      showFollowUps(detectTopic(`${content} ${result.text}`));
+      showFollowUps(detectExchangeTopic(content, result.text));
       // The chips ride in at the tail of the cascade.
       const wrap = log!.querySelector<HTMLElement>('.chat-followups');
       if (wrap) applyReveal(wrap, blockCount);

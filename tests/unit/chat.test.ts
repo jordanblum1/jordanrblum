@@ -11,6 +11,7 @@ import {
   REVEAL_MAX_DELAY_MS,
   REVEAL_STAGGER_MS,
   appendMessage,
+  detectExchangeTopic,
   detectTopic,
   followUpsFor,
   formatCharCount,
@@ -163,8 +164,8 @@ test('parseSSEBuffer carries an error event with its code', () => {
 // --- Follow-up chip topic detection -----------------------------------------
 
 test('detectTopic classifies each starter question', () => {
-  expect(detectTopic('What does Jordan do at Roam?')).toBe('work');
-  expect(detectTopic('Tell me about his side projects')).toBe('projects');
+  expect(detectTopic("What's his recent work experience?")).toBe('work');
+  expect(detectTopic('What has he built?')).toBe('projects');
   expect(detectTopic("What's his tech stack?")).toBe('stack');
   expect(detectTopic('How can I get in touch?')).toBe('contact');
 });
@@ -181,6 +182,22 @@ test('detectTopic falls back to default for small talk', () => {
 
 test('detectTopic prefers contact over other topics', () => {
   expect(detectTopic('how do I email Jordan about Roam projects?')).toBe('contact');
+});
+
+test('detectExchangeTopic trusts the question over the reply', () => {
+  // A work question whose reply mentions "building" a platform must still get
+  // work follow-ups, not projects.
+  expect(
+    detectExchangeTopic(
+      "What's his recent work experience?",
+      'He spent four years at Procore building the internal deployment platform.',
+    ),
+  ).toBe('work');
+});
+
+test('detectExchangeTopic falls back to the reply for small-talk questions', () => {
+  expect(detectExchangeTopic('what keeps him busy?', 'He is an engineer at Roam.')).toBe('work');
+  expect(detectExchangeTopic('hello there!', 'Nice to meet you!')).toBe('default');
 });
 
 test('followUpsFor returns 2-3 chips from the topic pool', () => {
