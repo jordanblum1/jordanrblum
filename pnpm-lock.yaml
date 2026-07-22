@@ -11,10 +11,13 @@ importers:
       '@fontsource-variable/fraunces':
         specifier: ^5.2.9
         version: 5.2.9
+      '@fontsource/baloo-2':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/shantell-sans':
+      '@fontsource/knewave':
         specifier: ^5.3.0
         version: 5.3.0
       '@tailwindcss/vite':
@@ -523,11 +526,14 @@ packages:
   '@fontsource-variable/fraunces@5.2.9':
     resolution: {integrity: sha512-Y6IjunlN9Ni723np+GIgAaKzCDBrPRrqNi01TZxHs5wtHYROWFM9W6yiT+/gGwSjWIRD18oX17kD/BRWekc/Lw==}
 
+  '@fontsource/baloo-2@5.3.0':
+    resolution: {integrity: sha512-CBuxZ27jvMmD5+KaaPkMWv/yjdRNppVAd5/002yAyvyQyLNL3aZCbkx6gbAT/bjxPd1A0VMdDQjfcELI8chccQ==}
+
   '@fontsource/geist-mono@5.2.8':
     resolution: {integrity: sha512-YqZUb3X42GjRaHkibUNyE8K4Rk9A6I9Ez81YpJYiuJN4ggmTW2ixoQpa9EWCPfXZtIsCQJTyrDoV9OJOZO/UcA==}
 
-  '@fontsource/shantell-sans@5.3.0':
-    resolution: {integrity: sha512-hVKmS5EO/xGOtKx+rHuyqIsswjWp5bb91DlszxSkO4jEqOSaRIjYH/iu5gJ7QVszDlofoezZeWM5OdKgyE2jtg==}
+  '@fontsource/knewave@5.3.0':
+    resolution: {integrity: sha512-Ftlumu01eE3sgzn/gPOC/FFlYVA8uud93Bpl1Ilr72EjSWLdWUTkGHeB7ivOpAXatrdmnT/qkorEwAzm7hqXpQ==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2573,9 +2579,11 @@ snapshots:
 
   '@fontsource-variable/fraunces@5.2.9': {}
 
+  '@fontsource/baloo-2@5.3.0': {}
+
   '@fontsource/geist-mono@5.2.8': {}
 
-  '@fontsource/shantell-sans@5.3.0': {}
+  '@fontsource/knewave@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 

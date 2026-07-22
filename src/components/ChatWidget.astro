@@ -1,6 +1,8 @@
 ---
-// Latin-400 subset only: one 46KB woff2 for the chat's personality surfaces.
-import '@fontsource/shantell-sans/latin-400.css';
+// Chat chrome fonts, latin subsets only (~20KB woff2 each): Knewave for the
+// big painted display moments, Baloo 2 SemiBold for chip/label legibility.
+import '@fontsource/knewave/latin-400.css';
+import '@fontsource/baloo-2/latin-600.css';
 
 const starters = [
   'What does Jordan do at Roam?',
@@ -121,13 +123,17 @@ const starters = [
        3.54:1, below WCAG AA. Mixing 70% warning into ink yields ~#80572f,
        5.3:1 on that surface, while staying inside the token system. */
     --warning-ink: color-mix(in oklab, var(--warning) 70%, var(--ink));
-    /* Chat-only personality font: Shantell Sans — a bouncy hand-marker face
-       designed for expressive readability. Its rounded, upright letterforms
-       echo the blobby hand-painted BLUM hero mark while every chip word stays
-       instantly legible at 13-14px (Sedgwick Ave's lowercase 'k' read as 'h'
-       at chip size). Personality surfaces only (Jordy header, intro heading,
-       chips); message text stays in the readable site stack. */
-    --font-fun: 'Shantell Sans', 'Marker Felt', 'Comic Sans MS', cursive;
+    /* Chat-only personality fonts, split by role after the font bake-off:
+       - display: Knewave, a fat paint-stroke face that matches the blobby
+         hand-painted BLUM hero mark. Single-weight display face, so it only
+         appears LARGE — the Jordy header and the intro's accent word.
+       - label: Baloo 2 SemiBold, a round warm face whose conventional
+         skeletons keep every chip word instantly legible at 13-14px
+         (Sedgwick Ave's lowercase 'k' read as 'h' at chip size; Shantell
+         Sans was legible but read plain).
+       Message text stays in the readable site stack. */
+    --font-fun-display: 'Knewave', 'Marker Felt', cursive;
+    --font-fun-label: 'Baloo 2', 'Trebuchet MS', 'Comic Sans MS', sans-serif;
     position: fixed;
     right: var(--space-6);
     bottom: var(--space-6);
@@ -168,7 +174,7 @@ const starters = [
   }
 
   .chat-name {
-    font-family: var(--font-fun);
+    font-family: var(--font-fun-display);
     font-weight: 400;
     font-size: 1.5rem;
     line-height: 1;
@@ -236,18 +242,20 @@ const starters = [
   }
 
   .chat-intro-title {
-    font-family: var(--font-fun);
+    font-family: var(--font-fun-label);
     font-size: 1.18rem;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.4;
     color: var(--heading);
     text-wrap: balance;
   }
 
-  /* The name pops in accent, in the same hand as the rest of the line —
-     .serif's global Fraunces would clash with the marker letterforms. */
+  /* The name pops in the painted display face and the accent red — the one
+     small-surface Knewave moment, sized up so it stays a display-size word.
+     (.serif's global Fraunces would clash with the paint letterforms.) */
   .chat-intro-title .serif {
-    font-family: inherit;
+    font-family: var(--font-fun-display);
+    font-weight: 400;
     font-style: normal;
     font-size: 1.12em;
     color: var(--accent);
@@ -278,9 +286,9 @@ const starters = [
     border-radius: var(--radius-pill);
     background: var(--paper-raised);
     color: var(--ink);
-    font-family: var(--font-fun);
+    font-family: var(--font-fun-label);
     font-size: 0.85rem;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.35;
     text-align: left;
     cursor: pointer;
