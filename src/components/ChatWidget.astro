@@ -1,6 +1,6 @@
 ---
-// Latin-400 subset only: one 35KB woff2 for the chat's personality surfaces.
-import '@fontsource/sedgwick-ave/latin-400.css';
+// Latin-400 subset only: one 46KB woff2 for the chat's personality surfaces.
+import '@fontsource/shantell-sans/latin-400.css';
 
 const starters = [
   'What does Jordan do at Roam?',
@@ -121,11 +121,13 @@ const starters = [
        3.54:1, below WCAG AA. Mixing 70% warning into ink yields ~#80572f,
        5.3:1 on that surface, while staying inside the token system. */
     --warning-ink: color-mix(in oklab, var(--warning) 70%, var(--ink));
-    /* Chat-only personality font: Sedgwick Ave — hand-tagged Bronx graffiti
-       letterforms tuned for text legibility, matching the BLUM hero mark's
-       bouncy hand-painted energy. Personality surfaces only (Jordy header,
-       intro heading, chips); message text stays in the readable site stack. */
-    --font-fun: 'Sedgwick Ave', 'Marker Felt', 'Comic Sans MS', cursive;
+    /* Chat-only personality font: Shantell Sans — a bouncy hand-marker face
+       designed for expressive readability. Its rounded, upright letterforms
+       echo the blobby hand-painted BLUM hero mark while every chip word stays
+       instantly legible at 13-14px (Sedgwick Ave's lowercase 'k' read as 'h'
+       at chip size). Personality surfaces only (Jordy header, intro heading,
+       chips); message text stays in the readable site stack. */
+    --font-fun: 'Shantell Sans', 'Marker Felt', 'Comic Sans MS', cursive;
     position: fixed;
     right: var(--space-6);
     bottom: var(--space-6);

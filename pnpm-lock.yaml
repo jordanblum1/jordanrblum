@@ -14,7 +14,7 @@ importers:
       '@fontsource/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/sedgwick-ave':
+      '@fontsource/shantell-sans':
         specifier: ^5.3.0
         version: 5.3.0
       '@tailwindcss/vite':
@@ -526,8 +526,8 @@ packages:
   '@fontsource/geist-mono@5.2.8':
     resolution: {integrity: sha512-YqZUb3X42GjRaHkibUNyE8K4Rk9A6I9Ez81YpJYiuJN4ggmTW2ixoQpa9EWCPfXZtIsCQJTyrDoV9OJOZO/UcA==}
 
-  '@fontsource/sedgwick-ave@5.3.0':
-    resolution: {integrity: sha512-vGquHj820A3Zu6nuspfLILpSK/NlLdfAAxFMlhFSt3Ivh/abHanB+0etNNmhUccwpcJyW2fsbFezCP1b2EFEkQ==}
+  '@fontsource/shantell-sans@5.3.0':
+    resolution: {integrity: sha512-hVKmS5EO/xGOtKx+rHuyqIsswjWp5bb91DlszxSkO4jEqOSaRIjYH/iu5gJ7QVszDlofoezZeWM5OdKgyE2jtg==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2575,7 +2575,7 @@ snapshots:
 
   '@fontsource/geist-mono@5.2.8': {}
 
-  '@fontsource/sedgwick-ave@5.3.0': {}
+  '@fontsource/shantell-sans@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 
