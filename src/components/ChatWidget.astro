@@ -38,10 +38,9 @@ const starters = [
 
     <div class="chat-body" data-chat-scroll>
       <div class="chat-intro" data-chat-intro>
-        <p class="chat-intro-title">Hi, I’m <span class="serif">Jordy</span> — Jordan’s assistant.</p>
         <p class="chat-intro-copy">
-          Ask me about his work, his projects, or his background. Pick a question below, or type your own to get
-          started.
+          I’m Jordan’s assistant — ask me about his work, his projects, or his background. Pick a question below,
+          or type your own to get started.
         </p>
         <div class="chat-starters" role="group" aria-label="Suggested questions">
           {starters.map((starter) => <button type="button" class="chat-chip" data-chat-chip>{starter}</button>)}
@@ -128,7 +127,7 @@ const starters = [
     /* Chat-only personality fonts, split by role after the font bake-off:
        - display: Knewave, a fat paint-stroke face that matches the blobby
          hand-painted BLUM hero mark. Single-weight display face, so it only
-         appears LARGE — the Jordy header and the intro's accent word.
+         appears LARGE — the Jordy header.
        - label: Baloo 2 Regular, a round warm face whose conventional
          skeletons keep every chip word instantly legible at 13-14px
          (Sedgwick Ave's lowercase 'k' read as 'h' at chip size; Shantell
@@ -193,8 +192,8 @@ const starters = [
     letter-spacing: 0.01em;
   }
 
-  /* "ask" steps back a touch so the name carries the header, mirroring the
-     intro's accent-red Jordy. */
+  /* "ask" steps back a touch so the name carries the header — the one place
+     the name appears now that the intro heading is gone. */
   .chat-name-ask {
     font-size: 0.78em;
     color: var(--ink-muted);
@@ -245,39 +244,23 @@ const starters = [
     display: none;
   }
 
+  /* No heading here — the "ask Jordy" header right above carries the name, so
+     the body copy leads the empty state. It steps up slightly in size and
+     measure, and the copy→chips gap widens so the state reads settled rather
+     than sparse. */
   .chat-intro {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     margin-block: auto;
-    padding-block: var(--space-2);
-  }
-
-  .chat-intro-title {
-    font-family: var(--font-fun-label);
-    font-size: 1.18rem;
-    font-weight: 400;
-    line-height: 1.4;
-    color: var(--heading);
-    text-wrap: balance;
-  }
-
-  /* The name pops in the painted display face and the accent red — the one
-     small-surface Knewave moment, sized up so it stays a display-size word.
-     (.serif's global Fraunces would clash with the paint letterforms.) */
-  .chat-intro-title .serif {
-    font-family: var(--font-fun-display);
-    font-weight: 400;
-    font-style: normal;
-    font-size: 1.12em;
-    color: var(--accent);
+    padding-block: var(--space-3);
   }
 
   .chat-intro-copy {
     color: var(--ink-muted);
-    font-size: 0.84rem;
-    line-height: 1.55;
-    max-width: 30ch;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 32ch;
     text-wrap: pretty;
   }
 
@@ -286,7 +269,6 @@ const starters = [
     flex-direction: column;
     gap: var(--space-2);
     align-items: flex-start;
-    margin-top: var(--space-2);
   }
 
   /* Chips are shared between the build-time starters and the runtime follow-ups

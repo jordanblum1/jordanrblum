@@ -34,8 +34,8 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(panel).toHaveAttribute('aria-label', 'Chat with Jordy, Jordan’s assistant');
   const intro = page.locator('[data-chat-intro]');
   await expect(intro).toBeVisible();
-  await expect(intro).toContainText('Hi, I’m Jordy — Jordan’s assistant.');
-  await expect(intro).toContainText('Ask me about his work, his projects, or his background.');
+  await expect(intro).not.toContainText('Hi, I’m Jordy');
+  await expect(intro).toContainText('I’m Jordan’s assistant — ask me about his work, his projects, or his background.');
 
   // No persistent mailto in the panel — the email only surfaces inside
   // error/limit notices.
