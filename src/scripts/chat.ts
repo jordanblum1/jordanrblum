@@ -1,3 +1,5 @@
+import { MarkdownStream, renderMarkdownInto } from './chat-markdown';
+
 export const MAX_MESSAGES = 20;
 export const MAX_MESSAGE_CHARS = 2000;
 
@@ -5,9 +7,9 @@ const STORAGE_KEY = 'jrb-chat-state-v1';
 const ENDPOINT = (import.meta.env.PUBLIC_CHAT_ENDPOINT as string | undefined) ?? '/api/chat';
 
 const NETWORK_ERROR_MESSAGE =
-  "Something went wrong reaching Jordan's assistant. Please try again, or email Jordan directly below.";
+  'Something went wrong reaching Jordy. Please try again, or email Jordan directly below.';
 const LIMIT_NOTICE =
-  "This conversation has reached its message limit. Feel free to start a new visit later, or email Jordan directly below.";
+  'This conversation has reached its message limit. Feel free to start a new visit later, or email Jordan directly below.';
 
 export type ChatRole = 'user' | 'assistant';
 
@@ -122,16 +124,55 @@ export function parseSSEBuffer(buffer: string): { events: ChatEvent[]; rest: str
   return { events, rest };
 }
 
+// --- Follow-up chips ---------------------------------------------------------
+// A small curated map keyed on light-touch topic detection over the last
+// exchange (user question + assistant reply). Deliberately client-side and
+// simple — the chips are suggestions, not navigation.
+
+export type ChipTopic = 'work' | 'projects' | 'stack' | 'contact' | 'default';
+
+export function detectTopic(text: string): ChipTopic {
+  const t = text.toLowerCase();
+  if (/(email|contact|reach|in touch|touch\b|hire|hiring|linkedin)/.test(t)) return 'contact';
+  if (/(stack|typescript|javascript|react|astro|aws|lambda|node|tech\b|tooling|framework|language)/.test(t)) return 'stack';
+  if (/(project|chicks|alive still|alivestill|citibike|blumblumblum|side\b|poker|stock|jams|built|building)/.test(t)) return 'projects';
+  if (/(roam|work\b|works\b|job|career|engineer|company|startup|procore|workday)/.test(t)) return 'work';
+  return 'default';
+}
+
+export const FOLLOW_UP_CHIPS: Record<ChipTopic, string[]> = {
+  work: ['What is Roam building?', 'What did he work on before Roam?', "What's his tech stack?"],
+  projects: ['What is Chicks of NYC?', 'What powers his side projects?', 'What does Jordan do at Roam?'],
+  stack: ['What has he built with that stack?', 'Tell me about his side projects', 'What does Jordan do at Roam?'],
+  contact: ["What's the best way to reach Jordan?", 'What does Jordan do at Roam?', 'Tell me about his side projects'],
+  default: ['What does Jordan do at Roam?', 'Tell me about his side projects', "What's his tech stack?", 'How can I get in touch?'],
+};
+
+// Picks 2-3 chips for a topic, skipping anything in `exclude` (e.g. the
+// question just asked) and rotating the default pool via `offset` so repeat
+// small-talk doesn't show identical chips every time.
+export function followUpsFor(topic: ChipTopic, exclude: string[] = [], offset = 0): string[] {
+  const pool = FOLLOW_UP_CHIPS[topic];
+  const excluded = new Set(exclude.map((text) => text.trim().toLowerCase()));
+  const rotated = pool.map((_, index) => pool[(index + (topic === 'default' ? offset : 0)) % pool.length]);
+  const picks = rotated.filter((chip) => !excluded.has(chip.trim().toLowerCase())).slice(0, 3);
+  for (const extra of FOLLOW_UP_CHIPS.default) {
+    if (picks.length >= 2) break;
+    if (!excluded.has(extra.trim().toLowerCase()) && !picks.includes(extra)) picks.push(extra);
+  }
+  return picks.slice(0, 3);
+}
+
 function errorMessageFor(code?: string): string {
   if (code === 'rate_limited') {
-    return "Jordan's assistant is getting a lot of messages right now — give it a minute and try again.";
+    return 'Jordy is getting a lot of messages right now — give it a minute and try again.';
   }
   return NETWORK_ERROR_MESSAGE;
 }
 
 type StreamResult =
   | { ok: true; text: string }
-  | { ok: false; aborted: boolean; message: string };
+  | { ok: false; aborted: boolean; message: string; text: string };
 
 async function streamAssistantReply(
   messages: ChatMessage[],
@@ -157,7 +198,7 @@ async function streamAssistantReply(
     });
 
     if (!response.ok || !response.body) {
-      return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE };
+      return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
     }
 
     const reader = response.body.getReader();
@@ -178,17 +219,21 @@ async function streamAssistantReply(
         } else if (event.type === 'done') {
           return { ok: true, text };
         } else if (event.type === 'error') {
-          return { ok: false, aborted: false, message: errorMessageFor(event.code) };
+          return { ok: false, aborted: false, message: errorMessageFor(event.code), text };
         }
       }
     }
 
-    return text ? { ok: true, text } : { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE };
+    return text
+      ? { ok: true, text }
+      : { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      return { ok: false, aborted: true, message: '' };
+      // Aborted (stop button or panel close): hand back the partial text so the
+      // caller can keep it on screen and in history.
+      return { ok: false, aborted: true, message: '', text };
     }
-    return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE };
+    return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
   }
 }
 
@@ -224,19 +269,27 @@ export function toggleChat(trigger: HTMLElement | null = null): void {
 function initChatWidget(): void {
   const panel = document.querySelector<HTMLElement>('[data-chat-panel]');
   const closeButton = document.querySelector<HTMLButtonElement>('[data-chat-close]');
+  const scroller = document.querySelector<HTMLElement>('[data-chat-scroll]');
+  const intro = document.querySelector<HTMLElement>('[data-chat-intro]');
   const log = document.querySelector<HTMLElement>('[data-chat-log]');
   const form = document.querySelector<HTMLFormElement>('[data-chat-form]');
   const input = document.querySelector<HTMLTextAreaElement>('[data-chat-input]');
   const sendButton = document.querySelector<HTMLButtonElement>('[data-chat-send]');
+  const stopButton = document.querySelector<HTMLButtonElement>('[data-chat-stop]');
+  const jumpButton = document.querySelector<HTMLButtonElement>('[data-chat-jump]');
   const notice = document.querySelector<HTMLElement>('[data-chat-notice]');
 
-  if (!panel || !closeButton || !log || !form || !input || !sendButton || !notice) return;
+  if (
+    !panel || !closeButton || !scroller || !intro || !log || !form ||
+    !input || !sendButton || !stopButton || !jumpButton || !notice
+  ) {
+    return;
+  }
 
   // aria-expanded lives on the triggers (nav + footer) now that there is no
   // launcher; every trigger mirrors the panel's state.
   const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-chat-trigger]'));
-
-  const GREETING = "Hi, I'm Jordan's assistant — I can answer any questions about him. What would you like to know?";
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   let state = loadChatState(sessionStorage, STORAGE_KEY);
   if (!state) {
@@ -246,22 +299,98 @@ function initChatWidget(): void {
 
   let controller: AbortController | null = null;
   let lastTrigger: HTMLElement | null = null;
+  let hideTimer = 0;
+  let defaultChipOffset = 0;
 
   function persist(): void {
     saveChatState(sessionStorage, state!, STORAGE_KEY);
+  }
+
+  function isStreaming(): boolean {
+    return controller !== null;
   }
 
   function setTriggersExpanded(expanded: boolean): void {
     for (const trigger of triggers) trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   }
 
-  function renderBubble(role: 'user' | 'assistant' | 'system', text: string): HTMLElement {
+  // --- Scroll behavior -------------------------------------------------------
+  // Research-verified pattern: a new assistant reply is top-anchored (the
+  // exchange pins to the top of the viewport) and the viewport does NOT follow
+  // the growing text. When the reply grows past the fold, an opt-in
+  // "jump to latest" pill appears instead.
+
+  function distanceFromLatest(): number {
+    return scroller!.scrollHeight - scroller!.scrollTop - scroller!.clientHeight;
+  }
+
+  function scrollToLatest(smooth = false): void {
+    scroller!.scrollTo({
+      top: scroller!.scrollHeight,
+      behavior: smooth && !reducedMotion.matches ? 'smooth' : 'auto',
+    });
+  }
+
+  function syncJump(): void {
+    jumpButton!.hidden = !(isStreaming() && distanceFromLatest() > 56);
+  }
+
+  scroller.addEventListener('scroll', syncJump);
+  jumpButton.addEventListener('click', () => {
+    scrollToLatest(true);
+    jumpButton!.hidden = true;
+  });
+
+  // --- Messages --------------------------------------------------------------
+
+  function makeBubble(role: 'user' | 'assistant' | 'system'): HTMLElement {
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble role-${role}`;
-    bubble.textContent = text;
     log!.appendChild(bubble);
-    log!.scrollTop = log!.scrollHeight;
     return bubble;
+  }
+
+  function renderMessageBubble(role: ChatRole, text: string): HTMLElement {
+    const bubble = makeBubble(role);
+    if (role === 'assistant') renderMarkdownInto(bubble, text);
+    else bubble.textContent = text;
+    return bubble;
+  }
+
+  function clearFollowUps(): void {
+    log!.querySelector('.chat-followups')?.remove();
+  }
+
+  function lastExchangeText(): string {
+    const lastUser = [...state!.messages].reverse().find((m) => m.role === 'user');
+    const lastAssistant = [...state!.messages].reverse().find((m) => m.role === 'assistant');
+    return `${lastUser?.content ?? ''} ${lastAssistant?.content ?? ''}`;
+  }
+
+  function showFollowUps(topic: ChipTopic): void {
+    clearFollowUps();
+    const lastUser = [...state!.messages].reverse().find((m) => m.role === 'user');
+    const chips = followUpsFor(topic, lastUser ? [lastUser.content] : [], defaultChipOffset);
+    if (topic === 'default') defaultChipOffset += 1;
+    if (!chips.length || !hasRoomForTurn(state!.messages, MAX_MESSAGES)) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-followups';
+    for (const label of chips) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chat-chip';
+      chip.textContent = label;
+      chip.addEventListener('click', () => void sendMessage(label));
+      wrap.appendChild(chip);
+    }
+    log!.appendChild(wrap);
+  }
+
+  function autosizeInput(): void {
+    input!.style.height = 'auto';
+    // CSS max-height caps growth at ~4 lines; past that the field scrolls.
+    input!.style.height = `${input!.scrollHeight}px`;
   }
 
   function updateComposerAvailability(): void {
@@ -273,14 +402,73 @@ function initChatWidget(): void {
   }
 
   function renderHistory(): void {
-    log!.innerHTML = '';
-    if (state!.messages.length) {
-      for (const message of state!.messages) renderBubble(message.role, message.content);
-    } else {
-      renderBubble('assistant', GREETING);
-    }
+    log!.replaceChildren();
+    intro!.hidden = state!.messages.length > 0;
+    for (const message of state!.messages) renderMessageBubble(message.role, message.content);
+    const last = state!.messages[state!.messages.length - 1];
+    if (last?.role === 'assistant') showFollowUps(detectTopic(lastExchangeText()));
     updateComposerAvailability();
+    scrollToLatest();
   }
+
+  async function sendMessage(raw: string): Promise<void> {
+    const content = truncateMessage(raw.trim(), MAX_MESSAGE_CHARS);
+    if (!content || isStreaming() || !hasRoomForTurn(state!.messages, MAX_MESSAGES)) return;
+
+    intro!.hidden = true;
+    clearFollowUps();
+
+    state = { ...state!, messages: appendMessage(state!.messages, { role: 'user', content }, MAX_MESSAGES) };
+    persist();
+    const userBubble = renderMessageBubble('user', content);
+    input!.value = '';
+    autosizeInput();
+    input!.disabled = true;
+    sendButton!.disabled = true;
+
+    controller = new AbortController();
+    const assistantBubble = makeBubble('assistant');
+    // Top-anchor the new exchange: the question sits at the top of the viewport
+    // and the reply streams in below it. No auto-follow while it grows.
+    scroller!.scrollTop = userBubble.offsetTop - 12;
+    stopButton!.hidden = false;
+
+    const stream = new MarkdownStream(assistantBubble);
+    const result = await streamAssistantReply(state.messages, state.conversationId, controller.signal, (delta) => {
+      stream.append(delta);
+      syncJump();
+    });
+
+    controller = null;
+    stopButton!.hidden = true;
+    jumpButton!.hidden = true;
+
+    if (result.ok) {
+      state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
+      persist();
+      showFollowUps(detectTopic(`${content} ${result.text}`));
+    } else if (result.aborted) {
+      if (result.text) {
+        // Keep the partial reply (on screen and in history) with a quiet marker.
+        state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
+        persist();
+        const note = document.createElement('span');
+        note.className = 'chat-stopped-note';
+        note.textContent = '— stopped';
+        assistantBubble.appendChild(note);
+      } else {
+        assistantBubble.remove();
+      }
+    } else {
+      assistantBubble.textContent = result.message;
+      assistantBubble.classList.add('role-system');
+    }
+
+    updateComposerAvailability();
+    if (!input!.disabled && !panel!.hidden) input!.focus();
+  }
+
+  // --- Dialog behavior -------------------------------------------------------
 
   function onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
@@ -291,7 +479,7 @@ function initChatWidget(): void {
     if (event.key !== 'Tab') return;
 
     const focusable = Array.from(panel!.querySelectorAll<HTMLElement>('button, textarea, a[href]')).filter(
-      (el) => !el.hasAttribute('disabled'),
+      (el) => !el.hasAttribute('disabled') && !el.hidden && el.getClientRects().length > 0,
     );
     if (!focusable.length) return;
     const first = focusable[0];
@@ -307,8 +495,14 @@ function initChatWidget(): void {
   }
 
   function openPanel(trigger: HTMLElement | null = null): void {
-    if (!panel!.hidden) return;
+    window.clearTimeout(hideTimer);
+    if (!panel!.hidden && panel!.classList.contains('is-open')) return;
     panel!.hidden = false;
+    if (!reducedMotion.matches) {
+      // Commit the hidden→shown layout first so the enter transition runs.
+      panel!.getBoundingClientRect();
+    }
+    panel!.classList.add('is-open');
     lastTrigger = trigger;
     setTriggersExpanded(true);
     renderHistory();
@@ -318,11 +512,18 @@ function initChatWidget(): void {
 
   function closePanel(): void {
     if (panel!.hidden) return;
-    panel!.hidden = true;
+    panel!.classList.remove('is-open');
     setTriggersExpanded(false);
     document.removeEventListener('keydown', onKeydown);
     controller?.abort();
-    controller = null;
+    if (reducedMotion.matches) {
+      panel!.hidden = true;
+    } else {
+      window.clearTimeout(hideTimer);
+      hideTimer = window.setTimeout(() => {
+        panel!.hidden = true;
+      }, 280);
+    }
     // Focus goes back to whichever trigger opened the panel.
     lastTrigger?.focus();
     lastTrigger = null;
@@ -330,6 +531,16 @@ function initChatWidget(): void {
 
   closeButton.addEventListener('click', closePanel);
 
+  stopButton.addEventListener('click', () => {
+    stopButton!.hidden = true;
+    controller?.abort();
+  });
+
+  for (const chip of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-chat-chip]'))) {
+    chip.addEventListener('click', () => void sendMessage(chip.textContent ?? ''));
+  }
+
+  input.addEventListener('input', autosizeInput);
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -337,43 +548,9 @@ function initChatWidget(): void {
     }
   });
 
-  form.addEventListener('submit', async (event) => {
+  form.addEventListener('submit', (event) => {
     event.preventDefault();
-
-    const raw = input.value.trim();
-    if (!raw || !hasRoomForTurn(state!.messages, MAX_MESSAGES)) return;
-
-    const content = truncateMessage(raw, MAX_MESSAGE_CHARS);
-    state = { ...state!, messages: appendMessage(state!.messages, { role: 'user', content }, MAX_MESSAGES) };
-    persist();
-    renderBubble('user', content);
-    input.value = '';
-    input.disabled = true;
-    sendButton.disabled = true;
-
-    controller?.abort();
-    controller = new AbortController();
-    const assistantBubble = renderBubble('assistant', '');
-
-    const result = await streamAssistantReply(state.messages, state.conversationId, controller.signal, (delta) => {
-      assistantBubble.textContent += delta;
-      log!.scrollTop = log!.scrollHeight;
-    });
-
-    if (result.ok) {
-      state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
-      assistantBubble.textContent = result.text;
-      persist();
-    } else if (result.aborted) {
-      assistantBubble.remove();
-    } else {
-      assistantBubble.textContent = result.message;
-      assistantBubble.classList.add('role-system');
-    }
-
-    controller = null;
-    updateComposerAvailability();
-    if (!input.disabled) input.focus();
+    void sendMessage(input.value);
   });
 
   panelController = {

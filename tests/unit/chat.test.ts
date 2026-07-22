@@ -1,8 +1,11 @@
 import { expect, test } from 'vitest';
 import {
+  FOLLOW_UP_CHIPS,
   MAX_MESSAGES,
   MAX_MESSAGE_CHARS,
   appendMessage,
+  detectTopic,
+  followUpsFor,
   hasRoomForTurn,
   hexEncode,
   loadChatState,
@@ -143,4 +146,57 @@ test('parseSSEBuffer skips malformed events without throwing', () => {
 test('parseSSEBuffer carries an error event with its code', () => {
   const { events } = parseSSEBuffer('data: {"type":"error","code":"rate_limited"}\n\n');
   expect(events).toEqual([{ type: 'error', code: 'rate_limited' }]);
+});
+
+// --- Follow-up chip topic detection -----------------------------------------
+
+test('detectTopic classifies each starter question', () => {
+  expect(detectTopic('What does Jordan do at Roam?')).toBe('work');
+  expect(detectTopic('Tell me about his side projects')).toBe('projects');
+  expect(detectTopic("What's his tech stack?")).toBe('stack');
+  expect(detectTopic('How can I get in touch?')).toBe('contact');
+});
+
+test('detectTopic reads the assistant reply as well as the question', () => {
+  expect(detectTopic('what is he up to? He is an engineer at Roam.')).toBe('work');
+  expect(detectTopic('tools? Mostly TypeScript and AWS.')).toBe('stack');
+});
+
+test('detectTopic falls back to default for small talk', () => {
+  expect(detectTopic('hello there!')).toBe('default');
+  expect(detectTopic('nice weather today')).toBe('default');
+});
+
+test('detectTopic prefers contact over other topics', () => {
+  expect(detectTopic('how do I email Jordan about Roam projects?')).toBe('contact');
+});
+
+test('followUpsFor returns 2-3 chips from the topic pool', () => {
+  for (const topic of ['work', 'projects', 'stack', 'contact', 'default'] as const) {
+    const chips = followUpsFor(topic);
+    expect(chips.length).toBeGreaterThanOrEqual(2);
+    expect(chips.length).toBeLessThanOrEqual(3);
+    expect(new Set(chips).size).toBe(chips.length);
+  }
+});
+
+test('followUpsFor excludes the question that was just asked', () => {
+  const [first] = FOLLOW_UP_CHIPS.work;
+  const chips = followUpsFor('work', [first.toUpperCase()]);
+  expect(chips).not.toContain(first);
+  expect(chips.length).toBeGreaterThanOrEqual(2);
+});
+
+test('followUpsFor rotates the default pool between offsets', () => {
+  const a = followUpsFor('default', [], 0);
+  const b = followUpsFor('default', [], 1);
+  expect(a).not.toEqual(b);
+  expect(a[0]).toBe(FOLLOW_UP_CHIPS.default[0]);
+  expect(b[0]).toBe(FOLLOW_UP_CHIPS.default[1]);
+});
+
+test('followUpsFor backfills from the default pool when exclusions bite', () => {
+  const chips = followUpsFor('contact', FOLLOW_UP_CHIPS.contact);
+  expect(chips.length).toBeGreaterThanOrEqual(2);
+  for (const chip of chips) expect(FOLLOW_UP_CHIPS.contact).not.toContain(chip);
 });
