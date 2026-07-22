@@ -1,0 +1,319 @@
+---
+import { social } from '../data/site';
+
+const [email] = social;
+---
+
+<div class="chat-widget" data-chat-widget>
+  <button
+    type="button"
+    class="chat-launcher"
+    data-chat-launcher
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-controls="chat-panel"
+  >
+    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+      <path
+        d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v6a2.5 2.5 0 0 1-2.5 2.5H8l-3.5 3v-3H5.5A2.5 2.5 0 0 1 3 11.5v-6Z"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <span class="visually-hidden">Chat with Jordan’s assistant</span>
+  </button>
+
+  <section
+    id="chat-panel"
+    class="chat-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="chat-panel-title"
+    data-chat-panel
+    hidden
+  >
+    <header class="chat-header">
+      <h2 id="chat-panel-title">Jordan’s assistant</h2>
+      <button type="button" class="chat-close" data-chat-close aria-label="Close chat">
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+          <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions" data-chat-log></div>
+
+    <p class="chat-notice" data-chat-notice hidden></p>
+
+    <form class="chat-form" data-chat-form>
+      <label class="visually-hidden" for="chat-input">Message Jordan’s assistant</label>
+      <textarea
+        id="chat-input"
+        class="chat-input"
+        data-chat-input
+        rows="1"
+        maxlength="2000"
+        placeholder="Ask about Jordan…"
+        autocomplete="off"
+      ></textarea>
+      <button type="submit" class="chat-send" data-chat-send aria-label="Send message">
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+          <path
+            d="M17 3 3 9.5l6 2.5m8-9-3.5 14L9 12.5m8-9L9 12.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </form>
+
+    <footer class="chat-footer">
+      <a href={email.href}>or email Jordan directly</a>
+    </footer>
+  </section>
+</div>
+
+<script src="../scripts/chat.ts"></script>
+
+<style>
+  .chat-widget {
+    position: fixed;
+    right: var(--space-6);
+    bottom: var(--space-6);
+    z-index: 60;
+  }
+
+  /* No-JS visitors never see the launcher — `html.js` is added synchronously in
+     <head> before the body is parsed, so there is no flash of an inert button. */
+  :global(html:not(.js)) .chat-widget {
+    display: none;
+  }
+
+  .chat-launcher {
+    display: grid;
+    width: 3.5rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    box-shadow: var(--shadow-lifted);
+    transition:
+      transform var(--duration-default) var(--spring),
+      box-shadow var(--duration-default) var(--ease);
+  }
+
+  .chat-launcher svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  :global(html.pointer-moved) .chat-launcher:hover {
+    transform: translateY(-2px);
+  }
+
+  .chat-panel[hidden] {
+    display: none;
+  }
+
+  .chat-panel {
+    position: fixed;
+    right: var(--space-6);
+    bottom: calc(var(--space-6) + 4.25rem);
+    display: flex;
+    width: min(380px, calc(100vw - var(--space-8)));
+    max-height: min(32rem, calc(100vh - 7rem));
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-lifted);
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .chat-header h2 {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .chat-close {
+    display: grid;
+    width: 1.9rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--ink-muted);
+    transition: color var(--duration-default) var(--ease), background-color var(--duration-default) var(--ease);
+  }
+
+  .chat-close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  :global(html.pointer-moved) .chat-close:hover {
+    color: var(--heading);
+    background: var(--hover-fill);
+  }
+
+  .chat-log {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-3);
+    overflow-y: auto;
+    padding: var(--space-4);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  /* Chat bubbles are appended by chat.ts via document.createElement, so they never
+     receive Astro's scoped data-astro-cid attribute — these rules must be global. */
+  :global(.chat-log .chat-bubble) {
+    max-width: 85%;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--radius-lg);
+    text-wrap: pretty;
+    white-space: pre-wrap;
+  }
+
+  :global(.chat-log .chat-bubble.role-assistant) {
+    align-self: flex-start;
+    border: 1px solid var(--hairline);
+    background: var(--surface);
+  }
+
+  :global(.chat-log .chat-bubble.role-user) {
+    align-self: flex-end;
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  :global(.chat-log .chat-bubble.role-system) {
+    align-self: center;
+    max-width: 100%;
+    border: 1px solid color-mix(in oklab, var(--warning) 35%, transparent);
+    background: color-mix(in oklab, var(--warning) 12%, var(--paper-raised));
+    color: var(--warning);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-align: center;
+  }
+
+  .chat-notice {
+    margin: 0 var(--space-4) var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--warning) 12%, var(--paper-raised));
+    color: var(--warning);
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .chat-notice[hidden] {
+    display: none;
+  }
+
+  .chat-form {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-top: 1px solid var(--hairline);
+  }
+
+  .chat-input {
+    flex: 1;
+    max-height: 6rem;
+    padding: 0.55rem 0.75rem;
+    resize: none;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .chat-input:disabled {
+    opacity: 0.6;
+  }
+
+  .chat-send {
+    display: grid;
+    width: 2.4rem;
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    transition: opacity var(--duration-default) var(--ease), transform var(--duration-default) var(--spring);
+  }
+
+  .chat-send svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .chat-send:disabled {
+    opacity: 0.5;
+  }
+
+  :global(html.pointer-moved) .chat-send:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  .chat-footer {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-align: center;
+  }
+
+  .chat-footer a {
+    color: var(--ink-muted);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklab, var(--accent) 42%, transparent);
+    text-underline-offset: 0.22em;
+  }
+
+  @media (max-width: 30rem) {
+    .chat-panel {
+      inset: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-height: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chat-launcher,
+    .chat-close,
+    .chat-send {
+      transition: none;
+    }
+
+    :global(html.pointer-moved) .chat-launcher:hover,
+    :global(html.pointer-moved) .chat-send:not(:disabled):hover {
+      transform: none;
+    }
+  }
+</style>
