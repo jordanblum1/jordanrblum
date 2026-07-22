@@ -108,15 +108,75 @@ test('the panel unfolds from the composer corner and reverses before hiding', as
   await expect(navChat).toBeFocused();
 });
 
-test('the empty state shows four starter chips with the suggested questions', async ({ page }) => {
+test('the empty state includes the resume download among its starter questions', async ({ page }) => {
   await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
 
   const chips = page.locator('[data-chat-intro] .chat-chip');
-  await expect(chips).toHaveCount(4);
+  await expect(chips).toHaveCount(5);
   await expect(chips.nth(0)).toHaveText("What's his recent work experience?");
   await expect(chips.nth(1)).toHaveText('What has he built?');
   await expect(chips.nth(2)).toHaveText("What's his tech stack?");
-  await expect(chips.nth(3)).toHaveText('How can I get in touch?');
+  await expect(chips.nth(3)).toHaveText('Can I download his resume?');
+  await expect(chips.nth(4)).toHaveText('How can I get in touch?');
+});
+
+test('a resume request opens an inline verified-email gate and downloads the PDF', async ({ page }) => {
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: sseBody([
+        { type: 'resume_offer' },
+        { type: 'delta', text: 'Absolutely — use the private form below and I’ll unlock it.' },
+        { type: 'done' },
+      ]),
+    });
+  });
+  await page.route('**/api/resume/request', async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ email: 'recruiter@example.com' });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        token: 'a'.repeat(64),
+        maskedEmail: 're••••••@example.com',
+        expiresAt: 1_900_000_000,
+      }),
+    });
+  });
+  await page.route('**/api/resume/verify', async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ token: 'a'.repeat(64), code: '123456' });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, token: 'a'.repeat(64), expiresAt: 1_900_000_000 }),
+    });
+  });
+  await page.route('**/api/resume/download', async (route) => {
+    expect(route.request().postDataJSON()).toEqual({ token: 'a'.repeat(64) });
+    await route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\nmock resume' });
+  });
+
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  await page.getByRole('button', { name: 'Can I download his resume?' }).click();
+
+  const gate = page.locator('[data-resume-gate]');
+  await expect(gate).toBeVisible();
+  await expect(gate.getByRole('heading', { name: "Get Jordan's resume" })).toBeVisible();
+  await gate.getByLabel('Email address').fill('recruiter@example.com');
+  await gate.getByRole('button', { name: 'Email me a code' }).click();
+
+  await expect(gate.getByRole('heading', { name: 'Check your inbox' })).toBeVisible();
+  await expect(gate).toContainText('re••••••@example.com');
+  await gate.getByLabel('Verification code').fill('123456');
+  await gate.getByRole('button', { name: 'Unlock resume' }).click();
+
+  await expect(gate.getByRole('heading', { name: 'Resume unlocked' })).toBeVisible();
+  const downloadEvent = page.waitForEvent('download');
+  await gate.getByRole('button', { name: 'Download PDF ↓' }).click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe('Jordan_Blum_Product_Engineer.pdf');
 });
 
 test('the inset send action activates only when the composer has meaningful text', async ({ page }) => {

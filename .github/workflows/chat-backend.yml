@@ -57,7 +57,7 @@ jobs:
         run: |
           pnpm build
           command -v zip >/dev/null || sudo apt-get update && sudo apt-get install -y zip
-          (cd dist && zip -r ../lambda.zip index.js)
+          (cd dist && zip -r ../lambda.zip index.js Jordan_Blum_Product_Engineer.pdf)
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -97,10 +97,11 @@ jobs:
           echo "ROLE_ARN=${ROLE_ARN}" >> "$GITHUB_ENV"
 
           # Scoped to exactly: CloudWatch Logs for this function, S3 PutObject
-          # into this transcripts bucket, DynamoDB UpdateItem on this table.
+          # into this transcripts bucket, DynamoDB operations on this table,
+          # and SES sends from the configured resume sender.
           # (Built as a single-line string — heredocs don't terminate
           # reliably once indented inside a YAML block scalar.)
-          POLICY_DOC="{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:${AWS_REGION}:${ACCOUNT_ID}:log-group:/aws/lambda/${FUNCTION_NAME}:*\"},{\"Effect\":\"Allow\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::${BUCKET_NAME}/transcripts/*\"},{\"Effect\":\"Allow\",\"Action\":\"dynamodb:UpdateItem\",\"Resource\":\"arn:aws:dynamodb:${AWS_REGION}:${ACCOUNT_ID}:table/${TABLE_NAME}\"}]}"
+          POLICY_DOC="{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:${AWS_REGION}:${ACCOUNT_ID}:log-group:/aws/lambda/${FUNCTION_NAME}:*\"},{\"Effect\":\"Allow\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::${BUCKET_NAME}/transcripts/*\"},{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:UpdateItem\"],\"Resource\":\"arn:aws:dynamodb:${AWS_REGION}:${ACCOUNT_ID}:table/${TABLE_NAME}\"},{\"Effect\":\"Allow\",\"Action\":\"ses:SendEmail\",\"Resource\":\"*\"}]}"
           aws iam put-role-policy \
             --role-name "$ROLE_NAME" \
             --policy-name "${ROLE_NAME}-policy" \
@@ -165,6 +166,7 @@ jobs:
         working-directory: server
         env:
           CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          RESUME_FROM_EMAIL: ${{ secrets.RESUME_FROM_EMAIL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CHAT_MODEL_INPUT: ${{ github.event.inputs.chat_model }}
         run: |
@@ -176,6 +178,10 @@ jobs:
           fi
           if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
             echo "::error::Secret ANTHROPIC_API_KEY is not set."
+            exit 1
+          fi
+          if [ -z "${RESUME_FROM_EMAIL:-}" ]; then
+            echo "::error::Secret RESUME_FROM_EMAIL is not set — use an address or domain already verified in Amazon SES."
             exit 1
           fi
 
@@ -193,7 +199,7 @@ jobs:
           fi
           echo "Deploying with CHAT_MODEL=${CURRENT_CHAT_MODEL}"
 
-          ENV_VARS="Variables={CHAT_MODEL=${CURRENT_CHAT_MODEL},CONTACT_EMAIL=${CONTACT_EMAIL},TRANSCRIPTS_BUCKET=${BUCKET_NAME},RATE_TABLE=${TABLE_NAME},ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}}"
+          ENV_VARS="Variables={CHAT_MODEL=${CURRENT_CHAT_MODEL},CONTACT_EMAIL=${CONTACT_EMAIL},RESUME_FROM_EMAIL=${RESUME_FROM_EMAIL},TRANSCRIPTS_BUCKET=${BUCKET_NAME},RATE_TABLE=${TABLE_NAME},ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}}"
 
           create_function() {
             aws lambda create-function \
@@ -242,7 +248,7 @@ jobs:
           # AuthType AWS_IAM — the Function URL is invoked only via the
           # CloudFront origin below (signed with an Origin Access Control),
           # never called directly by browsers.
-          CORS_JSON="{\"AllowOrigins\":${ALLOWED_ORIGINS},\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\"],\"MaxAge\":600}"
+          CORS_JSON="{\"AllowOrigins\":${ALLOWED_ORIGINS},\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\",\"x-amz-content-sha256\"],\"MaxAge\":600}"
 
           if FUNCTION_URL=$(aws lambda create-function-url-config \
             --function-name "$FUNCTION_NAME" \
@@ -363,7 +369,7 @@ jobs:
         run: |
           pnpm build
           command -v zip >/dev/null || sudo apt-get update && sudo apt-get install -y zip
-          (cd dist && zip -r ../lambda.zip index.js)
+          (cd dist && zip -r ../lambda.zip index.js Jordan_Blum_Product_Engineer.pdf)
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

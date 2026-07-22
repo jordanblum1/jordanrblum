@@ -20,10 +20,27 @@ Browser (chat widget)
                     before the response stream closes)
 ```
 
+Resume requests use the same Lambda and `/api/*` behavior:
+
+```
+Jordy calls offer_resume
+  └─ SSE resume_offer event renders the inline form
+       ├─ POST /api/resume/request  → sanitize email, rate limit, email six-digit code through SES
+       ├─ POST /api/resume/verify   → five-attempt cap, 10-minute code, notify Jordan
+       └─ POST /api/resume/download → private bundled PDF, 30-minute verified token
+```
+
+The PDF is never placed in the static site's `public/` directory and the
+download token is sent in a POST body rather than a query string. DynamoDB
+stores only a hash of the code. The full email remains on the short-lived
+token record until its TTL, and Jordan receives it only after the visitor
+proves inbox ownership.
+
 Request contract: `POST` body `{ conversationId: string, messages: [{ role: 'user' | 'assistant', content: string }, ...] }`.
 Response is `text/event-stream`, one JSON object per `data:` line:
 
 - `{"type":"delta","text":"..."}` — an incremental chunk of the assistant's reply
+- `{"type":"resume_offer"}` — render the verified-email resume form after the reply
 - `{"type":"done"}` — the turn is complete
 - `{"type":"error","code":"rate_limited" | "invalid_input" | "internal_error"}`
 
@@ -71,8 +88,16 @@ detail.
 | `CHAT_MODEL` | no | `claude-sonnet-5` | Model used for chat turns |
 | `CHAT_MAX_TOKENS` | no | `800` | `max_tokens` per turn |
 | `CONTACT_EMAIL` | yes (for reveal to work) | — | The only source of the email address the model may share |
+| `RESUME_FROM_EMAIL` | yes (for resume flow) | — | Amazon SES-verified sender used for codes and owner notifications |
 | `TRANSCRIPTS_BUCKET` | yes | — | S3 bucket transcripts are written to |
 | `RATE_TABLE` | yes | — | DynamoDB table used for both per-IP rate limiting and the global reveal cap |
+
+`RESUME_FROM_EMAIL` may use a display name, such as
+`Jordan Blum <resume@blumjordan.com>`, but the underlying identity must be
+verified in Amazon SES in `us-east-1`. SES must also be out of sandbox so it
+can deliver codes to arbitrary visitors. Store the value in the repository's
+`RESUME_FROM_EMAIL` Actions secret, then run the manual `provision` job to add
+the Lambda environment variable and SES/DynamoDB permissions.
 
 ## Switching the model (e.g. to Haiku)
 
@@ -123,8 +148,9 @@ pnpm build
 ```
 
 Runs `generate:bio`, type-checks with `tsc`, then bundles `src/handler.ts`
-with esbuild into `dist/index.js` (a single CommonJS file, Node 22 target) —
-the artifact the deploy workflow zips and uploads to Lambda.
+with esbuild into `dist/index.js` (a single CommonJS file, Node 22 target),
+then copies the private PDF beside it — the two artifacts the deploy workflow
+zips and uploads to Lambda.
 
 ## Infrastructure
 
@@ -134,8 +160,9 @@ Provisioning and deploys run entirely through
 
 - **`provision`** (`workflow_dispatch`, manual): idempotently creates/updates
   the Lambda function, its Function URL (`RESPONSE_STREAM` + CORS), the
-  transcripts S3 bucket, the DynamoDB rate/reveal table, the IAM role, and the
-  CloudFront `/api/*` behavior on distribution `E2S9S3SPS1S2DW`.
+  transcripts S3 bucket, the DynamoDB rate/reveal/resume table, SES send
+  permission, the IAM role, and the CloudFront `/api/*` behavior on
+  distribution `E2S9S3SPS1S2DW`.
 - **`deploy`**: on pushes to `master` touching `server/**`, builds and
   uploads the new Lambda code.
 

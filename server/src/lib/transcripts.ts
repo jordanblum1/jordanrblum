@@ -1,5 +1,5 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import type { ChatMessage, RevealLogEntry } from './types.js';
+import type { ChatMessage, ResumeOfferLogEntry, RevealLogEntry } from './types.js';
 
 let s3Client: S3Client | undefined;
 
@@ -27,6 +27,7 @@ export interface TranscriptRecord {
   startedAt: string;
   finishedAt: string;
   revealEvents: RevealLogEntry[];
+  resumeOfferEvents: ResumeOfferLogEntry[];
 }
 
 export function transcriptKey(conversationId: string, startedAt: string): string {

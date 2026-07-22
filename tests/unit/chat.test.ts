@@ -74,7 +74,11 @@ test('saveChatState and loadChatState round-trip', () => {
   const storage = new MemoryStorage();
   const state: ChatState = {
     conversationId: 'abc-123',
-    messages: [{ role: 'user', content: 'hi there' }],
+    messages: [
+      { role: 'user', content: 'Can I get his resume?' },
+      { role: 'assistant', content: 'Use the form below.', resumeOffered: true },
+    ],
+    resumeAccess: { token: 'a'.repeat(64), expiresAt: 1_900_000_000 },
   };
   saveChatState(storage, state, 'k');
   expect(loadChatState(storage, 'k')).toEqual(state);
@@ -97,6 +101,15 @@ test('loadChatState returns null when the shape does not match', () => {
   expect(loadChatState(storage, 'k')).toBeNull();
 
   storage.setItem('k', JSON.stringify({ messages: [] }));
+  expect(loadChatState(storage, 'k')).toBeNull();
+
+  storage.setItem('k', JSON.stringify({
+    conversationId: 'x',
+    messages: [{ role: 'assistant', content: 'hi', resumeOffered: 'yes' }],
+  }));
+  expect(loadChatState(storage, 'k')).toBeNull();
+
+  storage.setItem('k', JSON.stringify({ conversationId: 'x', messages: [], resumeAccess: { token: 123 } }));
   expect(loadChatState(storage, 'k')).toBeNull();
 });
 
@@ -159,6 +172,16 @@ test('parseSSEBuffer skips malformed events without throwing', () => {
 test('parseSSEBuffer carries an error event with its code', () => {
   const { events } = parseSSEBuffer('data: {"type":"error","code":"rate_limited"}\n\n');
   expect(events).toEqual([{ type: 'error', code: 'rate_limited' }]);
+});
+
+test('parseSSEBuffer carries the resume offer event alongside reply deltas', () => {
+  const { events } = parseSSEBuffer(
+    'data: {"type":"resume_offer"}\n\ndata: {"type":"delta","text":"Use the form below."}\n\n',
+  );
+  expect(events).toEqual([
+    { type: 'resume_offer' },
+    { type: 'delta', text: 'Use the form below.' },
+  ]);
 });
 
 // --- Follow-up chip topic detection -----------------------------------------

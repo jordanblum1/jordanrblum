@@ -3,7 +3,7 @@ import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 let docClient: DynamoDBDocumentClient | undefined;
 
-function getClient(): DynamoDBDocumentClient {
+export function getDocumentClient(): DynamoDBDocumentClient {
   if (!docClient) {
     docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
   }
@@ -18,15 +18,19 @@ function requireEnv(name: string): string {
   return value;
 }
 
+export function requireDynamoTable(): string {
+  return requireEnv('RATE_TABLE');
+}
+
 /**
  * Atomically increments the counter at `pk` and reports whether it is still
  * within `limit`, in a single conditional UpdateItem call — avoids the
  * read-then-write race of a separate get + put.
  */
 export async function atomicIncrementWithLimit(pk: string, limit: number, ttlSeconds: number): Promise<boolean> {
-  const table = requireEnv('RATE_TABLE');
+  const table = requireDynamoTable();
   try {
-    await getClient().send(
+    await getDocumentClient().send(
       new UpdateCommand({
         TableName: table,
         Key: { pk },

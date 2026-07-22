@@ -29,6 +29,7 @@ describe('saveTranscript', () => {
       startedAt: '2026-07-21T10:00:00.000Z',
       finishedAt: '2026-07-21T10:00:05.000Z',
       revealEvents: [{ timestamp: '2026-07-21T10:00:03.000Z', allowed: false, reason: 'insufficient_conversation' }],
+      resumeOfferEvents: [{ timestamp: '2026-07-21T10:00:04.000Z' }],
     });
 
     const calls = s3Mock.commandCalls(PutObjectCommand);
@@ -51,6 +52,7 @@ describe('saveTranscript', () => {
     });
     expect(body.revealEvents).toHaveLength(1);
     expect(body.revealEvents[0]).toMatchObject({ allowed: false, reason: 'insufficient_conversation' });
+    expect(body.resumeOfferEvents).toHaveLength(1);
   });
 
   it('throws if TRANSCRIPTS_BUCKET is not configured', async () => {
@@ -66,6 +68,7 @@ describe('saveTranscript', () => {
         startedAt: '2026-07-21T10:00:00.000Z',
         finishedAt: '2026-07-21T10:00:00.000Z',
         revealEvents: [],
+        resumeOfferEvents: [],
       }),
     ).rejects.toThrow(/TRANSCRIPTS_BUCKET/);
   });

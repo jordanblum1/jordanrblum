@@ -6,6 +6,10 @@ export const MAX_MESSAGE_CHARS = 2000;
 
 const STORAGE_KEY = 'jrb-chat-state-v1';
 const ENDPOINT = (import.meta.env.PUBLIC_CHAT_ENDPOINT as string | undefined) ?? '/api/chat';
+const API_BASE = ENDPOINT.replace(/\/chat\/?$/, '');
+const RESUME_REQUEST_ENDPOINT = `${API_BASE}/resume/request`;
+const RESUME_VERIFY_ENDPOINT = `${API_BASE}/resume/verify`;
+const RESUME_DOWNLOAD_ENDPOINT = `${API_BASE}/resume/download`;
 
 const NETWORK_ERROR_MESSAGE =
   'Something went wrong reaching Jordy. Please try again, or email Jordan directly.';
@@ -42,15 +46,20 @@ export type ChatRole = 'user' | 'assistant';
 export interface ChatMessage {
   role: ChatRole;
   content: string;
+  resumeOffered?: boolean;
 }
 
 export interface ChatState {
   conversationId: string;
   messages: ChatMessage[];
+  resumeAccess?: {
+    token: string;
+    expiresAt: number;
+  };
 }
 
 export interface ChatEvent {
-  type: 'delta' | 'done' | 'error';
+  type: 'delta' | 'resume_offer' | 'done' | 'error';
   text?: string;
   code?: string;
 }
@@ -131,9 +140,19 @@ export function loadChatState(storage: StorageLike, key: string = STORAGE_KEY): 
           !!m &&
           typeof m === 'object' &&
           ((m as ChatMessage).role === 'user' || (m as ChatMessage).role === 'assistant') &&
-          typeof (m as ChatMessage).content === 'string',
+          typeof (m as ChatMessage).content === 'string' &&
+          ((m as ChatMessage).resumeOffered === undefined || typeof (m as ChatMessage).resumeOffered === 'boolean'),
       )
     ) {
+      if (
+        parsed.resumeAccess !== undefined &&
+        (!parsed.resumeAccess ||
+          typeof parsed.resumeAccess !== 'object' ||
+          typeof parsed.resumeAccess.token !== 'string' ||
+          typeof parsed.resumeAccess.expiresAt !== 'number')
+      ) {
+        return null;
+      }
       return parsed as ChatState;
     }
     return null;
@@ -246,8 +265,8 @@ function errorMessageFor(code?: string): string {
 }
 
 type StreamResult =
-  | { ok: true; text: string }
-  | { ok: false; aborted: boolean; message: string; text: string };
+  | { ok: true; text: string; resumeOffered: boolean }
+  | { ok: false; aborted: boolean; message: string; text: string; resumeOffered: boolean };
 
 async function streamAssistantReply(
   messages: ChatMessage[],
@@ -257,6 +276,7 @@ async function streamAssistantReply(
 ): Promise<StreamResult> {
   let buffer = '';
   let text = '';
+  let resumeOffered = false;
 
   try {
     // Serialize once: the hash must cover the exact bytes sent as the body.
@@ -273,7 +293,7 @@ async function streamAssistantReply(
     });
 
     if (!response.ok || !response.body) {
-      return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
+      return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text, resumeOffered };
     }
 
     const reader = response.body.getReader();
@@ -291,25 +311,71 @@ async function streamAssistantReply(
         if (event.type === 'delta' && event.text) {
           text += event.text;
           onDelta(event.text);
+        } else if (event.type === 'resume_offer') {
+          resumeOffered = true;
         } else if (event.type === 'done') {
-          return { ok: true, text };
+          return { ok: true, text, resumeOffered };
         } else if (event.type === 'error') {
-          return { ok: false, aborted: false, message: errorMessageFor(event.code), text };
+          return { ok: false, aborted: false, message: errorMessageFor(event.code), text, resumeOffered };
         }
       }
     }
 
     return text
-      ? { ok: true, text }
-      : { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
+      ? { ok: true, text, resumeOffered }
+      : { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text, resumeOffered };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       // Aborted (stop button or panel close): hand back the partial text so the
       // caller can keep it on screen and in history.
-      return { ok: false, aborted: true, message: '', text };
+      return { ok: false, aborted: true, message: '', text, resumeOffered };
     }
-    return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
+    return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text, resumeOffered };
   }
+}
+
+interface ResumeRequestResponse {
+  ok: boolean;
+  token?: string;
+  maskedEmail?: string;
+  expiresAt?: number;
+  error?: string;
+}
+
+interface ResumeVerifyResponse {
+  ok: boolean;
+  token?: string;
+  expiresAt?: number;
+  error?: string;
+}
+
+async function signedPost(path: string, payload: Record<string, string>): Promise<Response> {
+  const body = JSON.stringify(payload);
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const payloadHash = await sha256Hex(body);
+  if (payloadHash) headers['x-amz-content-sha256'] = payloadHash;
+  return fetch(path, { method: 'POST', headers, body });
+}
+
+async function postResumeJson(path: string, payload: Record<string, string>): Promise<ResumeRequestResponse> {
+  const response = await signedPost(path, payload);
+  try {
+    return (await response.json()) as ResumeRequestResponse;
+  } catch {
+    return { ok: false, error: response.ok ? 'invalid_response' : 'delivery_unavailable' };
+  }
+}
+
+function resumeRequestError(error?: string): string {
+  if (error === 'invalid_email') return 'Enter a valid email address.';
+  if (error === 'rate_limited') return 'Too many codes were requested. Try again later.';
+  return 'I couldn’t send the code right now. Try again in a moment.';
+}
+
+function resumeVerifyError(error?: string): string {
+  if (error === 'expired') return 'That code expired. Request a new one.';
+  if (error === 'too_many_attempts') return 'Too many tries. Request a fresh code.';
+  return 'That code doesn’t match. Check the email and try again.';
 }
 
 // --- Open/close API ---------------------------------------------------------
@@ -602,6 +668,258 @@ function initChatWidget(): void {
     return bubble;
   }
 
+  function makeTextElement<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className: string,
+    text: string,
+  ): HTMLElementTagNameMap[K] {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+    return element;
+  }
+
+  function resumeAccessIsFresh(): boolean {
+    return !!state!.resumeAccess && state!.resumeAccess.expiresAt > Math.floor(Date.now() / 1000);
+  }
+
+  function makeResumeGate(): HTMLElement {
+    const gate = document.createElement('section');
+    gate.className = 'resume-gate';
+    gate.setAttribute('aria-label', "Request Jordan's resume");
+    gate.dataset.resumeGate = '';
+
+    function setGateContent(...children: Node[]): void {
+      gate.replaceChildren(...children);
+      if (gate.isConnected) {
+        const userBubbles = log!.querySelectorAll<HTMLElement>('.chat-bubble.role-user');
+        const lastUserBubble = userBubbles.item(userBubbles.length - 1);
+        if (lastUserBubble) sizeSpacerFor(lastUserBubble);
+        syncJump();
+      }
+    }
+
+    function makeIntro(title: string, copy: string): DocumentFragment {
+      const introFragment = document.createDocumentFragment();
+      introFragment.append(
+        makeTextElement('p', 'resume-gate-kicker', 'PRIVATE DOWNLOAD'),
+        makeTextElement('h3', 'resume-gate-title', title),
+        makeTextElement('p', 'resume-gate-copy', copy),
+      );
+      return introFragment;
+    }
+
+    function makeStatus(): HTMLParagraphElement {
+      const status = makeTextElement('p', 'resume-gate-status', '');
+      status.setAttribute('aria-live', 'polite');
+      status.hidden = true;
+      return status;
+    }
+
+    function showStatus(status: HTMLElement, message: string, kind: 'error' | 'info' = 'error'): void {
+      status.textContent = message;
+      status.dataset.kind = kind;
+      status.hidden = false;
+    }
+
+    function setButtonBusy(button: HTMLButtonElement, busy: boolean, idleLabel: string, busyLabel: string): void {
+      button.disabled = busy;
+      button.textContent = busy ? busyLabel : idleLabel;
+      button.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
+    function renderEmailStep(prefill = '', message = ''): void {
+      const form = document.createElement('form');
+      form.className = 'resume-gate-form';
+      form.noValidate = true;
+
+      const label = makeTextElement('label', 'resume-gate-label', 'Email address');
+      const email = document.createElement('input');
+      email.className = 'resume-gate-input';
+      email.type = 'email';
+      email.name = 'email';
+      email.autocomplete = 'email';
+      email.inputMode = 'email';
+      email.placeholder = 'you@company.com';
+      email.required = true;
+      email.maxLength = 254;
+      email.value = prefill;
+      label.appendChild(email);
+
+      const submit = makeTextElement('button', 'resume-gate-button', 'Email me a code');
+      submit.type = 'submit';
+      const status = makeStatus();
+      if (message) showStatus(status, message);
+      form.append(label, submit, status);
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        status.hidden = true;
+        if (!email.validity.valid || !email.value.trim()) {
+          showStatus(status, 'Enter a valid email address.');
+          email.focus();
+          return;
+        }
+
+        setButtonBusy(submit, true, 'Email me a code', 'Sending…');
+        try {
+          const result = await postResumeJson(RESUME_REQUEST_ENDPOINT, { email: email.value.trim() });
+          if (result.ok && result.token && result.maskedEmail) {
+            renderCodeStep(result.token, result.maskedEmail, email.value.trim());
+            announce(`Verification code sent to ${result.maskedEmail}.`);
+            return;
+          }
+          showStatus(status, resumeRequestError(result.error));
+        } catch {
+          showStatus(status, resumeRequestError());
+        } finally {
+          setButtonBusy(submit, false, 'Email me a code', 'Sending…');
+        }
+      });
+
+      const privacy = makeTextElement(
+        'p',
+        'resume-gate-privacy',
+        "Used only to send the resume and let Jordan know who requested it. No mailing list.",
+      );
+      setGateContent(
+        makeIntro("Get Jordan's resume", 'Enter your email and I’ll send a six-digit code to verify the inbox.'),
+        form,
+        privacy,
+      );
+    }
+
+    function renderCodeStep(token: string, maskedEmail: string, email: string): void {
+      const form = document.createElement('form');
+      form.className = 'resume-gate-form';
+      form.noValidate = true;
+
+      const label = makeTextElement('label', 'resume-gate-label', 'Verification code');
+      const code = document.createElement('input');
+      code.className = 'resume-gate-input resume-gate-code';
+      code.type = 'text';
+      code.name = 'code';
+      code.autocomplete = 'one-time-code';
+      code.inputMode = 'numeric';
+      code.pattern = '[0-9]{6}';
+      code.placeholder = '000000';
+      code.maxLength = 6;
+      code.required = true;
+      code.addEventListener('input', () => {
+        code.value = code.value.replace(/\D/g, '').slice(0, 6);
+      });
+      label.appendChild(code);
+
+      const submit = makeTextElement('button', 'resume-gate-button', 'Unlock resume');
+      submit.type = 'submit';
+      const status = makeStatus();
+      form.append(label, submit, status);
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        status.hidden = true;
+        if (!/^\d{6}$/.test(code.value)) {
+          showStatus(status, 'Enter the six-digit code from the email.');
+          code.focus();
+          return;
+        }
+
+        setButtonBusy(submit, true, 'Unlock resume', 'Checking…');
+        try {
+          const result = (await postResumeJson(RESUME_VERIFY_ENDPOINT, {
+            token,
+            code: code.value,
+          })) as ResumeVerifyResponse;
+          if (result.ok && result.token && result.expiresAt) {
+            state = { ...state!, resumeAccess: { token: result.token, expiresAt: result.expiresAt } };
+            persist();
+            renderUnlockedStep();
+            announce("Email verified. Jordan's resume is ready to download.");
+            return;
+          }
+          showStatus(status, resumeVerifyError(result.error));
+        } catch {
+          showStatus(status, 'I couldn’t verify that code right now. Try again in a moment.');
+        } finally {
+          setButtonBusy(submit, false, 'Unlock resume', 'Checking…');
+        }
+      });
+
+      const change = makeTextElement('button', 'resume-gate-link', 'Use a different email');
+      change.type = 'button';
+      change.addEventListener('click', () => renderEmailStep(email));
+      setGateContent(
+        makeIntro('Check your inbox', `I sent a code to ${maskedEmail}. It expires in 10 minutes.`),
+        form,
+        change,
+      );
+      code.focus();
+    }
+
+    function renderUnlockedStep(): void {
+      const status = makeStatus();
+      const download = makeTextElement('button', 'resume-gate-button resume-download-button', 'Download PDF ↓');
+      download.type = 'button';
+
+      download.addEventListener('click', async () => {
+        const access = state!.resumeAccess;
+        if (!access) {
+          renderEmailStep('', 'Your access expired. Request a new code.');
+          return;
+        }
+
+        status.hidden = true;
+        setButtonBusy(download, true, 'Download PDF ↓', 'Preparing…');
+        try {
+          const response = await signedPost(RESUME_DOWNLOAD_ENDPOINT, { token: access.token });
+          if (!response.ok) {
+            const nextState = { ...state! };
+            delete nextState.resumeAccess;
+            state = nextState;
+            persist();
+            renderEmailStep('', 'Your access expired. Request a new code.');
+            return;
+          }
+          const blob = await response.blob();
+          const objectUrl = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = objectUrl;
+          anchor.download = 'Jordan_Blum_Product_Engineer.pdf';
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+          showStatus(status, 'Downloaded. Thanks for taking a look.', 'info');
+        } catch {
+          showStatus(status, 'I couldn’t prepare the PDF. Try again.', 'error');
+        } finally {
+          setButtonBusy(download, false, 'Download PDF ↓', 'Preparing…');
+        }
+      });
+
+      const verified = makeTextElement('p', 'resume-gate-verified', '✓ EMAIL VERIFIED');
+      setGateContent(
+        verified,
+        makeTextElement('h3', 'resume-gate-title', 'Resume unlocked'),
+        makeTextElement('p', 'resume-gate-copy', 'Your private download stays available for 30 minutes.'),
+        download,
+        status,
+      );
+    }
+
+    if (resumeAccessIsFresh()) renderUnlockedStep();
+    else {
+      if (state!.resumeAccess) {
+        const nextState = { ...state! };
+        delete nextState.resumeAccess;
+        state = nextState;
+        persist();
+      }
+      renderEmailStep();
+    }
+    return gate;
+  }
+
   // iMessage-style typing indicator: an assistant bubble holding three
   // staggered bouncing dots. Purely decorative — the aria-live announcer
   // handles assistive tech, so the whole bubble is aria-hidden.
@@ -715,7 +1033,11 @@ function initChatWidget(): void {
   function renderHistory(): void {
     log!.replaceChildren();
     intro!.hidden = state!.messages.length > 0;
-    for (const message of state!.messages) renderMessageBubble(message.role, message.content);
+    const lastResumeOffer = state!.messages.findLastIndex((message) => message.resumeOffered === true);
+    state!.messages.forEach((message, index) => {
+      renderMessageBubble(message.role, message.content);
+      if (index === lastResumeOffer) log!.appendChild(makeResumeGate());
+    });
     const last = state!.messages[state!.messages.length - 1];
     if (last?.role === 'assistant') showFollowUps(lastExchangeTopic());
     updateComposerAvailability();
@@ -760,14 +1082,26 @@ function initChatWidget(): void {
     typing.remove();
 
     if (result.ok) {
-      state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
+      state = {
+        ...state,
+        messages: appendMessage(
+          state.messages,
+          { role: 'assistant', content: result.text, resumeOffered: result.resumeOffered || undefined },
+          MAX_MESSAGES,
+        ),
+      };
       persist();
       const bubble = makeBubble('assistant');
       const blockCount = revealBlocks(bubble, buffered, true);
+      if (result.resumeOffered) {
+        const gate = makeResumeGate();
+        log!.appendChild(gate);
+        applyReveal(gate, blockCount);
+      }
       showFollowUps(detectExchangeTopic(content, result.text));
       // The chips ride in at the tail of the cascade.
       const wrap = log!.querySelector<HTMLElement>('.chat-followups');
-      if (wrap) applyReveal(wrap, blockCount);
+      if (wrap) applyReveal(wrap, blockCount + (result.resumeOffered ? 1 : 0));
       // One announcement per completed reply, as rendered plain text.
       announce(bubble.textContent ?? '');
     } else if (result.aborted) {
@@ -820,7 +1154,7 @@ function initChatWidget(): void {
     }
     if (event.key !== 'Tab') return;
 
-    const focusable = Array.from(panel!.querySelectorAll<HTMLElement>('button, textarea, a[href]')).filter(
+    const focusable = Array.from(panel!.querySelectorAll<HTMLElement>('button, input, textarea, a[href]')).filter(
       (el) => !el.hasAttribute('disabled') && !el.hidden && el.getClientRects().length > 0,
     );
     if (!focusable.length) return;

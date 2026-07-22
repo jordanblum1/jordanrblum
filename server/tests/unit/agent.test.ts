@@ -37,7 +37,7 @@ describe('runAgentTurn', () => {
     const revealLog: RevealLogEntry[] = [];
 
     const chunks: string[] = [];
-    for await (const chunk of runAgentTurn({ messages, revealLog })) {
+    for await (const chunk of runAgentTurn({ messages, revealLog, resumeOfferLog: [] })) {
       chunks.push(chunk);
     }
 
@@ -48,7 +48,7 @@ describe('runAgentTurn', () => {
     const { runAgentTurn } = await import('../../src/lib/agent.js');
     const messages: ChatMessage[] = [{ role: 'user', content: 'Hi' }];
 
-    for await (const _chunk of runAgentTurn({ messages, revealLog: [] })) {
+    for await (const _chunk of runAgentTurn({ messages, revealLog: [], resumeOfferLog: [] })) {
       // drain the generator
     }
 
@@ -63,7 +63,7 @@ describe('runAgentTurn', () => {
     process.env.CHAT_MAX_TOKENS = '400';
     const { runAgentTurn } = await import('../../src/lib/agent.js');
 
-    for await (const _chunk of runAgentTurn({ messages: [{ role: 'user', content: 'Hi' }], revealLog: [] })) {
+    for await (const _chunk of runAgentTurn({ messages: [{ role: 'user', content: 'Hi' }], revealLog: [], resumeOfferLog: [] })) {
       // drain the generator
     }
 
@@ -71,13 +71,12 @@ describe('runAgentTurn', () => {
     expect(capturedParams?.max_tokens).toBe(400);
   });
 
-  it('registers exactly one tool: reveal_email', async () => {
+  it('registers the contact and resume tools', async () => {
     const { runAgentTurn } = await import('../../src/lib/agent.js');
-    for await (const _chunk of runAgentTurn({ messages: [{ role: 'user', content: 'Hi' }], revealLog: [] })) {
+    for await (const _chunk of runAgentTurn({ messages: [{ role: 'user', content: 'Hi' }], revealLog: [], resumeOfferLog: [] })) {
       // drain the generator
     }
     const tools = capturedParams?.tools as Array<{ name: string }>;
-    expect(tools).toHaveLength(1);
-    expect(tools[0]?.name).toBe('reveal_email');
+    expect(tools.map((tool) => tool.name)).toEqual(['reveal_email', 'offer_resume']);
   });
 });

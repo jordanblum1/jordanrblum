@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { betaTool } from '@anthropic-ai/sdk/helpers/beta/json-schema';
 import { buildSystemPrompt } from './systemPrompt.js';
 import { evaluateEmailReveal } from './tools/revealEmail.js';
-import type { ChatMessage, RevealLogEntry } from './types.js';
+import type { ChatMessage, ResumeOfferLogEntry, RevealLogEntry } from './types.js';
 
 export const DEFAULT_MODEL = 'claude-sonnet-5';
 export const DEFAULT_MAX_TOKENS = 1200;
@@ -19,6 +19,8 @@ function getClient(): Anthropic {
 export interface AgentTurnParams {
   messages: ChatMessage[];
   revealLog: RevealLogEntry[];
+  resumeOfferLog: ResumeOfferLogEntry[];
+  onResumeOffer?: () => void;
 }
 
 function countPriorUserTurns(messages: ChatMessage[]): number {
@@ -27,7 +29,12 @@ function countPriorUserTurns(messages: ChatMessage[]): number {
   return Math.max(userTurns - 1, 0);
 }
 
-export async function* runAgentTurn({ messages, revealLog }: AgentTurnParams): AsyncGenerator<string> {
+export async function* runAgentTurn({
+  messages,
+  revealLog,
+  resumeOfferLog,
+  onResumeOffer,
+}: AgentTurnParams): AsyncGenerator<string> {
   const priorUserTurns = countPriorUserTurns(messages);
 
   const revealEmailTool = betaTool({
@@ -48,6 +55,18 @@ export async function* runAgentTurn({ messages, revealLog }: AgentTurnParams): A
     },
   });
 
+  const offerResumeTool = betaTool({
+    name: 'offer_resume',
+    description:
+      "Show the visitor Jordan's private resume request form. Call this whenever they ask to see, get, download, or receive Jordan's resume or CV.",
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    run: async () => {
+      resumeOfferLog.push({ timestamp: new Date().toISOString() });
+      onResumeOffer?.();
+      return 'A secure resume form will appear automatically below your reply. Briefly tell the visitor to use it; do not invent or paste a resume URL.';
+    },
+  });
+
   const model = process.env.CHAT_MODEL || DEFAULT_MODEL;
   const maxTokens = Number(process.env.CHAT_MAX_TOKENS) || DEFAULT_MAX_TOKENS;
 
@@ -61,7 +80,7 @@ export async function* runAgentTurn({ messages, revealLog }: AgentTurnParams): A
         cache_control: { type: 'ephemeral' },
       },
     ],
-    tools: [revealEmailTool],
+    tools: [revealEmailTool, offerResumeTool],
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
     stream: true,
   });
