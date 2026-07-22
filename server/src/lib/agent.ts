@@ -5,7 +5,7 @@ import { evaluateEmailReveal } from './tools/revealEmail.js';
 import type { ChatMessage, RevealLogEntry } from './types.js';
 
 export const DEFAULT_MODEL = 'claude-sonnet-5';
-export const DEFAULT_MAX_TOKENS = 800;
+export const DEFAULT_MAX_TOKENS = 1200;
 
 let client: Anthropic | undefined;
 

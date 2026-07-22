@@ -44,7 +44,7 @@ describe('runAgentTurn', () => {
     expect(chunks.join('')).toBe('Hello world');
   });
 
-  it('defaults to claude-sonnet-5 and 800 max_tokens, with cache_control on the system prompt', async () => {
+  it('defaults to claude-sonnet-5 and 1200 max_tokens, with cache_control on the system prompt', async () => {
     const { runAgentTurn } = await import('../../src/lib/agent.js');
     const messages: ChatMessage[] = [{ role: 'user', content: 'Hi' }];
 
@@ -53,7 +53,7 @@ describe('runAgentTurn', () => {
     }
 
     expect(capturedParams?.model).toBe('claude-sonnet-5');
-    expect(capturedParams?.max_tokens).toBe(800);
+    expect(capturedParams?.max_tokens).toBe(1200);
     const system = capturedParams?.system as Array<{ cache_control?: unknown }>;
     expect(system[0]?.cache_control).toEqual({ type: 'ephemeral' });
   });
