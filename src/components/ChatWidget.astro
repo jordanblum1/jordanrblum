@@ -602,26 +602,45 @@ const starters = [
   }
 
   /* Fullscreen sheet on phones — including landscape, where the height (not
-     the width) is what runs out and the floating panel's flex layout would
-     otherwise crush the header. */
+     the width) is what runs out.
+
+     Researched iOS pattern: the sheet is plain fixed-position CSS sized with
+     dvh (vh fallback first, so the cascade degrades cleanly on old engines).
+     No JS chases the browser toolbar — the body lock in chat.ts freezes the
+     page, which freezes the iOS toolbar, which keeps 100dvh stable. Internal
+     layout is a grid whose messages row (1fr, min-height 0) is the only thing
+     that scrolls; the software keyboard lifts the composer cluster via the
+     --kb inset that chat.ts maintains from the visualViewport while the sheet
+     is open. */
   @media (max-width: 30rem), (max-height: 30rem) {
     .chat-panel {
       inset: 0;
-      right: 0;
-      bottom: 0;
       width: 100%;
-      max-height: 100%;
-      height: 100%;
+      max-height: none;
+      height: 100vh;
+      height: 100dvh;
+      display: grid;
+      /* header / messages / (announcer, pills, notice, count, form, footer —
+         implicit auto rows). Only the 1fr messages row flexes. */
+      grid-template-rows: auto 1fr auto;
       border: none;
       border-radius: 0;
+      overscroll-behavior: none;
     }
 
     .chat-panel:not(.is-open) {
       transform: translateY(var(--space-6));
     }
 
+    .chat-body {
+      min-height: 0;
+      overscroll-behavior: contain;
+      /* Momentum scrolling in the log on iOS. */
+      -webkit-overflow-scrolling: touch;
+    }
+
     /* iOS safe areas: keep the header clear of the notch and the composer
-       clear of the home indicator. */
+       cluster clear of the home indicator. */
     .chat-header {
       padding-top: calc(var(--space-4) + env(safe-area-inset-top));
       padding-left: calc(var(--space-5) + env(safe-area-inset-left));
@@ -633,13 +652,12 @@ const starters = [
       padding-right: calc(var(--space-4) + env(safe-area-inset-right));
     }
 
+    /* The footer is the last row of the composer cluster, so it carries the
+       keyboard inset (lifting the form above the keyboard with it) and the
+       home-indicator safe area. */
     .chat-footer {
-      padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
-    }
-
-    /* Momentum scrolling in the log on iOS. */
-    .chat-body {
-      -webkit-overflow-scrolling: touch;
+      margin-bottom: var(--kb, 0px);
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
 
     /* ≥16px so iOS Safari does not zoom the page when the input focuses. */

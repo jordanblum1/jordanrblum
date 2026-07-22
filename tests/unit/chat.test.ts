@@ -14,6 +14,7 @@ import {
   formatCharCount,
   hasRoomForTurn,
   hexEncode,
+  keyboardInset,
   loadChatState,
   parseSSEBuffer,
   revealDelay,
@@ -251,6 +252,22 @@ test('revealDelay clamps a negative index to zero', () => {
 test('the whole cascade finishes well under a second', () => {
   // Last block starts at the delay cap and runs for one block duration.
   expect(REVEAL_MAX_DELAY_MS + REVEAL_BLOCK_MS).toBeLessThan(1000);
+});
+
+// --- Keyboard inset -----------------------------------------------------------
+
+test('keyboardInset measures how much of the layout viewport the keyboard covers', () => {
+  expect(keyboardInset(844, 500, 0)).toBe(344);
+  // iOS scrolls the visual viewport down while the keyboard is up: the
+  // offsetTop counts toward the visible region, not the keyboard.
+  expect(keyboardInset(844, 500, 44)).toBe(300);
+  expect(keyboardInset(844, 844, 0)).toBe(0);
+});
+
+test('keyboardInset never goes negative and rounds to whole pixels', () => {
+  // Rotation races can briefly report a visual viewport taller than the layout one.
+  expect(keyboardInset(500, 844, 0)).toBe(0);
+  expect(keyboardInset(844, 500.4, 0)).toBe(344);
 });
 
 // --- Copy --------------------------------------------------------------------

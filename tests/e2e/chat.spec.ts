@@ -380,13 +380,34 @@ test.describe('mobile sheet', () => {
     await cta.click();
     await expect(page.locator('[data-chat-panel]')).toBeVisible();
 
-    // position:fixed body lock, preserving the scroll offset.
+    // position:fixed body lock, preserving the scroll offset. Freezing the
+    // page is what keeps the iOS toolbar (and therefore 100dvh) stable.
     const lock = await page.evaluate(() => ({
       position: document.body.style.position,
       top: document.body.style.top,
+      overflow: document.body.style.overflow,
+      overscroll: document.body.style.overscrollBehavior,
     }));
     expect(lock.position).toBe('fixed');
     expect(lock.top).toBe(`-${scrollBefore}px`);
+    expect(lock.overflow).toBe('hidden');
+    expect(lock.overscroll).toBe('none');
+
+    // The sheet fills the viewport edge-to-edge — pure CSS dvh geometry, with
+    // no JS writing top/height inline styles.
+    // (Polling: the 240ms enter transition translates the sheet up into place.)
+    const sheet = page.locator('[data-chat-panel]');
+    await expect.poll(async () => Math.round((await sheet.boundingBox())!.y)).toBe(0);
+    const box = (await sheet.boundingBox())!;
+    expect(Math.round(box.x)).toBe(0);
+    expect(Math.round(box.width)).toBe(390);
+    expect(Math.round(box.height)).toBe(844);
+    const inline = await page.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-chat-panel]')!;
+      return { top: panel.style.top, height: panel.style.height };
+    });
+    expect(inline.top).toBe('');
+    expect(inline.height).toBe('');
 
     // Wheeling over the open sheet must not scroll the page behind it.
     await page.mouse.wheel(0, 600);

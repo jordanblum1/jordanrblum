@@ -68,6 +68,13 @@ export function revealDelay(index: number): number {
   return Math.min(Math.max(0, index) * REVEAL_STAGGER_MS, REVEAL_MAX_DELAY_MS);
 }
 
+// The software-keyboard inset: how much of the layout viewport the keyboard
+// covers. innerHeight is the layout viewport; the visual viewport (height +
+// offsetTop) is what remains visible above the keyboard.
+export function keyboardInset(innerHeight: number, vvHeight: number, vvOffsetTop: number): number {
+  return Math.max(0, Math.round(innerHeight - vvHeight - vvOffsetTop));
+}
+
 // A turn always writes a user message and (on success) an assistant reply, so a
 // turn only starts if both slots fit under the cap — otherwise a user message
 // could get stranded with no room left for its reply.
@@ -371,11 +378,12 @@ function initChatWidget(): void {
   }
 
   // --- Native-feeling mobile sheet -------------------------------------------
-  // While the sheet is open on small screens the page behind it must not
-  // scroll: the position-fixed body lock freezes it and restores the scroll
-  // position on close. The sheet also tracks the visual viewport so the
-  // composer stays above the iOS software keyboard, which shrinks the visual
-  // viewport but not the layout viewport.
+  // The sheet itself is plain fixed-position CSS sized with dvh — there is NO
+  // JS geometry syncing chasing the browser toolbar. What makes dvh stable is
+  // the body lock below: with the page frozen the iOS toolbar cannot
+  // collapse/expand under the sheet, so 100dvh stops moving. The only
+  // visualViewport work left is the keyboard inset (--kb), active only while
+  // the sheet is open.
 
   let savedScrollY = 0;
   let bodyLocked = false;
@@ -389,6 +397,8 @@ function initChatWidget(): void {
     style.left = '0';
     style.right = '0';
     style.width = '100%';
+    style.overflow = 'hidden';
+    style.overscrollBehavior = 'none';
     bodyLocked = true;
   }
 
@@ -400,36 +410,66 @@ function initChatWidget(): void {
     style.left = '';
     style.right = '';
     style.width = '';
+    style.overflow = '';
+    style.overscrollBehavior = '';
     bodyLocked = false;
     // Instant, not smooth: the page has scroll-behavior:smooth, and an
     // animated restore would be stomped by the focus() that follows close.
     window.scrollTo({ top: savedScrollY, left: 0, behavior: 'instant' });
   }
 
-  function syncBodyLock(): void {
-    if (!panel!.hidden && mobileSheet.matches) lockBody();
-    else unlockBody();
-  }
+  // Keyboard inset: --kb is how much of the layout viewport the software
+  // keyboard covers; the composer lifts by exactly that much (see the mobile
+  // sheet CSS). Listeners are attached only while the sheet is open and
+  // removed (with the var) on close.
+  let keyboardSyncActive = false;
 
-  function syncViewport(): void {
+  function syncKeyboard(): void {
     const vv = window.visualViewport;
-    if (panel!.hidden || !mobileSheet.matches || !vv) {
-      panel!.style.top = '';
-      panel!.style.bottom = '';
-      panel!.style.height = '';
-      return;
-    }
-    panel!.style.top = `${Math.round(vv.offsetTop)}px`;
-    panel!.style.bottom = 'auto';
-    panel!.style.height = `${Math.round(vv.height)}px`;
+    if (!vv) return;
+    const wasNearBottom = distanceFromLatest() < 72;
+    document.documentElement.style.setProperty(
+      '--kb',
+      `${keyboardInset(window.innerHeight, vv.height, vv.offsetTop)}px`,
+    );
+    // The 1fr messages row just shrank/grew — keep the log bottom in view if
+    // the visitor was reading there.
+    if (wasNearBottom) scrollToLatest();
   }
 
-  window.visualViewport?.addEventListener('resize', syncViewport);
-  window.visualViewport?.addEventListener('scroll', syncViewport);
-  mobileSheet.addEventListener?.('change', () => {
-    syncBodyLock();
-    syncViewport();
+  function enableKeyboardSync(): void {
+    if (keyboardSyncActive || !window.visualViewport) return;
+    keyboardSyncActive = true;
+    window.visualViewport.addEventListener('resize', syncKeyboard);
+    window.visualViewport.addEventListener('scroll', syncKeyboard);
+    syncKeyboard();
+  }
+
+  function disableKeyboardSync(): void {
+    if (!keyboardSyncActive) return;
+    keyboardSyncActive = false;
+    window.visualViewport?.removeEventListener('resize', syncKeyboard);
+    window.visualViewport?.removeEventListener('scroll', syncKeyboard);
+    document.documentElement.style.removeProperty('--kb');
+  }
+
+  // iOS can dismiss the keyboard on blur without a final visualViewport
+  // resize event, leaving --kb stale — re-read shortly after blur.
+  input.addEventListener('blur', () => {
+    if (keyboardSyncActive) window.setTimeout(syncKeyboard, 250);
   });
+
+  function syncSheetMode(): void {
+    if (!panel!.hidden && mobileSheet.matches) {
+      lockBody();
+      enableKeyboardSync();
+    } else {
+      unlockBody();
+      disableKeyboardSync();
+    }
+  }
+
+  mobileSheet.addEventListener?.('change', syncSheetMode);
 
   // --- Scroll behavior -------------------------------------------------------
   // A new exchange is top-anchored: the question pins to the top of the
@@ -749,8 +789,7 @@ function initChatWidget(): void {
       panel!.getBoundingClientRect();
     }
     panel!.classList.add('is-open');
-    syncBodyLock();
-    syncViewport();
+    syncSheetMode();
     lastTrigger = trigger;
     setTriggersExpanded(true);
     renderHistory();
@@ -765,14 +804,13 @@ function initChatWidget(): void {
     document.removeEventListener('keydown', onKeydown);
     controller?.abort();
     unlockBody();
+    disableKeyboardSync();
     if (reducedMotion.matches) {
       panel!.hidden = true;
-      syncViewport();
     } else {
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
         panel!.hidden = true;
-        syncViewport();
       }, 280);
     }
     // Focus goes back to whichever trigger opened the panel.
