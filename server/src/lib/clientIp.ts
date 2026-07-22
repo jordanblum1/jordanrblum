@@ -45,3 +45,52 @@ export function clientIp(event: ClientIpEvent): string {
   const rightmost = (entries[entries.length - 1] ?? '').trim();
   return isIP(rightmost) !== 0 ? rightmost : sourceIp;
 }
+
+const IPV4_MAPPED = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i;
+
+/**
+ * Expand a valid IPv6 address into its 8 hextets (leading zeros stripped,
+ * lower-cased). Handles `::` compression and an embedded dotted-quad tail
+ * (e.g. `64:ff9b::192.0.2.1`). Input must already be validated with isIP.
+ */
+function expandIpv6(ip: string): string[] {
+  let addr = ip.toLowerCase();
+
+  const lastColon = addr.lastIndexOf(':');
+  const tailPart = addr.slice(lastColon + 1);
+  if (tailPart.includes('.')) {
+    const [a = 0, b = 0, c = 0, d = 0] = tailPart.split('.').map(Number);
+    addr = addr.slice(0, lastColon + 1) + `${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+
+  let hextets: string[];
+  if (addr.includes('::')) {
+    const [headStr = '', tailStr = ''] = addr.split('::');
+    const head = headStr ? headStr.split(':') : [];
+    const tail = tailStr ? tailStr.split(':') : [];
+    hextets = [...head, ...Array(8 - head.length - tail.length).fill('0'), ...tail];
+  } else {
+    hextets = addr.split(':');
+  }
+
+  return hextets.map((h) => Number.parseInt(h || '0', 16).toString(16));
+}
+
+/**
+ * Reduce an IP to the granularity used for rate-limit keys.
+ *
+ * IPv6 visitors typically control an entire /64 (a single SLAAC allocation),
+ * so keying rate limits on the full address would let one visitor rotate
+ * through 2^64 addresses without ever re-using a bucket. Bucket IPv6 by its
+ * /64 prefix instead; IPv4 addresses (including IPv4-mapped IPv6 forms) pass
+ * through unchanged. Only the RATE keys use this — transcripts keep the hash
+ * of the full validated address.
+ */
+export function rateLimitBucket(ip: string): string {
+  const mapped = IPV4_MAPPED.exec(ip)?.[1];
+  if (mapped && isIP(mapped) === 4) return mapped;
+  if (isIP(ip) !== 6) return ip;
+
+  const hextets = expandIpv6(ip);
+  return `${hextets.slice(0, 4).join(':')}::/64`;
+}

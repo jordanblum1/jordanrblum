@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clientIp, type ClientIpEvent } from '../../src/lib/clientIp.js';
+import { clientIp, rateLimitBucket, type ClientIpEvent } from '../../src/lib/clientIp.js';
 
 function event(xff: string | undefined, sourceIp = '130.176.0.1', headerName = 'x-forwarded-for'): ClientIpEvent {
   return {
@@ -57,5 +57,42 @@ describe('clientIp', () => {
 
   it('matches the header name case-insensitively', () => {
     expect(clientIp(event('192.0.2.2', '130.176.0.1', 'X-Forwarded-For'))).toBe('192.0.2.2');
+  });
+});
+
+describe('rateLimitBucket', () => {
+  it('leaves IPv4 addresses unchanged', () => {
+    expect(rateLimitBucket('192.0.2.2')).toBe('192.0.2.2');
+  });
+
+  it('leaves non-IP fallback values (e.g. "unknown") unchanged', () => {
+    expect(rateLimitBucket('unknown')).toBe('unknown');
+  });
+
+  it('buckets two IPv6 addresses in the same /64 onto the same rate key', () => {
+    const a = rateLimitBucket('2001:db8:85a3:1234::1');
+    const b = rateLimitBucket('2001:db8:85a3:1234:ffff:ffff:ffff:ffff');
+    expect(a).toBe(b);
+    expect(a).toBe('2001:db8:85a3:1234::/64');
+  });
+
+  it('keeps different /64s in different buckets', () => {
+    expect(rateLimitBucket('2001:db8:85a3:1234::1')).not.toBe(rateLimitBucket('2001:db8:85a3:1235::1'));
+  });
+
+  it('normalizes compressed and expanded spellings of the same address to one bucket', () => {
+    expect(rateLimitBucket('2001:0db8:0000:0000:0000:0000:0000:0001')).toBe(rateLimitBucket('2001:db8::1'));
+  });
+
+  it('normalizes hextet case to one bucket', () => {
+    expect(rateLimitBucket('2001:DB8:85A3:1234::1')).toBe(rateLimitBucket('2001:db8:85a3:1234::1'));
+  });
+
+  it('treats IPv4-mapped IPv6 addresses as their embedded IPv4', () => {
+    expect(rateLimitBucket('::ffff:192.0.2.2')).toBe('192.0.2.2');
+  });
+
+  it('buckets an IPv6 address with an embedded dotted-quad tail by its /64', () => {
+    expect(rateLimitBucket('64:ff9b:1:2:3:4:192.0.2.2')).toBe('64:ff9b:1:2::/64');
   });
 });

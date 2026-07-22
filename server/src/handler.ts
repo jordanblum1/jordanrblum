@@ -1,6 +1,6 @@
 import type { Context } from 'aws-lambda';
 import { runAgentTurn, DEFAULT_MODEL } from './lib/agent.js';
-import { clientIp } from './lib/clientIp.js';
+import { clientIp, rateLimitBucket } from './lib/clientIp.js';
 import { hashIp } from './lib/ipHash.js';
 import { checkRateLimit } from './lib/rateLimit.js';
 import { formatSseEvent } from './lib/sse.js';
@@ -49,7 +49,11 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
 
   const startedAt = new Date().toISOString();
   const visitorIp = clientIp(event);
+  // Transcripts record the hash of the full visitor address; rate-limit keys
+  // hash the /64-bucketed form so IPv6 visitors can't rotate within their
+  // allocation to dodge the limiter.
   const ipHash = hashIp(visitorIp);
+  const rateKeyHash = hashIp(rateLimitBucket(visitorIp));
 
   const rawBody = decodeBody(event);
   if (!checkBodySize(rawBody)) {
@@ -75,7 +79,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
   }
   const { conversationId, messages } = validation.value;
 
-  const rateLimit = await checkRateLimit(ipHash);
+  const rateLimit = await checkRateLimit(rateKeyHash);
   if (!rateLimit.allowed) {
     httpStream.write(formatSseEvent({ type: 'error', code: 'rate_limited' }));
     httpStream.end();
