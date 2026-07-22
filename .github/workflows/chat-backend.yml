@@ -7,6 +7,11 @@ on:
         description: 'Override CHAT_MODEL on the Lambda (leave blank to keep whatever is already configured, or claude-sonnet-5 on first provision)'
         required: false
         default: ''
+      diagnose:
+        description: 'Run ONLY the read-only auth diagnostics job (skips provisioning entirely)'
+        type: boolean
+        required: false
+        default: false
   push:
     branches: [master]
     paths:
@@ -31,7 +36,7 @@ jobs:
   # NOT run automatically by this workflow file. Trigger it by hand from the
   # Actions tab (workflow_dispatch) after review.
   provision:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && !inputs.diagnose
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -360,3 +365,64 @@ jobs:
             --function-name "$FUNCTION_NAME" \
             --zip-file fileb://server/lambda.zip
           aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+
+  # Read-only diagnostics for the live chat auth chain (Function URL auth,
+  # Lambda resource policy, CloudFront OAC + /api/* behavior wiring). Makes
+  # NO writes. Triggered via workflow_dispatch with the `diagnose` input set.
+  # Never prints secret values: the get-function-configuration --query
+  # deliberately excludes Environment (it contains the API key).
+  diagnose:
+    if: github.event_name == 'workflow_dispatch' && inputs.diagnose
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Function URL config (AuthType / InvokeMode / CORS)
+        run: |
+          echo "=== lambda get-function-url-config ==="
+          aws lambda get-function-url-config \
+            --function-name "$FUNCTION_NAME" 2>&1 || true
+
+      - name: Lambda resource policy (may AccessDenied — printed, not fatal)
+        run: |
+          echo "=== lambda get-policy ==="
+          aws lambda get-policy \
+            --function-name "$FUNCTION_NAME" 2>&1 || true
+
+      - name: CloudFront Origin Access Control config
+        run: |
+          echo "=== cloudfront get-origin-access-control E3E03MHOU9HH7U ==="
+          aws cloudfront get-origin-access-control \
+            --id E3E03MHOU9HH7U 2>&1 || true
+
+      - name: CloudFront distribution origins + /api/* behavior + status
+        run: |
+          echo "=== cloudfront get-distribution-config (origins) ==="
+          aws cloudfront get-distribution-config \
+            --id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --query "DistributionConfig.Origins.Items[].{Id:Id,DomainName:DomainName,OriginAccessControlId:OriginAccessControlId}" \
+            2>&1 || true
+          echo "=== cloudfront get-distribution-config (/api/* cache behavior) ==="
+          aws cloudfront get-distribution-config \
+            --id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --query "DistributionConfig.CacheBehaviors.Items[?PathPattern=='/api/*'].{PathPattern:PathPattern,TargetOriginId:TargetOriginId,AllowedMethods:AllowedMethods.Items,CachePolicyId:CachePolicyId,OriginRequestPolicyId:OriginRequestPolicyId}" \
+            2>&1 || true
+          echo "=== cloudfront get-distribution (Status) ==="
+          aws cloudfront get-distribution \
+            --id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --query "Distribution.Status" --output text 2>&1 || true
+
+      - name: Lambda function configuration (Environment deliberately excluded)
+        run: |
+          echo "=== lambda get-function-configuration (no Environment) ==="
+          aws lambda get-function-configuration \
+            --function-name "$FUNCTION_NAME" \
+            --query '{State:State,LastUpdateStatus:LastUpdateStatus,Timeout:Timeout,MemorySize:MemorySize,Handler:Handler,Runtime:Runtime}' \
+            2>&1 || true
