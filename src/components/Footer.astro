@@ -2,7 +2,7 @@
 import { social } from '../data/site';
 import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
 
-const [email, linkedin, github, blumblumblum] = social;
+const [, linkedin, github, blumblumblum] = social;
 const blumMark = blumMarkSource
   .replace(/<\?xml[^>]*>\s*/, '')
   .replace(/<defs>[\s\S]*?<\/defs>/, '')
@@ -26,26 +26,16 @@ const blumMark = blumMarkSource
           <span>Chat with my assistant</span>
           <span aria-hidden="true">→</span>
         </button>
-        <a class="email-link" href={email.href}>
-          <span>Email me</span>
-          <span aria-hidden="true">→</span>
-        </a>
       </div>
     </div>
 
-    <nav class="social" aria-label="Contact and professional profiles">
-      <a href={email.href} aria-label="Email Jordan" title="Email">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3.75 5.75h16.5v12.5H3.75z"></path>
-          <path d="m4.5 6.5 7.5 6 7.5-6"></path>
-        </svg>
-      </a>
-      <a href={linkedin.href} target="_blank" rel="noopener" aria-label="Jordan on LinkedIn" title="LinkedIn">
+    <nav class="social" aria-label="Professional profiles">
+      <a class="linkedin-link" href={linkedin.href} target="_blank" rel="noopener" aria-label="Jordan on LinkedIn" title="LinkedIn">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M5.36 8.17H2.22V21h3.14V8.17ZM3.79 2A1.82 1.82 0 1 0 3.8 5.64 1.82 1.82 0 0 0 3.79 2ZM21 13.64c0-3.87-2.07-5.67-4.83-5.67a4.18 4.18 0 0 0-3.77 2.07h-.04V8.17h-3V21h3.13v-6.35c0-1.67.32-3.3 2.4-3.3 2.05 0 2.08 1.92 2.08 3.41V21H21v-7.36Z"></path>
         </svg>
       </a>
-      <a href={github.href} target="_blank" rel="noopener" aria-label="Jordan on GitHub" title="GitHub">
+      <a class="github-link" href={github.href} target="_blank" rel="noopener" aria-label="Jordan on GitHub" title="GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.61-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.03A9.5 9.5 0 0 1 12 6.84c.85 0 1.69.11 2.49.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"></path>
         </svg>
@@ -105,16 +95,16 @@ const blumMark = blumMarkSource
     align-items: center;
   }
 
-  .chat-cta,
-  .email-link {
+  .chat-cta {
     display: inline-flex;
     flex: 0 0 auto;
     align-items: center;
     gap: var(--space-8);
     padding: 0.9rem 1.15rem;
-    border: 1px solid var(--hairline);
+    border: 1px solid transparent;
     border-radius: 999px;
-    background: var(--paper-raised);
+    background: var(--accent);
+    color: var(--accent-contrast);
     font-size: 0.88rem;
     font-weight: 500;
     font-family: inherit;
@@ -126,14 +116,8 @@ const blumMark = blumMarkSource
       transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .chat-cta {
-    border-color: transparent;
-    background: var(--accent);
-    color: var(--accent-contrast);
-  }
-
-  /* No-JS visitors never see a CTA that can't do anything, so only the mailto
-     fallback shows. */
+  /* No-JS visitors never see a CTA that can't do anything. The footer carries
+     no mailto anymore; the nav's no-JS email fallback is the escape hatch. */
   :global(html:not(.js)) .chat-cta {
     display: none;
   }
@@ -167,14 +151,6 @@ const blumMark = blumMarkSource
     fill: currentColor;
   }
 
-  .social a:first-child svg {
-    fill: none;
-    stroke: currentColor;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 1.5;
-  }
-
   .social .blum-link {
     width: 5.75rem;
     aspect-ratio: auto;
@@ -202,11 +178,6 @@ const blumMark = blumMarkSource
     border-top: 1px solid var(--hairline);
     font-family: var(--font-mono);
     font-size: 0.7rem;
-  }
-
-  :global(html.pointer-moved) .email-link:hover {
-    border-color: var(--ink-muted);
-    transform: translateY(-2px);
   }
 
   :global(html.pointer-moved) .chat-cta:hover {
@@ -242,13 +213,11 @@ const blumMark = blumMarkSource
 
   @media (prefers-reduced-motion: reduce) {
     .chat-cta,
-    .email-link,
     .social a {
       transition: color 120ms, border-color 120ms;
     }
 
     :global(html.pointer-moved) .chat-cta:hover,
-    :global(html.pointer-moved) .email-link:hover,
     :global(html.pointer-moved) .social a:hover,
     :global(html.pointer-moved) .social a:nth-child(even):hover {
       transform: none;

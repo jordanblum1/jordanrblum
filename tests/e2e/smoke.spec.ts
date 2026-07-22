@@ -21,7 +21,8 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
   await expect(page.locator('.status')).toHaveCount(0);
   await expect(page.getByRole('contentinfo')).toContainText('Want to chat?');
   await expect(page.getByRole('contentinfo')).toContainText('New York');
-  await expect(page.locator('footer .social a')).toHaveCount(4);
+  await expect(page.locator('footer .social a')).toHaveCount(3);
+  await expect(page.getByRole('contentinfo').locator('a[href^="mailto:"]')).toHaveCount(0);
   await expect(page.locator('.off-clock, .footer-kicker')).toHaveCount(0);
   await expect(page.locator('.personal-note .note-logo')).toBeVisible();
   await expect(page.locator('.personal-note .note-caption')).toHaveCount(0);
