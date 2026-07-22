@@ -168,6 +168,102 @@ const blumMark = blumMarkSource
     fill: var(--accent);
   }
 
+  /* --- blumblumblum-style icon motifs ----------------------------------------
+     Ported from blumblumblum.com's outpost discs: each icon carries a bespoke
+     one-shot micro-animation on hover/focus. GitHub gets its orbit motif
+     verbatim (dashed ring sweep + a dot arcing over the disc); LinkedIn gets
+     the portfolio disc's stamp (glyph presses in while a ring pulses out) —
+     both scaled to this footer's 3.25rem discs and this site's tokens. */
+
+  .github-link,
+  .linkedin-link {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .github-link svg,
+  .linkedin-link svg {
+    position: relative;
+    z-index: 1;
+    transform-origin: center;
+  }
+
+  .github-link::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset: 15%;
+    pointer-events: none;
+    border: 1px dashed var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .github-link::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 12%;
+    left: 48%;
+    width: 0.28rem;
+    height: 0.28rem;
+    pointer-events: none;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+  }
+
+  .linkedin-link::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    inset: 15%;
+    pointer-events: none;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+  }
+
+  .github-link:is(:hover, :focus-visible)::before {
+    animation: orbit-trace 480ms var(--ease);
+  }
+
+  .github-link:is(:hover, :focus-visible)::after {
+    animation: orbit-dot 480ms var(--ease);
+  }
+
+  .linkedin-link:is(:hover, :focus-visible) svg {
+    animation: linkedin-stamp 420ms var(--ease);
+  }
+
+  .linkedin-link:is(:hover, :focus-visible)::after {
+    animation: stamp-ring 420ms var(--ease);
+  }
+
+  @keyframes orbit-trace {
+    0% { opacity: 0; transform: rotate(-28deg) scale(0.82); }
+    46% { opacity: 0.5; }
+    100% { opacity: 0; transform: rotate(28deg) scale(1.02); }
+  }
+
+  @keyframes orbit-dot {
+    0% { opacity: 0; transform: translate3d(-0.5rem, 0.4rem, 0) scale(0.5); }
+    45% { opacity: 1; }
+    100% { opacity: 0; transform: translate3d(0.5rem, 0.36rem, 0) scale(1); }
+  }
+
+  @keyframes linkedin-stamp {
+    0% { transform: translate3d(0, -0.14rem, 0) rotate(-3deg) scale(0.94); }
+    58% { transform: translate3d(0, 0.06rem, 0) rotate(0.8deg) scale(1.02); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  }
+
+  @keyframes stamp-ring {
+    0% { opacity: 0; transform: scale(0.74); }
+    52% { opacity: 0.52; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.08); }
+  }
+
   .colophon {
     display: flex;
     flex-wrap: wrap;
@@ -221,6 +317,13 @@ const blumMark = blumMarkSource
     :global(html.pointer-moved) .social a:hover,
     :global(html.pointer-moved) .social a:nth-child(even):hover {
       transform: none;
+    }
+
+    .github-link:is(:hover, :focus-visible)::before,
+    .github-link:is(:hover, :focus-visible)::after,
+    .linkedin-link:is(:hover, :focus-visible) svg,
+    .linkedin-link:is(:hover, :focus-visible)::after {
+      animation: none;
     }
   }
 </style>
