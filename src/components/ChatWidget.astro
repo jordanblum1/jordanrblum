@@ -444,7 +444,25 @@ const starters = [
     height: 0;
   }
 
+  /* While a pill is showing, fade the log out underneath it so streaming text
+     never visually threads through the pill row. */
+  .chat-float::before {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 3.6rem;
+    background: linear-gradient(to top, var(--paper-raised) 35%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-default) var(--ease);
+  }
+
+  .chat-float:has(.chat-pill:not([hidden]))::before {
+    opacity: 1;
+  }
+
   .chat-pill {
+    position: relative;
     display: inline-flex;
     transform: translateY(calc(-100% - var(--space-3)));
     align-items: center;
