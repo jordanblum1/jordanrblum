@@ -123,6 +123,10 @@ const starters = [
   }
 
   .chat-panel {
+    /* Warning text on the 12%-warning-mix surface: raw --warning lands at
+       3.54:1, below WCAG AA. Mixing 70% warning into ink yields ~#80572f,
+       5.3:1 on that surface, while staying inside the token system. */
+    --warning-ink: color-mix(in oklab, var(--warning) 70%, var(--ink));
     position: fixed;
     right: var(--space-6);
     bottom: var(--space-6);
@@ -418,7 +422,7 @@ const starters = [
     border: 1px solid color-mix(in oklab, var(--warning) 35%, transparent);
     border-radius: var(--radius-sm);
     background: color-mix(in oklab, var(--warning) 12%, var(--paper-raised));
-    color: var(--warning);
+    color: var(--warning-ink);
     font-family: var(--font-mono);
     font-size: 0.72rem;
     text-align: center;
@@ -507,7 +511,7 @@ const starters = [
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-sm);
     background: color-mix(in oklab, var(--warning) 12%, var(--paper-raised));
-    color: var(--warning);
+    color: var(--warning-ink);
     font-size: 0.76rem;
     line-height: 1.4;
   }
