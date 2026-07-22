@@ -1,5 +1,6 @@
 import type { Context } from 'aws-lambda';
 import { runAgentTurn, DEFAULT_MODEL } from './lib/agent.js';
+import { clientIp } from './lib/clientIp.js';
 import { hashIp } from './lib/ipHash.js';
 import { checkRateLimit } from './lib/rateLimit.js';
 import { formatSseEvent } from './lib/sse.js';
@@ -24,6 +25,7 @@ declare const awslambda: {
 interface LambdaFunctionUrlEvent {
   body?: string;
   isBase64Encoded?: boolean;
+  headers?: Record<string, string | undefined>;
   requestContext?: {
     http?: {
       sourceIp?: string;
@@ -46,7 +48,8 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
   });
 
   const startedAt = new Date().toISOString();
-  const ipHash = hashIp(event.requestContext?.http?.sourceIp ?? 'unknown');
+  const visitorIp = clientIp(event);
+  const ipHash = hashIp(visitorIp);
 
   const rawBody = decodeBody(event);
   if (!checkBodySize(rawBody)) {
