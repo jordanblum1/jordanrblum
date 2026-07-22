@@ -4,9 +4,11 @@ import {
   MAX_MESSAGE_CHARS,
   appendMessage,
   hasRoomForTurn,
+  hexEncode,
   loadChatState,
   parseSSEBuffer,
   saveChatState,
+  sha256Hex,
   truncateMessage,
   type ChatMessage,
   type ChatState,
@@ -80,6 +82,31 @@ test('loadChatState returns null when the shape does not match', () => {
 
   storage.setItem('k', JSON.stringify({ messages: [] }));
   expect(loadChatState(storage, 'k')).toBeNull();
+});
+
+test('hexEncode produces lowercase hex with zero-padded bytes', () => {
+  expect(hexEncode(new Uint8Array([]))).toBe('');
+  expect(hexEncode(new Uint8Array([0x00, 0x0f, 0xab, 0xff]))).toBe('000fabff');
+});
+
+test('sha256Hex matches the known SHA-256 test vector for "abc"', async () => {
+  // FIPS 180-2 test vector: sha256("abc")
+  expect(await sha256Hex('abc')).toBe(
+    'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+  );
+});
+
+test('sha256Hex hashes the empty string to the well-known digest', async () => {
+  expect(await sha256Hex('')).toBe(
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  );
+});
+
+test('sha256Hex hashes the UTF-8 encoding of non-ASCII input', async () => {
+  // sha256(utf8("é")) = sha256(0xc3 0xa9)
+  expect(await sha256Hex('é')).toBe(
+    '4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c',
+  );
 });
 
 test('parseSSEBuffer parses a single complete event', () => {

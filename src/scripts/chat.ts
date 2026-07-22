@@ -81,6 +81,24 @@ export function saveChatState(storage: StorageLike, state: ChatState, key: strin
   storage.setItem(key, JSON.stringify(state));
 }
 
+export function hexEncode(bytes: Uint8Array): string {
+  let hex = '';
+  for (const byte of bytes) hex += byte.toString(16).padStart(2, '0');
+  return hex;
+}
+
+// CloudFront forwards /api/chat to a Lambda Function URL behind Origin Access
+// Control, which SigV4-signs the origin request. For signed POSTs AWS requires
+// the VIEWER to send `x-amz-content-sha256` (lowercase-hex SHA-256 of the exact
+// body bytes) — without it the origin rejects with a signature mismatch.
+// Returns null when crypto.subtle is unavailable (non-secure context) so the
+// caller can proceed without the header rather than break chat entirely.
+export async function sha256Hex(text: string): Promise<string | null> {
+  if (typeof crypto === 'undefined' || !crypto.subtle) return null;
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return hexEncode(new Uint8Array(digest));
+}
+
 // Parses a (possibly partial) SSE byte buffer into complete `data:`-framed events plus
 // whatever incomplete text should be carried over into the next chunk. Events are
 // separated by a blank line; a multi-line `data:` body is joined with newlines per spec.
@@ -125,10 +143,16 @@ async function streamAssistantReply(
   let text = '';
 
   try {
+    // Serialize once: the hash must cover the exact bytes sent as the body.
+    const body = JSON.stringify({ conversationId, messages });
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const payloadHash = await sha256Hex(body);
+    if (payloadHash) headers['x-amz-content-sha256'] = payloadHash;
+
     const response = await fetch(ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ conversationId, messages }),
+      headers,
+      body,
       signal,
     });
 
