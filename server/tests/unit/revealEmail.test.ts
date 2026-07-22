@@ -54,5 +54,8 @@ describe('evaluateEmailReveal', () => {
 
     expect(result.allowed).toBe(false);
     expect(result.reason).toBe('contact_email_not_configured');
+    // The config check runs BEFORE the cap increment, so a misconfigured
+    // deploy never burns daily-cap slots on reveals that can't succeed.
+    expect(ddbMock.commandCalls(UpdateCommand)).toHaveLength(0);
   });
 });

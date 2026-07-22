@@ -22,12 +22,28 @@ export interface RevealResult {
  * this function's checks.
  */
 export async function evaluateEmailReveal({ priorUserTurns }: RevealParams): Promise<RevealResult> {
+  // Advisory gate only: priorUserTurns is counted from the client-supplied
+  // message history, so it is forgeable by design. The server-side global
+  // daily cap below is the real limiter — the email is public elsewhere on
+  // the site, so this turn gate is UX friction, not secrecy.
   if (priorUserTurns < MIN_PRIOR_USER_TURNS) {
     return {
       allowed: false,
       reason: 'insufficient_conversation',
       refusalInstruction:
         'Explain that you can share direct contact details once you have chatted a bit more, and invite the visitor to keep asking questions.',
+    };
+  }
+
+  // Check the email is configured BEFORE consuming a daily-cap slot, so a
+  // missing CONTACT_EMAIL doesn't burn cap entries on reveals that could
+  // never succeed.
+  const email = process.env.CONTACT_EMAIL;
+  if (!email) {
+    return {
+      allowed: false,
+      reason: 'contact_email_not_configured',
+      refusalInstruction: 'Explain that direct contact sharing is temporarily unavailable.',
     };
   }
 
@@ -39,15 +55,6 @@ export async function evaluateEmailReveal({ priorUserTurns }: RevealParams): Pro
       reason: 'daily_cap_reached',
       refusalInstruction:
         'Explain that direct contact sharing has reached its limit for today, and suggest trying again tomorrow.',
-    };
-  }
-
-  const email = process.env.CONTACT_EMAIL;
-  if (!email) {
-    return {
-      allowed: false,
-      reason: 'contact_email_not_configured',
-      refusalInstruction: 'Explain that direct contact sharing is temporarily unavailable.',
     };
   }
 
