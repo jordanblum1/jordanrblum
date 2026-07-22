@@ -282,3 +282,52 @@ test('the transcript is not a live region; exactly one announcement per complete
     'Hi there, I can help.',
   ]);
 });
+
+test('the question anchors near the top of the log on the second exchange', async ({ page }) => {
+  const reply =
+    'Jordan is a full-stack engineer at Roam. He works across the product, from realtime ' +
+    'infrastructure to interface polish, and keeps a stable of side projects going on the weekends. ' +
+    'Ask about any of them and I can go deeper.';
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: sseBody([
+        { type: 'delta', text: reply.slice(0, 60) },
+        { type: 'delta', text: reply.slice(60) },
+        { type: 'done' },
+      ]),
+    });
+  });
+
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  const userBubbles = page.locator('[data-chat-log] .chat-bubble.role-user');
+  const input = page.locator('[data-chat-input]');
+
+  await input.fill('First question about Jordan?');
+  await page.locator('[data-chat-send]').click();
+  await expect(page.locator('[data-chat-log] .chat-followups .chat-chip').first()).toBeVisible();
+
+  await input.fill('Second question about Roam?');
+  await page.locator('[data-chat-send]').click();
+  await expect(userBubbles).toHaveCount(2);
+  await expect(page.locator('[data-chat-log] .chat-bubble.role-assistant')).toHaveCount(2);
+  await expect(page.locator('[data-chat-log] .chat-followups .chat-chip').first()).toBeVisible();
+
+  // Measured anchor: after the exchange settles, the scroller really sits at
+  // the second question's top-anchor position (offsetTop - 12), not clamped
+  // to the old bottom.
+  const measured = await page.evaluate(() => {
+    const scroller = document.querySelector<HTMLElement>('[data-chat-scroll]')!;
+    const bubbles = document.querySelectorAll<HTMLElement>('[data-chat-log] .chat-bubble.role-user');
+    const last = bubbles[bubbles.length - 1];
+    return {
+      scrollTop: scroller.scrollTop,
+      target: Math.max(0, last.offsetTop - 12),
+      spacer: document.querySelector('[data-chat-log] .chat-spacer') !== null,
+    };
+  });
+  expect(measured.target).toBeGreaterThan(0);
+  expect(Math.abs(measured.scrollTop - measured.target)).toBeLessThanOrEqual(2);
+  expect(measured.spacer).toBe(true);
+});

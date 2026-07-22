@@ -354,6 +354,37 @@ function initChatWidget(): void {
     });
   }
 
+  // The in-flight exchange gets a spacer below it so the user's question can
+  // actually pin near the top of the viewport while the reply is still short —
+  // without it, setting scrollTop to the anchor just clamps against
+  // scrollHeight and the question stays stuck at the bottom edge. The spacer
+  // shrinks as the reply streams in and stays (re-balanced) after completion
+  // so the anchor holds.
+  let spacer: HTMLElement | null = null;
+  let anchorTarget = 0;
+
+  function ensureSpacer(): HTMLElement {
+    if (!spacer || spacer.parentElement !== log) {
+      spacer = document.createElement('div');
+      spacer.className = 'chat-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+    }
+    // The spacer always sits last in the log.
+    log!.appendChild(spacer);
+    return spacer;
+  }
+
+  function sizeSpacerFor(userBubble: HTMLElement): void {
+    const el = ensureSpacer();
+    const previousScrollTop = scroller!.scrollTop;
+    anchorTarget = Math.max(0, userBubble.offsetTop - 12);
+    const contentHeight = scroller!.scrollHeight - el.offsetHeight;
+    const deficit = anchorTarget + scroller!.clientHeight - contentHeight;
+    el.style.height = `${Math.max(0, deficit)}px`;
+    // Re-balancing must never move the viewport on its own.
+    scroller!.scrollTop = previousScrollTop;
+  }
+
   function syncJump(): void {
     jumpButton!.hidden = !(isStreaming() && distanceFromLatest() > 56);
   }
@@ -461,14 +492,24 @@ function initChatWidget(): void {
 
     controller = new AbortController();
     const assistantBubble = makeBubble('assistant');
-    // Top-anchor the new exchange: the question sits at the top of the viewport
-    // and the reply streams in below it. No auto-follow while it grows.
-    scroller!.scrollTop = userBubble.offsetTop - 12;
+    // Top-anchor the new exchange: the question pins near the top of the
+    // viewport and the reply streams in below it. No auto-follow while it
+    // grows. The spacer makes the anchor reachable from the first frame.
+    sizeSpacerFor(userBubble);
+    scroller!.scrollTop = anchorTarget;
     stopButton!.hidden = false;
 
+    let firstDelta = true;
     const stream = new MarkdownStream(assistantBubble);
     const result = await streamAssistantReply(state.messages, state.conversationId, controller.signal, (delta) => {
       stream.append(delta);
+      sizeSpacerFor(userBubble);
+      if (firstDelta) {
+        // Re-apply the anchor once real content exists — layout may have
+        // shifted between send time and the first delta.
+        firstDelta = false;
+        scroller!.scrollTop = anchorTarget;
+      }
       syncJump();
     });
 
@@ -500,6 +541,10 @@ function initChatWidget(): void {
       assistantBubble.classList.add('role-system');
       announce(result.message);
     }
+
+    // Chips or an error bubble changed the content below the question —
+    // re-balance the spacer (and keep it last) so the anchor stays valid.
+    sizeSpacerFor(userBubble);
 
     updateComposerAvailability();
     if (!input!.disabled && !panel!.hidden) input!.focus();
