@@ -20,15 +20,15 @@ const starters = [
     class="chat-panel"
     role="dialog"
     aria-modal="true"
-    aria-labelledby="chat-panel-title"
+    aria-label="Chat with Jordy, Jordan’s assistant"
     data-chat-panel
     hidden
   >
     <header class="chat-header">
-      <div class="chat-heading">
-        <h2 id="chat-panel-title" class="chat-name">Jordy</h2>
-        <p class="chat-tagline">Jordan’s assistant</p>
-      </div>
+      <!-- Just the painted title and the close button, floating over the
+           panel surface — the dialog's aria-label carries the "Jordan's
+           assistant" context now that the visible tagline is gone. -->
+      <h2 id="chat-panel-title" class="chat-name"><span class="chat-name-ask">ask</span> Jordy</h2>
       <button type="button" class="chat-close" data-chat-close aria-label="Close chat">
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
           <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -161,20 +161,28 @@ const starters = [
     pointer-events: none;
   }
 
+  /* The header floats over the shared panel surface — no divider. A soft
+     paper→transparent fade hangs below it so scrolled messages sink under the
+     title instead of butting into it (a gradient, deliberately not a line). */
   .chat-header {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-4) var(--space-5) var(--space-3);
-    border-bottom: 1px solid var(--hairline);
+    padding: var(--space-4) var(--space-5) var(--space-2);
   }
 
-  .chat-heading {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-3);
-    min-width: 0;
+  .chat-header::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 1.5rem;
+    background: linear-gradient(to bottom, var(--paper-raised), transparent);
+    pointer-events: none;
   }
 
   .chat-name {
@@ -185,11 +193,11 @@ const starters = [
     letter-spacing: 0.01em;
   }
 
-  .chat-tagline {
+  /* "ask" steps back a touch so the name carries the header, mirroring the
+     intro's accent-red Jordy. */
+  .chat-name-ask {
+    font-size: 0.78em;
     color: var(--ink-muted);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.02em;
   }
 
   .chat-close {
@@ -227,7 +235,7 @@ const starters = [
     overscroll-behavior: contain;
     /* Extra bottom padding keeps the floating jump pill clear of the
        last line of a revealed reply. */
-    padding: var(--space-5) var(--space-5) var(--space-8);
+    padding: var(--space-3) var(--space-5) var(--space-8);
     min-height: 16rem;
   }
 
@@ -489,6 +497,17 @@ const starters = [
     opacity: 1;
   }
 
+  /* An always-on, shallower fade keeps the transcript's last line from
+     sitting flush against the composer zone — one surface, softly settled. */
+  .chat-float::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 1.1rem;
+    background: linear-gradient(to top, var(--paper-raised), transparent);
+    pointer-events: none;
+  }
+
   .chat-pill {
     position: relative;
     display: inline-flex;
@@ -555,12 +574,13 @@ const starters = [
     display: none;
   }
 
+  /* The composer blends into the panel — no divider; the input's own outline
+     is the only edge in the zone. */
   .chat-form {
     display: flex;
     gap: var(--space-2);
     align-items: flex-end;
-    padding: var(--space-3) var(--space-4);
-    border-top: 1px solid var(--hairline);
+    padding: var(--space-2) var(--space-4) var(--space-4);
   }
 
   .chat-input {

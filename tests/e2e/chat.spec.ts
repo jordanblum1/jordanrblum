@@ -27,9 +27,11 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(panel).toHaveAttribute('aria-modal', 'true');
   await expect(navChat).toHaveAttribute('aria-expanded', 'true');
 
-  // Header identity + empty-state intro copy.
-  await expect(panel.locator('#chat-panel-title')).toHaveText('Jordy');
-  await expect(panel.locator('.chat-tagline')).toHaveText('Jordan’s assistant');
+  // Header identity: just the painted "ask Jordy" title — no tagline. The
+  // dialog's accessible name carries the assistant context instead.
+  await expect(panel.locator('#chat-panel-title')).toHaveText('ask Jordy');
+  await expect(panel.locator('.chat-tagline')).toHaveCount(0);
+  await expect(panel).toHaveAttribute('aria-label', 'Chat with Jordy, Jordan’s assistant');
   const intro = page.locator('[data-chat-intro]');
   await expect(intro).toBeVisible();
   await expect(intro).toContainText('Hi, I’m Jordy — Jordan’s assistant.');
