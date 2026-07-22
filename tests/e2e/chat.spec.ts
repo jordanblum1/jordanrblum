@@ -149,16 +149,24 @@ test('markdown in the reply renders as real elements, never raw HTML', async ({ 
   await expect(reply).toContainText('<img src=x onerror=alert(1)>');
 });
 
-test('stop generating aborts the stream and keeps the partial reply', async ({ page }) => {
+test('a typing indicator shows while the reply generates and the full reply reveals at once', async ({ page }) => {
   // Playwright's route.fulfill can only deliver a complete body, so a real
-  // local SSE server streams one delta and then stays open until the client
-  // aborts — exactly the state the stop button exists for.
+  // local SSE server streams one delta immediately and holds the stream open —
+  // long enough to observe the buffering state: the indicator is up and
+  // nothing has painted yet, even though a delta already arrived.
   const responses = new Set<import('node:http').ServerResponse>();
   const server: Server = createServer((request, response) => {
     responses.add(response);
     response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
     response.write('data: {"type":"delta","text":"Jordan is a **full-stack** engineer"}\n\n');
-    request.on('close', () => responses.delete(response));
+    const finish = setTimeout(() => {
+      response.write('data: {"type":"delta","text":" at Roam."}\n\ndata: {"type":"done"}\n\n');
+      response.end();
+    }, 700);
+    request.on('close', () => {
+      clearTimeout(finish);
+      responses.delete(response);
+    });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const port = (server.address() as AddressInfo).port;
@@ -170,17 +178,25 @@ test('stop generating aborts the stream and keeps the partial reply', async ({ p
     await page.locator('[data-chat-input]').fill('Tell me everything about Jordan');
     await page.locator('[data-chat-send]').click();
 
-    const stop = page.locator('[data-chat-stop]');
-    await expect(stop).toBeVisible();
-    const reply = page.locator('[data-chat-log] .chat-bubble.role-assistant').last();
-    await expect(reply).toContainText('full-stack');
+    // The indicator appears immediately on send: three decorative dots in an
+    // assistant bubble, hidden from assistive tech (the announcer covers it).
+    const typing = page.locator('[data-chat-log] .chat-typing');
+    await expect(typing).toBeVisible();
+    await expect(typing.locator('.chat-typing-dot')).toHaveCount(3);
+    await expect(typing).toHaveAttribute('aria-hidden', 'true');
 
-    await stop.click();
+    // No progressive paint: deltas buffer silently behind the indicator, and
+    // there is no stop affordance in any state.
+    const painted = page.locator('[data-chat-log] .chat-bubble.role-assistant:not(.chat-typing)');
+    await expect(painted).toHaveCount(0);
+    await expect(page.locator('[data-chat-stop]')).toHaveCount(0);
 
-    await expect(stop).toBeHidden();
-    // Partial text is kept (rendered markdown included) and quietly marked.
-    await expect(reply.locator('strong')).toHaveText('full-stack');
-    await expect(reply.locator('.chat-stopped-note')).toHaveText('— stopped');
+    // On completion the indicator is gone and the whole reply is revealed,
+    // markdown rendered.
+    await expect(painted).toHaveCount(1);
+    await expect(typing).toHaveCount(0);
+    await expect(painted.first().locator('strong')).toHaveText('full-stack');
+    await expect(painted.first()).toContainText('Jordan is a full-stack engineer at Roam.');
     await expect(page.locator('[data-chat-input]')).toBeEnabled();
   } finally {
     for (const response of responses) response.destroy();

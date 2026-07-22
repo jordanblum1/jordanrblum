@@ -54,6 +54,20 @@ export function formatCharCount(length: number, max: number = MAX_MESSAGE_CHARS)
   return `${length.toLocaleString('en-US')} / ${max.toLocaleString('en-US')}`;
 }
 
+// --- Reveal cascade ----------------------------------------------------------
+// Replies are buffered behind a typing indicator and revealed whole: each
+// rendered block fades/rises in over REVEAL_BLOCK_MS, staggered by
+// REVEAL_STAGGER_MS, with the stagger capped so even a long reply finishes its
+// reveal well under a second.
+
+export const REVEAL_BLOCK_MS = 140;
+export const REVEAL_STAGGER_MS = 70;
+export const REVEAL_MAX_DELAY_MS = 560;
+
+export function revealDelay(index: number): number {
+  return Math.min(Math.max(0, index) * REVEAL_STAGGER_MS, REVEAL_MAX_DELAY_MS);
+}
+
 // A turn always writes a user message and (on success) an assistant reply, so a
 // turn only starts if both slots fit under the cap — otherwise a user message
 // could get stranded with no room left for its reply.
@@ -291,7 +305,6 @@ function initChatWidget(): void {
   const form = document.querySelector<HTMLFormElement>('[data-chat-form]');
   const input = document.querySelector<HTMLTextAreaElement>('[data-chat-input]');
   const sendButton = document.querySelector<HTMLButtonElement>('[data-chat-send]');
-  const stopButton = document.querySelector<HTMLButtonElement>('[data-chat-stop]');
   const jumpButton = document.querySelector<HTMLButtonElement>('[data-chat-jump]');
   const notice = document.querySelector<HTMLElement>('[data-chat-notice]');
   const announcer = document.querySelector<HTMLElement>('[data-chat-announce]');
@@ -299,7 +312,7 @@ function initChatWidget(): void {
 
   if (
     !panel || !closeButton || !scroller || !intro || !log || !form ||
-    !input || !sendButton || !stopButton || !jumpButton || !notice ||
+    !input || !sendButton || !jumpButton || !notice ||
     !announcer || !counter
   ) {
     return;
@@ -337,13 +350,12 @@ function initChatWidget(): void {
   }
 
   // --- Screen-reader announcements -------------------------------------------
-  // The visual transcript is deliberately NOT a live region: streaming re-renders
-  // the growing block on every delta, which would re-announce the whole
-  // accumulated paragraph each time, and reopening the panel re-renders history.
-  // Instead this visually-hidden region announces exactly two things: a
-  // completed assistant reply (its rendered plain text, once) and error/limit
-  // notices. The visitor's own message, chips, and restored history are never
-  // announced.
+  // The visual transcript is deliberately NOT a live region: replies buffer
+  // behind the typing indicator and reveal whole, and reopening the panel
+  // re-renders history. Instead this visually-hidden region announces exactly
+  // two things: a completed assistant reply (its rendered plain text, once)
+  // and error/limit notices. The visitor's own message, chips, restored
+  // history, and the typing indicator are never announced.
 
   let announceTimer = 0;
 
@@ -420,10 +432,10 @@ function initChatWidget(): void {
   });
 
   // --- Scroll behavior -------------------------------------------------------
-  // Research-verified pattern: a new assistant reply is top-anchored (the
-  // exchange pins to the top of the viewport) and the viewport does NOT follow
-  // the growing text. When the reply grows past the fold, an opt-in
-  // "jump to latest" pill appears instead.
+  // A new exchange is top-anchored: the question pins to the top of the
+  // viewport with the typing indicator (then the revealed reply) beneath it.
+  // The viewport never follows on its own; when a revealed reply's tail sits
+  // below the fold, an opt-in "jump to latest" pill appears instead.
 
   function distanceFromLatest(): number {
     return scroller!.scrollHeight - scroller!.scrollTop - scroller!.clientHeight;
@@ -437,11 +449,10 @@ function initChatWidget(): void {
   }
 
   // The in-flight exchange gets a spacer below it so the user's question can
-  // actually pin near the top of the viewport while the reply is still short —
-  // without it, setting scrollTop to the anchor just clamps against
+  // actually pin near the top of the viewport while the content below is still
+  // short — without it, setting scrollTop to the anchor just clamps against
   // scrollHeight and the question stays stuck at the bottom edge. The spacer
-  // shrinks as the reply streams in and stays (re-balanced) after completion
-  // so the anchor holds.
+  // re-balances when the reply reveals and stays afterwards so the anchor holds.
   let spacer: HTMLElement | null = null;
   let anchorTarget = 0;
 
@@ -467,11 +478,9 @@ function initChatWidget(): void {
     scroller!.scrollTop = previousScrollTop;
   }
 
-  // Opt-in follow: clicking "Jump to latest" during a stream sticks the view
-  // to the bottom until the visitor scrolls up again — still no forced
-  // auto-follow. The pill also lingers briefly after streaming ends when the
-  // reply's tail (and its chips) sit below the fold.
-  let follow = false;
+  // The "Jump to latest" pill: available while waiting on a reply if the
+  // visitor scrolls up, and it lingers briefly after a reveal whose tail (and
+  // chips) sit below the fold.
   let jumpLinger = false;
   let jumpLingerTimer = 0;
 
@@ -479,25 +488,10 @@ function initChatWidget(): void {
     jumpButton!.hidden = !(distanceFromLatest() > 56 && (isStreaming() || jumpLinger));
   }
 
-  scroller.addEventListener('scroll', () => {
-    // A scroll that leaves the bottom is the visitor's — programmatic follow
-    // scrolls always land flush at the bottom.
-    if (follow && distanceFromLatest() > 72) follow = false;
-    syncJump();
-  });
-  scroller.addEventListener(
-    'wheel',
-    (event) => {
-      if (event.deltaY < 0) follow = false;
-    },
-    { passive: true },
-  );
+  scroller.addEventListener('scroll', syncJump);
   jumpButton.addEventListener('click', () => {
-    follow = isStreaming();
     jumpLinger = false;
-    // Instant when entering follow so the smooth animation's intermediate
-    // positions don't read as the visitor scrolling away.
-    scrollToLatest(!follow);
+    scrollToLatest(true);
     jumpButton!.hidden = true;
   });
 
@@ -515,6 +509,50 @@ function initChatWidget(): void {
     if (role === 'assistant') renderMarkdownInto(bubble, text);
     else bubble.textContent = text;
     return bubble;
+  }
+
+  // iMessage-style typing indicator: an assistant bubble holding three
+  // staggered bouncing dots. Purely decorative — the aria-live announcer
+  // handles assistive tech, so the whole bubble is aria-hidden.
+  function makeTypingIndicator(): HTMLElement {
+    const bubble = makeBubble('assistant');
+    bubble.classList.add('chat-typing');
+    bubble.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 3; i += 1) {
+      const dot = document.createElement('span');
+      dot.className = 'chat-typing-dot';
+      bubble.appendChild(dot);
+    }
+    return bubble;
+  }
+
+  // Applies the reveal cascade (opacity + 4px rise, staggered per block) to an
+  // element and cleans the animation styles up afterwards. No-op under
+  // prefers-reduced-motion: the content simply appears in place.
+  function applyReveal(el: HTMLElement, index: number): void {
+    if (reducedMotion.matches) return;
+    el.classList.add('chat-reveal');
+    el.style.animationDelay = `${revealDelay(index)}ms`;
+    el.addEventListener(
+      'animationend',
+      () => {
+        el.classList.remove('chat-reveal');
+        el.style.animationDelay = '';
+      },
+      { once: true },
+    );
+  }
+
+  // Moves the buffered, already-rendered blocks into the live bubble. Layout
+  // is final immediately (the cascade only animates opacity/transform), so the
+  // anchor/spacer math can run right away.
+  function revealBlocks(bubble: HTMLElement, rendered: HTMLElement, cascade: boolean): number {
+    const blocks = Array.from(rendered.children) as HTMLElement[];
+    blocks.forEach((block, index) => {
+      if (cascade) applyReveal(block, index);
+      bubble.appendChild(block);
+    });
+    return blocks.length;
   }
 
   function clearFollowUps(): void {
@@ -605,66 +643,61 @@ function initChatWidget(): void {
     sendButton!.disabled = true;
 
     controller = new AbortController();
-    const assistantBubble = makeBubble('assistant');
-    // Top-anchor the new exchange: the question pins near the top of the
-    // viewport and the reply streams in below it. No auto-follow while it
-    // grows. The spacer makes the anchor reachable from the first frame.
+
+    // The typing indicator appears immediately; SSE deltas buffer into a
+    // detached container (rendered block-incrementally by MarkdownStream but
+    // never painted) and the whole reply reveals at once on completion.
+    const typing = makeTypingIndicator();
     sizeSpacerFor(userBubble);
     scroller!.scrollTop = anchorTarget;
-    follow = false;
-    stopButton!.hidden = false;
 
-    let firstDelta = true;
-    const stream = new MarkdownStream(assistantBubble);
-    const result = await streamAssistantReply(state.messages, state.conversationId, controller.signal, (delta) => {
-      stream.append(delta);
-      sizeSpacerFor(userBubble);
-      if (firstDelta) {
-        // Re-apply the anchor once real content exists — layout may have
-        // shifted between send time and the first delta.
-        firstDelta = false;
-        scroller!.scrollTop = anchorTarget;
-      } else if (follow) {
-        scrollToLatest();
-      }
-      syncJump();
-    });
+    const buffered = document.createElement('div');
+    const stream = new MarkdownStream(buffered);
+    const result = await streamAssistantReply(
+      state.messages,
+      state.conversationId,
+      controller.signal,
+      (delta) => stream.append(delta),
+    );
 
     controller = null;
-    stopButton!.hidden = true;
-    follow = false;
+    typing.remove();
 
     if (result.ok) {
       state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
       persist();
+      const bubble = makeBubble('assistant');
+      const blockCount = revealBlocks(bubble, buffered, true);
       showFollowUps(detectTopic(`${content} ${result.text}`));
+      // The chips ride in at the tail of the cascade.
+      const wrap = log!.querySelector<HTMLElement>('.chat-followups');
+      if (wrap) applyReveal(wrap, blockCount);
       // One announcement per completed reply, as rendered plain text.
-      announce(assistantBubble.textContent ?? '');
+      announce(bubble.textContent ?? '');
     } else if (result.aborted) {
       if (result.text) {
-        // Keep the partial reply (on screen and in history) with a quiet marker.
+        // An abort only happens when the panel closes mid-reply — keep the
+        // buffered partial in history (and the log) so it's there on reopen.
         state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
         persist();
-        const note = document.createElement('span');
-        note.className = 'chat-stopped-note';
-        note.textContent = '— stopped';
-        assistantBubble.appendChild(note);
-        announce(assistantBubble.textContent ?? '');
-      } else {
-        assistantBubble.remove();
+        const bubble = makeBubble('assistant');
+        revealBlocks(bubble, buffered, false);
       }
     } else {
-      assistantBubble.textContent = result.message;
-      assistantBubble.classList.add('role-system');
+      const bubble = makeBubble('assistant');
+      bubble.textContent = result.message;
+      bubble.classList.add('role-system');
       announce(result.message);
     }
 
-    // Chips or an error bubble changed the content below the question —
-    // re-balance the spacer (and keep it last) so the anchor stays valid.
+    // Anchor the reveal: the question pins to the top of the viewport and the
+    // reply (or error) sits beneath it. Layout is final at this point — the
+    // cascade animates opacity/transform only — so the measurement is stable.
     sizeSpacerFor(userBubble);
+    scroller!.scrollTop = anchorTarget;
 
-    // Keep "Jump to latest" available briefly when the reply's tail and its
-    // chips ended up below the fold, then let it fade away.
+    // Keep "Jump to latest" available briefly when the revealed reply's tail
+    // and its chips ended up below the fold, then let it fade away.
     if (distanceFromLatest() > 56) {
       jumpLinger = true;
       window.clearTimeout(jumpLingerTimer);
@@ -748,11 +781,6 @@ function initChatWidget(): void {
   }
 
   closeButton.addEventListener('click', closePanel);
-
-  stopButton.addEventListener('click', () => {
-    stopButton!.hidden = true;
-    controller?.abort();
-  });
 
   for (const chip of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-chat-chip]'))) {
     chip.addEventListener('click', () => void sendMessage(chip.textContent ?? ''));

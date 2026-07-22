@@ -47,19 +47,15 @@ const starters = [
       <div class="chat-log" data-chat-log></div>
     </div>
 
-    <!-- The transcript above is deliberately not a live region (streaming
-         re-renders the growing block per delta and reopening re-renders
-         history, both of which would spam screen readers). This hidden region
+    <!-- The transcript above is deliberately not a live region (replies buffer
+         behind the typing indicator and reveal whole, and reopening re-renders
+         history — both would spam screen readers if live). This hidden region
          announces only completed replies and error/limit notices. -->
     <div class="visually-hidden" aria-live="polite" data-chat-announce></div>
 
     <div class="chat-float">
       <button type="button" class="chat-pill chat-jump" data-chat-jump hidden>
         Jump to latest <span aria-hidden="true">↓</span>
-      </button>
-      <button type="button" class="chat-pill chat-stop" data-chat-stop hidden>
-        <svg aria-hidden="true" viewBox="0 0 20 20"><rect x="6" y="6" width="8" height="8" rx="1.5" fill="currentColor" /></svg>
-        Stop
       </button>
     </div>
 
@@ -217,8 +213,8 @@ const starters = [
     gap: var(--space-4);
     overflow-y: auto;
     overscroll-behavior: contain;
-    /* Extra bottom padding keeps the floating stop/jump pills clear of the
-       last line of a streaming reply. */
+    /* Extra bottom padding keeps the floating jump pill clear of the
+       last line of a revealed reply. */
     padding: var(--space-5) var(--space-5) var(--space-8);
     min-height: 16rem;
   }
@@ -408,15 +404,6 @@ const starters = [
     text-decoration-color: var(--accent);
   }
 
-  :global(.chat-log .chat-stopped-note) {
-    display: block;
-    margin-top: var(--space-1);
-    color: var(--ink-muted);
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.02em;
-  }
-
   :global(.chat-log .chat-bubble.role-system) {
     align-self: center;
     max-width: 100%;
@@ -439,8 +426,7 @@ const starters = [
 
   /* --- Floating pills (stop / jump) ----------------------------------------- */
 
-  /* A zero-height row whose pills are lifted up over the log, so stop and
-     jump never collide with each other. */
+  /* A zero-height row whose pill is lifted up over the log. */
   .chat-float {
     position: relative;
     z-index: 1;
@@ -450,7 +436,7 @@ const starters = [
     height: 0;
   }
 
-  /* While a pill is showing, fade the log out underneath it so streaming text
+  /* While a pill is showing, fade the log out underneath it so transcript text
      never visually threads through the pill row. */
   .chat-float::before {
     content: '';
@@ -499,11 +485,6 @@ const starters = [
   :global(html.pointer-moved) .chat-pill:hover {
     color: var(--heading);
     border-color: var(--ink-muted);
-  }
-
-  :global(html.pointer-moved) .chat-stop:hover {
-    color: var(--accent);
-    border-color: color-mix(in oklab, var(--accent) 55%, var(--hairline));
   }
 
   /* --- Composer -------------------------------------------------------------- */
@@ -683,6 +664,94 @@ const starters = [
 
     :global(html.pointer-moved) .chat-send:not(:disabled):hover {
       transform: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Typing indicator + reveal cascade. These elements are all created at
+     runtime by chat.ts, and their @keyframes must keep their literal names
+     (Astro scoping would rename them out from under the runtime-added
+     classes), so this block is global with prefixed keyframe names. */
+
+  /* Three ink-muted dots on the flat assistant style, staggered through a
+     1.2s iMessage-style bounce/fade loop. */
+  .chat-log .chat-bubble.chat-typing {
+    display: flex;
+    align-items: center;
+    gap: 0.32rem;
+    /* Roughly one line of reply text, so the indicator→reply swap sits still. */
+    min-height: 1.4rem;
+  }
+
+  .chat-typing .chat-typing-dot {
+    width: 0.44rem;
+    height: 0.44rem;
+    border-radius: 50%;
+    background: var(--ink-muted);
+    animation: jrb-chat-typing-bounce 1.2s ease-in-out infinite;
+  }
+
+  .chat-typing .chat-typing-dot:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  .chat-typing .chat-typing-dot:nth-child(3) {
+    animation-delay: 300ms;
+  }
+
+  @keyframes jrb-chat-typing-bounce {
+    0%,
+    55%,
+    100% {
+      transform: none;
+      opacity: 0.4;
+    }
+    25% {
+      transform: translateY(-0.26rem);
+      opacity: 1;
+    }
+  }
+
+  /* Reveal cascade: chat.ts adds .chat-reveal plus a per-block
+     animation-delay (70ms stagger, capped) to each rendered block, then
+     removes both on animationend. `both` keeps delayed blocks invisible
+     until their turn. */
+  .chat-log .chat-reveal {
+    animation: jrb-chat-reveal-in 140ms var(--ease) both;
+  }
+
+  @keyframes jrb-chat-reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Static dots with a gentle opacity pulse — no movement. */
+    .chat-typing .chat-typing-dot {
+      animation: jrb-chat-typing-pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes jrb-chat-typing-pulse {
+      0%,
+      100% {
+        opacity: 0.35;
+      }
+      50% {
+        opacity: 0.8;
+      }
+    }
+
+    /* Belt and suspenders: chat.ts already skips the cascade classes under
+       reduced motion. */
+    .chat-log .chat-reveal {
+      animation: none;
     }
   }
 </style>

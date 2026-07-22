@@ -5,6 +5,9 @@ import {
   LIMIT_NOTICE,
   MAX_MESSAGES,
   MAX_MESSAGE_CHARS,
+  REVEAL_BLOCK_MS,
+  REVEAL_MAX_DELAY_MS,
+  REVEAL_STAGGER_MS,
   appendMessage,
   detectTopic,
   followUpsFor,
@@ -13,6 +16,7 @@ import {
   hexEncode,
   loadChatState,
   parseSSEBuffer,
+  revealDelay,
   saveChatState,
   sha256Hex,
   shouldShowCharCount,
@@ -224,6 +228,29 @@ test('shouldShowCharCount rounds the threshold up for odd caps', () => {
 test('formatCharCount renders thousands-separated "used / max"', () => {
   expect(formatCharCount(1840, 2000)).toBe('1,840 / 2,000');
   expect(formatCharCount(1700, 2000)).toBe('1,700 / 2,000');
+});
+
+// --- Reveal cascade ----------------------------------------------------------
+
+test('revealDelay staggers blocks by 70ms starting at zero', () => {
+  expect(REVEAL_STAGGER_MS).toBe(70);
+  expect(revealDelay(0)).toBe(0);
+  expect(revealDelay(1)).toBe(REVEAL_STAGGER_MS);
+  expect(revealDelay(3)).toBe(3 * REVEAL_STAGGER_MS);
+});
+
+test('revealDelay caps the stagger so long replies still reveal fast', () => {
+  expect(revealDelay(100)).toBe(REVEAL_MAX_DELAY_MS);
+  expect(revealDelay(REVEAL_MAX_DELAY_MS / REVEAL_STAGGER_MS + 1)).toBe(REVEAL_MAX_DELAY_MS);
+});
+
+test('revealDelay clamps a negative index to zero', () => {
+  expect(revealDelay(-2)).toBe(0);
+});
+
+test('the whole cascade finishes well under a second', () => {
+  // Last block starts at the delay cap and runs for one block duration.
+  expect(REVEAL_MAX_DELAY_MS + REVEAL_BLOCK_MS).toBeLessThan(1000);
 });
 
 // --- Copy --------------------------------------------------------------------
