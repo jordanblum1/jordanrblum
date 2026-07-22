@@ -119,6 +119,47 @@ test('the empty state shows four starter chips with the suggested questions', as
   await expect(chips.nth(3)).toHaveText('How can I get in touch?');
 });
 
+test('the inset send action activates only when the composer has meaningful text', async ({ page }) => {
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+
+  const composer = page.locator('[data-chat-composer]');
+  const input = page.locator('[data-chat-input]');
+  const send = page.locator('[data-chat-send]');
+
+  await expect(composer).toBeVisible();
+  await expect(composer.locator('[data-chat-send]')).toHaveCount(1);
+  await expect(send.locator('svg')).toHaveCount(0);
+  await expect(send.locator('.chat-send-arrow')).toHaveText('↑');
+  await expect(send).toBeDisabled();
+
+  const disabledColor = await send.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await input.fill('   ');
+  await expect(send).toBeDisabled();
+
+  await input.fill('What is Jordan working on?');
+  await expect(send).toBeEnabled();
+  await expect
+    .poll(() => send.evaluate((element) => getComputedStyle(element).backgroundColor))
+    .not.toBe(disabledColor);
+  const activeColor = await send.evaluate((element) => getComputedStyle(element).backgroundColor);
+  expect(activeColor).not.toBe(disabledColor);
+
+  const geometry = await composer.evaluate((element) => {
+    const composerBounds = element.getBoundingClientRect();
+    const sendBounds = element.querySelector('[data-chat-send]')!.getBoundingClientRect();
+    return {
+      insetLeft: sendBounds.left >= composerBounds.left,
+      insetRight: sendBounds.right <= composerBounds.right,
+      insetTop: sendBounds.top >= composerBounds.top,
+      insetBottom: sendBounds.bottom <= composerBounds.bottom,
+    };
+  });
+  expect(geometry).toEqual({ insetLeft: true, insetRight: true, insetTop: true, insetBottom: true });
+
+  await input.fill('');
+  await expect(send).toBeDisabled();
+});
+
 test('clicking a starter chip sends it as a user message and follow-up chips appear after the reply', async ({ page }) => {
   await page.route('**/api/chat', async (route) => {
     await route.fulfill({
@@ -526,7 +567,9 @@ test.describe('mobile sheet', () => {
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     expect(fontSize).toBeGreaterThanOrEqual(16);
 
-    await page.locator('[data-chat-input]').click();
+    // Programmatic focus models the keyboard-opening state without letting
+    // Astro's development toolbar intercept a synthetic pointer click.
+    await page.locator('[data-chat-input]').focus();
     await page.setViewportSize({ width: 390, height: 500 });
 
     await expect(page.locator('[data-chat-form]')).toBeInViewport();

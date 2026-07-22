@@ -73,30 +73,24 @@ const starters = [
 
     <form class="chat-form" data-chat-form>
       <label class="visually-hidden" for="chat-input">Message Jordy, Jordan’s assistant</label>
-      <textarea
-        id="chat-input"
-        class="chat-input"
-        data-chat-input
-        rows="1"
-        maxlength="2000"
-        placeholder="Ask Jordy about Jordan…"
-        autocomplete="off"
-        aria-describedby="chat-input-hint"
-      ></textarea>
+      <div class="chat-composer" data-chat-composer>
+        <textarea
+          id="chat-input"
+          class="chat-input"
+          data-chat-input
+          rows="1"
+          maxlength="2000"
+          placeholder="Ask Jordy about Jordan…"
+          autocomplete="off"
+          aria-describedby="chat-input-hint"
+        ></textarea>
+        <button type="submit" class="chat-send" data-chat-send aria-label="Send message" disabled>
+          <span class="chat-send-arrow" aria-hidden="true">↑</span>
+        </button>
+      </div>
       <span id="chat-input-hint" class="visually-hidden">
         Press Enter to send, Shift and Enter for a new line. Messages can be up to 2000 characters.
       </span>
-      <button type="submit" class="chat-send" data-chat-send aria-label="Send message">
-        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
-          <path
-            d="M17 3 3 9.5l6 2.5m8-9-3.5 14L9 12.5m8-9L9 12.5"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-          />
-        </svg>
-      </button>
     </form>
 
   </section>
@@ -705,31 +699,42 @@ const starters = [
     display: none;
   }
 
-  /* The composer blends into the panel — no divider; the input's own outline
-     is the only edge in the zone. */
+  /* One quiet composer surface: the send action is inset into the field so it
+     reads as part of the message action, not as a second floating control. */
   .chat-form {
-    display: flex;
-    gap: var(--space-2);
-    align-items: flex-end;
     padding: var(--space-2) var(--space-4) var(--space-4);
   }
 
-  .chat-input {
-    flex: 1;
-    /* ~4 lines of 0.86rem/1.5 text plus padding; past that the field scrolls. */
-    max-height: 6.1rem;
-    padding: 0.55rem 0.8rem;
-    resize: none;
-    overflow-y: auto;
-    scrollbar-width: none;
+  .chat-composer {
+    position: relative;
+    display: flex;
+    min-height: 2.75rem;
+    align-items: flex-end;
+    overflow: hidden;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
     background: var(--surface);
+    transition: border-color var(--duration-default) var(--ease);
+  }
+
+  .chat-composer:focus-within {
+    border-color: color-mix(in oklab, var(--accent) 60%, var(--hairline));
+  }
+
+  .chat-input {
+    width: 100%;
+    /* ~4 lines of 0.86rem/1.5 text plus padding; past that the field scrolls. */
+    max-height: 6.1rem;
+    padding: 0.65rem 3.25rem 0.65rem 0.8rem;
+    resize: none;
+    overflow-y: auto;
+    scrollbar-width: none;
+    border: 0;
+    background: transparent;
     color: var(--ink);
     font-family: inherit;
     font-size: 0.86rem;
     line-height: 1.5;
-    transition: border-color var(--duration-default) var(--ease);
   }
 
   .chat-input::-webkit-scrollbar {
@@ -738,7 +743,6 @@ const starters = [
 
   .chat-input:focus-visible {
     outline: none;
-    border-color: color-mix(in oklab, var(--accent) 60%, var(--hairline));
   }
 
   .chat-input::placeholder {
@@ -750,32 +754,47 @@ const starters = [
   }
 
   .chat-send {
+    position: absolute;
+    right: var(--space-1);
+    bottom: var(--space-1);
     display: grid;
-    width: 2.4rem;
+    width: 2.25rem;
     aspect-ratio: 1;
-    flex: 0 0 auto;
     place-items: center;
     padding: 0;
-    border: 1px solid var(--hairline);
+    border: 1px solid var(--accent);
     border-radius: 50%;
     background: var(--accent);
     color: var(--accent-contrast);
     cursor: pointer;
-    transition: opacity var(--duration-default) var(--ease), transform var(--duration-default) var(--spring);
+    transition:
+      background-color var(--duration-default) var(--ease),
+      border-color var(--duration-default) var(--ease),
+      color var(--duration-default) var(--ease),
+      transform var(--duration-default) var(--spring);
   }
 
-  .chat-send svg {
-    width: 1.05rem;
-    height: 1.05rem;
+  .chat-send-arrow {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1;
   }
 
   .chat-send:disabled {
-    opacity: 0.5;
+    border-color: transparent;
+    background: color-mix(in oklab, var(--ink-muted) 14%, var(--surface));
+    color: color-mix(in oklab, var(--ink-muted) 72%, var(--hairline));
     cursor: default;
   }
 
   :global(html.pointer-moved) .chat-send:not(:disabled):hover {
     transform: translateY(-1px);
+  }
+
+  .chat-send:not(:disabled):active {
+    transform: scale(0.96);
   }
 
   /* Fullscreen sheet on phones — including landscape, where the height (not
@@ -856,6 +875,7 @@ const starters = [
     .chat-header,
     .chat-body,
     .chat-form,
+    .chat-composer,
     .chat-close,
     .chat-send,
     .chat-pill,

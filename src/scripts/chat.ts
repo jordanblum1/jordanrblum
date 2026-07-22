@@ -693,10 +693,15 @@ function initChatWidget(): void {
   // session — a restored already-full conversation is history, not news.
   let announcedFull = !hasRoomForTurn(state.messages, MAX_MESSAGES);
 
+  function syncSendAvailability(): void {
+    const full = !hasRoomForTurn(state!.messages, MAX_MESSAGES);
+    sendButton!.disabled = full || isStreaming() || input!.value.trim().length === 0;
+  }
+
   function updateComposerAvailability(): void {
     const full = !hasRoomForTurn(state!.messages, MAX_MESSAGES);
     input!.disabled = full;
-    sendButton!.disabled = full;
+    syncSendAvailability();
     notice!.hidden = !full;
     if (full) {
       renderNoticeInto(notice!, LIMIT_NOTICE);
@@ -876,6 +881,7 @@ function initChatWidget(): void {
   input.addEventListener('input', () => {
     autosizeInput();
     syncCharCount();
+    syncSendAvailability();
   });
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
