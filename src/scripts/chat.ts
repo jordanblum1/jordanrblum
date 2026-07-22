@@ -309,8 +309,9 @@ function initChatWidget(): void {
   // launcher; every trigger mirrors the panel's state.
   const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-chat-trigger]'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  // Mirrors the CSS breakpoint where the panel becomes a full-screen sheet.
-  const mobileSheet = window.matchMedia('(max-width: 30rem)');
+  // Mirrors the CSS breakpoint where the panel becomes a full-screen sheet
+  // (portrait phones by width, landscape phones by height).
+  const mobileSheet = window.matchMedia('(max-width: 30rem), (max-height: 30rem)');
 
   let state = loadChatState(sessionStorage, STORAGE_KEY);
   if (!state) {

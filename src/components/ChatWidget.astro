@@ -620,7 +620,10 @@ const starters = [
     text-underline-offset: 0.22em;
   }
 
-  @media (max-width: 30rem) {
+  /* Fullscreen sheet on phones — including landscape, where the height (not
+     the width) is what runs out and the floating panel's flex layout would
+     otherwise crush the header. */
+  @media (max-width: 30rem), (max-height: 30rem) {
     .chat-panel {
       inset: 0;
       right: 0;
@@ -640,6 +643,8 @@ const starters = [
        clear of the home indicator. */
     .chat-header {
       padding-top: calc(var(--space-4) + env(safe-area-inset-top));
+      padding-left: calc(var(--space-5) + env(safe-area-inset-left));
+      padding-right: calc(var(--space-5) + env(safe-area-inset-right));
     }
 
     .chat-form {
