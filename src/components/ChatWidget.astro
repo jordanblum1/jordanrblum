@@ -5,25 +5,6 @@ const [email] = social;
 ---
 
 <div class="chat-widget" data-chat-widget>
-  <button
-    type="button"
-    class="chat-launcher"
-    data-chat-launcher
-    aria-haspopup="dialog"
-    aria-expanded="false"
-    aria-controls="chat-panel"
-  >
-    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M3 5.5A2.5 2.5 0 0 1 5.5 3h9A2.5 2.5 0 0 1 17 5.5v6a2.5 2.5 0 0 1-2.5 2.5H8l-3.5 3v-3H5.5A2.5 2.5 0 0 1 3 11.5v-6Z"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linejoin="round"
-      />
-    </svg>
-    <span class="visually-hidden">Chat with Jordan’s assistant</span>
-  </button>
-
   <section
     id="chat-panel"
     class="chat-panel"
@@ -86,34 +67,13 @@ const [email] = social;
     z-index: 60;
   }
 
-  /* No-JS visitors never see the launcher — `html.js` is added synchronously in
-     <head> before the body is parsed, so there is no flash of an inert button. */
+  /* There is no floating launcher: the panel opens only from the nav "Chat"
+     button and the footer CTA (both `data-chat-trigger`, via chat.ts's
+     openChat/toggleChat API). No-JS visitors never see any of it — `html.js`
+     is added synchronously in <head> before the body is parsed, and the
+     triggers hide themselves the same way. */
   :global(html:not(.js)) .chat-widget {
     display: none;
-  }
-
-  .chat-launcher {
-    display: grid;
-    width: 3.5rem;
-    aspect-ratio: 1;
-    place-items: center;
-    border: 1px solid var(--hairline);
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--accent-contrast);
-    box-shadow: var(--shadow-lifted);
-    transition:
-      transform var(--duration-default) var(--spring),
-      box-shadow var(--duration-default) var(--ease);
-  }
-
-  .chat-launcher svg {
-    width: 1.5rem;
-    height: 1.5rem;
-  }
-
-  :global(html.pointer-moved) .chat-launcher:hover {
-    transform: translateY(-2px);
   }
 
   .chat-panel[hidden] {
@@ -305,13 +265,11 @@ const [email] = social;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .chat-launcher,
     .chat-close,
     .chat-send {
       transition: none;
     }
 
-    :global(html.pointer-moved) .chat-launcher:hover,
     :global(html.pointer-moved) .chat-send:not(:disabled):hover {
       transform: none;
     }

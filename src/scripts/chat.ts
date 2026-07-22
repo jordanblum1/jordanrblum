@@ -192,8 +192,36 @@ async function streamAssistantReply(
   }
 }
 
+// --- Open/close API ---------------------------------------------------------
+// The panel has no launcher of its own: the nav "Chat" button and the footer
+// "Chat with my assistant" CTA (both marked with `data-chat-trigger`) are the
+// only ways in. Their glue scripts import these functions instead of poking
+// widget-internal DOM. The trigger that opened the panel is remembered so
+// closing (Esc or the close button) returns focus to it.
+
+interface ChatPanelController {
+  open(trigger: HTMLElement | null): void;
+  close(): void;
+  isOpen(): boolean;
+}
+
+let panelController: ChatPanelController | null = null;
+
+export function openChat(trigger: HTMLElement | null = null): void {
+  panelController?.open(trigger);
+}
+
+export function closeChat(): void {
+  panelController?.close();
+}
+
+export function toggleChat(trigger: HTMLElement | null = null): void {
+  if (!panelController) return;
+  if (panelController.isOpen()) panelController.close();
+  else panelController.open(trigger);
+}
+
 function initChatWidget(): void {
-  const launcher = document.querySelector<HTMLButtonElement>('[data-chat-launcher]');
   const panel = document.querySelector<HTMLElement>('[data-chat-panel]');
   const closeButton = document.querySelector<HTMLButtonElement>('[data-chat-close]');
   const log = document.querySelector<HTMLElement>('[data-chat-log]');
@@ -202,7 +230,11 @@ function initChatWidget(): void {
   const sendButton = document.querySelector<HTMLButtonElement>('[data-chat-send]');
   const notice = document.querySelector<HTMLElement>('[data-chat-notice]');
 
-  if (!launcher || !panel || !closeButton || !log || !form || !input || !sendButton || !notice) return;
+  if (!panel || !closeButton || !log || !form || !input || !sendButton || !notice) return;
+
+  // aria-expanded lives on the triggers (nav + footer) now that there is no
+  // launcher; every trigger mirrors the panel's state.
+  const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-chat-trigger]'));
 
   const GREETING = "Hi, I'm Jordan's assistant — I can answer any questions about him. What would you like to know?";
 
@@ -213,9 +245,14 @@ function initChatWidget(): void {
   }
 
   let controller: AbortController | null = null;
+  let lastTrigger: HTMLElement | null = null;
 
   function persist(): void {
     saveChatState(sessionStorage, state!, STORAGE_KEY);
+  }
+
+  function setTriggersExpanded(expanded: boolean): void {
+    for (const trigger of triggers) trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   }
 
   function renderBubble(role: 'user' | 'assistant' | 'system', text: string): HTMLElement {
@@ -269,27 +306,27 @@ function initChatWidget(): void {
     }
   }
 
-  function openPanel(): void {
+  function openPanel(trigger: HTMLElement | null = null): void {
+    if (!panel!.hidden) return;
     panel!.hidden = false;
-    launcher!.setAttribute('aria-expanded', 'true');
+    lastTrigger = trigger;
+    setTriggersExpanded(true);
     renderHistory();
     (input!.disabled ? closeButton! : input!).focus();
     document.addEventListener('keydown', onKeydown);
   }
 
   function closePanel(): void {
+    if (panel!.hidden) return;
     panel!.hidden = true;
-    launcher!.setAttribute('aria-expanded', 'false');
+    setTriggersExpanded(false);
     document.removeEventListener('keydown', onKeydown);
     controller?.abort();
     controller = null;
-    launcher!.focus();
+    // Focus goes back to whichever trigger opened the panel.
+    lastTrigger?.focus();
+    lastTrigger = null;
   }
-
-  launcher.addEventListener('click', () => {
-    if (panel!.hidden) openPanel();
-    else closePanel();
-  });
 
   closeButton.addEventListener('click', closePanel);
 
@@ -338,6 +375,12 @@ function initChatWidget(): void {
     updateComposerAvailability();
     if (!input.disabled) input.focus();
   });
+
+  panelController = {
+    open: openPanel,
+    close: closePanel,
+    isOpen: () => !panel!.hidden,
+  };
 
   renderHistory();
 }

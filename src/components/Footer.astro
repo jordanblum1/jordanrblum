@@ -14,7 +14,15 @@ const blumMark = blumMarkSource
     <div class="footer-lead">
       <p class="footer-title">Want to chat?</p>
       <div class="footer-cta-group">
-        <button type="button" class="chat-cta" data-footer-chat-cta>
+        <button
+          type="button"
+          class="chat-cta"
+          data-footer-chat-cta
+          data-chat-trigger
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-controls="chat-panel"
+        >
           <span>Chat with my assistant</span>
           <span aria-hidden="true">→</span>
         </button>
@@ -55,14 +63,13 @@ const blumMark = blumMarkSource
 </footer>
 
 <script>
-  // The floating widget owns its own open/close state; this CTA just triggers its
-  // launcher so the footer doesn't need to duplicate that logic.
-  const cta = document.querySelector<HTMLButtonElement>('[data-footer-chat-cta]');
-  const launcher = document.querySelector<HTMLButtonElement>('[data-chat-launcher]');
+  import { toggleChat } from '../scripts/chat';
 
-  cta?.addEventListener('click', () => {
-    if (launcher?.getAttribute('aria-expanded') !== 'true') launcher?.click();
-  });
+  // The widget owns the panel and exposes an open/close API; passing the CTA
+  // lets the widget return focus here and keep this trigger's aria-expanded in
+  // sync when the panel closes.
+  const cta = document.querySelector<HTMLButtonElement>('[data-footer-chat-cta]');
+  cta?.addEventListener('click', () => toggleChat(cta));
 </script>
 
 <style>
@@ -125,8 +132,8 @@ const blumMark = blumMarkSource
     color: var(--accent-contrast);
   }
 
-  /* Matches the widget launcher: no-JS visitors never see a CTA that can't do
-     anything, so only the mailto fallback shows. */
+  /* No-JS visitors never see a CTA that can't do anything, so only the mailto
+     fallback shows. */
   :global(html:not(.js)) .chat-cta {
     display: none;
   }

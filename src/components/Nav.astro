@@ -37,7 +37,15 @@ const workHref = onHome ? '#work' : '/#work';
         </span>
         <span class="nav-label">About</span>
       </a>
-      <button class="nav-chat" type="button" data-nav-chat>
+      <button
+        class="nav-chat"
+        type="button"
+        data-nav-chat
+        data-chat-trigger
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="chat-panel"
+      >
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none">
             <path
@@ -64,13 +72,13 @@ const workHref = onHome ? '#work' : '/#work';
 </nav>
 
 <script>
-  // Same glue as the footer CTA: the floating widget owns its open/close state,
-  // the nav trigger just pokes its launcher.
+  import { toggleChat } from '../scripts/chat';
+
+  // Same glue as the footer CTA: the widget owns the panel and exposes an
+  // open/close API. Passing the button lets the widget return focus here and
+  // keep this trigger's aria-expanded in sync when the panel closes.
   const navChat = document.querySelector<HTMLButtonElement>('[data-nav-chat]');
-  navChat?.addEventListener('click', () => {
-    const launcher = document.querySelector<HTMLButtonElement>('[data-chat-launcher]');
-    if (launcher?.getAttribute('aria-expanded') !== 'true') launcher?.click();
-  });
+  navChat?.addEventListener('click', () => toggleChat(navChat));
 
   const navPill = document.querySelector<HTMLElement>('[data-nav-pill]');
   const navMark = document.querySelector<HTMLElement>('[data-nav-mark]');
@@ -347,10 +355,10 @@ const workHref = onHome ? '#work' : '/#work';
     cursor: pointer;
   }
 
-  /* Same progressive enhancement as the footer CTA and widget launcher: without
-     JS the chat widget never appears, so the nav shows the mailto fallback
-     instead of a dead chat button. Either way the pill holds exactly 3 items,
-     keeping the tuned collapse animation untouched. */
+  /* Same progressive enhancement as the footer CTA: without JS the chat panel
+     never appears, so the nav shows the mailto fallback instead of a dead chat
+     button. Either way the pill holds exactly 3 items, keeping the tuned
+     collapse animation untouched. */
   :global(html:not(.js)) .nav-chat {
     display: none;
   }

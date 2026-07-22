@@ -23,7 +23,7 @@ The site deploys to S3, with optional CloudFront invalidation, on pushes to `mas
 
 ## Assistant chat
 
-The floating chat launcher (`src/components/ChatWidget.astro` + `src/scripts/chat.ts`) is a static-site island, mounted site-wide from `src/layouts/Base.astro`, that talks to a streaming AWS Lambda backend in `server/` — see [`server/README.md`](server/README.md) for the architecture, the `reveal_email` gate, transcript storage, and how to switch models. The `mailto:` link stays as a visible fallback everywhere it already appeared (footer, nav).
+The chat widget (`src/components/ChatWidget.astro` + `src/scripts/chat.ts`), opened from the nav “Chat” button and the footer CTA, is a static-site island, mounted site-wide from `src/layouts/Base.astro`, that talks to a streaming AWS Lambda backend in `server/` — see [`server/README.md`](server/README.md) for the architecture, the `reveal_email` gate, transcript storage, and how to switch models. The `mailto:` link stays as a visible fallback everywhere it already appeared (footer, nav).
 
 The widget POSTs to a relative `/api/chat` by default, which only works in production because CloudFront proxies that path to the Lambda Function URL (AWS_IAM + OAC — not reachable directly). For local development against a real backend, set `PUBLIC_CHAT_ENDPOINT` to the deployed endpoint in a `.env` file (Astro loads `PUBLIC_*` env vars into the client bundle automatically):
 

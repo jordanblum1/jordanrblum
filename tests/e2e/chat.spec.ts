@@ -10,42 +10,42 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
-test('launcher is visible and opens the panel with the fixed greeting', async ({ page }) => {
-  const launcher = page.locator('[data-chat-launcher]');
-  await expect(launcher).toBeVisible();
+test('there is no floating launcher; the nav trigger opens the panel with the fixed greeting', async ({ page }) => {
+  await expect(page.locator('[data-chat-launcher]')).toHaveCount(0);
+
+  const navChat = page.locator('nav[aria-label="Primary"] button[data-nav-chat]');
+  await expect(navChat).toBeVisible();
+  await expect(navChat).toContainText('Chat');
+  await expect(navChat).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('nav[aria-label="Primary"] a[href^="mailto:"]')).toBeHidden();
   await expect(page.locator('[data-chat-panel]')).toBeHidden();
 
-  await launcher.click();
+  await navChat.click();
 
   const panel = page.locator('[data-chat-panel]');
   await expect(panel).toBeVisible();
   await expect(panel).toHaveAttribute('aria-modal', 'true');
-  await expect(launcher).toHaveAttribute('aria-expanded', 'true');
+  await expect(navChat).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('[data-chat-log] .chat-bubble.role-assistant')).toHaveText(GREETING);
 });
 
-test('the footer CTA opens the same widget panel', async ({ page }) => {
-  await expect(page.locator('[data-footer-chat-cta]')).toBeVisible();
+test('the footer CTA opens the same widget panel and both triggers mirror the state', async ({ page }) => {
+  const cta = page.locator('[data-footer-chat-cta]');
+  await expect(cta).toBeVisible();
+  await expect(cta).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Email me' })).toHaveAttribute(
     'href',
     'mailto:jordanblum16@gmail.com',
   );
 
-  await page.locator('[data-footer-chat-cta]').click();
+  await cta.click();
 
   await expect(page.locator('[data-chat-panel]')).toBeVisible();
-});
-
-test('the nav chat trigger opens the same widget panel', async ({ page }) => {
-  const navChat = page.locator('nav[aria-label="Primary"] button[data-nav-chat]');
-  await expect(navChat).toBeVisible();
-  await expect(navChat).toContainText('Chat');
-  await expect(page.locator('nav[aria-label="Primary"] a[href^="mailto:"]')).toBeHidden();
-
-  await navChat.click();
-
-  await expect(page.locator('[data-chat-panel]')).toBeVisible();
-  await expect(page.locator('[data-chat-launcher]')).toHaveAttribute('aria-expanded', 'true');
+  await expect(cta).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('nav[aria-label="Primary"] button[data-nav-chat]')).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
 });
 
 test('sends a message and streams a mocked assistant reply', async ({ page }) => {
@@ -61,7 +61,7 @@ test('sends a message and streams a mocked assistant reply', async ({ page }) =>
     });
   });
 
-  await page.locator('[data-chat-launcher]').click();
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
   await page.locator('[data-chat-input]').fill('What does Jordan do?');
   await page.locator('[data-chat-send]').click();
 
@@ -78,7 +78,7 @@ test('shows the rate-limit notice when the backend streams an error event', asyn
     });
   });
 
-  await page.locator('[data-chat-launcher]').click();
+  await page.locator('[data-footer-chat-cta]').click();
   await page.locator('[data-chat-input]').fill('Hello');
   await page.locator('[data-chat-send]').click();
 
@@ -86,14 +86,30 @@ test('shows the rate-limit notice when the backend streams an error event', asyn
   await expect(errorBubble).toContainText('getting a lot of messages');
 });
 
-test('Escape closes the panel and returns focus to the launcher', async ({ page }) => {
-  const launcher = page.locator('[data-chat-launcher]');
-  await launcher.click();
+test('Escape closes the panel and returns focus to the nav trigger that opened it', async ({ page }) => {
+  const navChat = page.locator('nav[aria-label="Primary"] button[data-nav-chat]');
+  await navChat.click();
   await expect(page.locator('[data-chat-panel]')).toBeVisible();
 
   await page.keyboard.press('Escape');
 
   await expect(page.locator('[data-chat-panel]')).toBeHidden();
-  await expect(launcher).toHaveAttribute('aria-expanded', 'false');
-  await expect(launcher).toBeFocused();
+  await expect(navChat).toHaveAttribute('aria-expanded', 'false');
+  await expect(navChat).toBeFocused();
+});
+
+test('the close button returns focus to the footer CTA when it opened the panel', async ({ page }) => {
+  const cta = page.locator('[data-footer-chat-cta]');
+  await cta.click();
+  await expect(page.locator('[data-chat-panel]')).toBeVisible();
+
+  await page.locator('[data-chat-close]').click();
+
+  await expect(page.locator('[data-chat-panel]')).toBeHidden();
+  await expect(cta).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('nav[aria-label="Primary"] button[data-nav-chat]')).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  );
+  await expect(cta).toBeFocused();
 });
