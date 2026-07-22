@@ -34,6 +34,11 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(intro).toBeVisible();
   await expect(intro).toContainText('Hi, I’m Jordy — Jordan’s assistant.');
   await expect(intro).toContainText('Ask me about his work, his projects, or his background.');
+
+  // No persistent mailto in the panel — the email only surfaces inside
+  // error/limit notices.
+  await expect(panel.locator('.chat-footer')).toHaveCount(0);
+  await expect(panel.locator('a[href^="mailto:"]')).toHaveCount(0);
 });
 
 test('the empty state shows four starter chips with the suggested questions', async ({ page }) => {
@@ -86,10 +91,8 @@ test('the footer CTA opens the same widget panel and both triggers mirror the st
   const cta = page.locator('[data-footer-chat-cta]');
   await expect(cta).toBeVisible();
   await expect(cta).toHaveAttribute('aria-expanded', 'false');
-  await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Email me' })).toHaveAttribute(
-    'href',
-    'mailto:jordanblum16@gmail.com',
-  );
+  // The chat CTA is the footer's single contact CTA — no mailto fallback.
+  await expect(page.getByRole('contentinfo').locator('a[href^="mailto:"]')).toHaveCount(0);
 
   await cta.click();
 
@@ -219,6 +222,29 @@ test('shows the rate-limit notice when the backend streams an error event', asyn
 
   const errorBubble = page.locator('[data-chat-log] .chat-bubble.role-system').last();
   await expect(errorBubble).toContainText('getting a lot of messages');
+  // The rate-limit notice keeps the email reachable inline.
+  const mailto = errorBubble.locator('a[href="mailto:jordanblum16@gmail.com"]');
+  await expect(mailto).toBeVisible();
+  await expect(mailto).toHaveText('email Jordan directly');
+});
+
+test('an unreachable backend shows an error bubble with a working mailto escape hatch', async ({ page }) => {
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({ status: 502, contentType: 'text/plain', body: 'Bad Gateway' });
+  });
+
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  await page.locator('[data-chat-input]').fill('Hello?');
+  await page.locator('[data-chat-send]').click();
+
+  const errorBubble = page.locator('[data-chat-log] .chat-bubble.role-system').last();
+  await expect(errorBubble).toContainText('Something went wrong reaching Jordy.');
+
+  // The inline mailto is the only remaining email surface when the backend is
+  // down — it must be a real, visible anchor with the site's contact address.
+  const mailto = errorBubble.locator('a[href="mailto:jordanblum16@gmail.com"]');
+  await expect(mailto).toBeVisible();
+  await expect(mailto).toHaveText('email Jordan directly');
 });
 
 test('Escape closes the panel and returns focus to the nav trigger that opened it', async ({ page }) => {

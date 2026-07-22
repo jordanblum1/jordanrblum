@@ -1,9 +1,6 @@
 ---
 // Latin-400 subset only: one 35KB woff2 for the chat's personality surfaces.
 import '@fontsource/sedgwick-ave/latin-400.css';
-import { social } from '../data/site';
-
-const [email] = social;
 
 const starters = [
   'What does Jordan do at Roam?',
@@ -93,9 +90,6 @@ const starters = [
       </button>
     </form>
 
-    <footer class="chat-footer">
-      <a href={email.href}>or email Jordan directly</a>
-    </footer>
   </section>
 </div>
 
@@ -417,6 +411,21 @@ const starters = [
     text-decoration-color: var(--accent);
   }
 
+  :global(.chat-log .chat-bubble.role-system a),
+  .chat-notice :global(a) {
+    color: inherit;
+    font-weight: 500;
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklab, var(--warning-ink) 55%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+
+  :global(html.pointer-moved .chat-log .chat-bubble.role-system a:hover),
+  :global(html.pointer-moved) .chat-notice :global(a:hover) {
+    text-decoration-color: var(--warning-ink);
+  }
+
   :global(.chat-log .chat-bubble.role-system) {
     align-self: center;
     max-width: 100%;
@@ -599,21 +608,6 @@ const starters = [
     transform: translateY(-1px);
   }
 
-  .chat-footer {
-    padding: var(--space-2) var(--space-3) var(--space-3);
-    color: var(--ink-muted);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    text-align: center;
-  }
-
-  .chat-footer a {
-    color: var(--ink-muted);
-    text-decoration-line: underline;
-    text-decoration-color: color-mix(in oklab, var(--accent) 42%, transparent);
-    text-underline-offset: 0.22em;
-  }
-
   /* Fullscreen sheet on phones — including landscape, where the height (not
      the width) is what runs out.
 
@@ -660,15 +654,12 @@ const starters = [
       padding-right: calc(var(--space-5) + env(safe-area-inset-right));
     }
 
+    /* The form is the last row of the composer cluster, so it carries the
+       keyboard inset (lifting itself above the keyboard) and the
+       home-indicator safe area. */
     .chat-form {
       padding-left: calc(var(--space-4) + env(safe-area-inset-left));
       padding-right: calc(var(--space-4) + env(safe-area-inset-right));
-    }
-
-    /* The footer is the last row of the composer cluster, so it carries the
-       keyboard inset (lifting the form above the keyboard with it) and the
-       home-indicator safe area. */
-    .chat-footer {
       margin-bottom: var(--kb, 0px);
       padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }

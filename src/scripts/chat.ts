@@ -1,4 +1,5 @@
 import { MarkdownStream, renderMarkdownInto } from './chat-markdown';
+import { social } from '../data/site';
 
 export const MAX_MESSAGES = 20;
 export const MAX_MESSAGE_CHARS = 2000;
@@ -7,9 +8,34 @@ const STORAGE_KEY = 'jrb-chat-state-v1';
 const ENDPOINT = (import.meta.env.PUBLIC_CHAT_ENDPOINT as string | undefined) ?? '/api/chat';
 
 const NETWORK_ERROR_MESSAGE =
-  'Something went wrong reaching Jordy. Please try again, or email Jordan directly below.';
+  'Something went wrong reaching Jordy. Please try again, or email Jordan directly.';
 export const LIMIT_NOTICE =
-  "This conversation's full — email Jordan directly below, or come back for a fresh start.";
+  "This conversation's full — email Jordan directly, or come back for a fresh start.";
+
+// The panel no longer carries a persistent mailto — error and limit notices
+// are the one surface that still links the email, so chat stays escapable
+// when the backend is unreachable.
+export const CONTACT_EMAIL_HREF = social.find((entry) => entry.href.startsWith('mailto:'))!.href;
+
+const EMAIL_LINK_TEXT = 'email Jordan directly';
+
+// Builds a notice as real DOM nodes, turning the literal phrase
+// "email Jordan directly" into a mailto anchor. createElement only — notice
+// copy must never pass through innerHTML — and the anchor is runtime-created,
+// so the widget styles it via :global(...).
+export function renderNoticeInto(el: HTMLElement, message: string): void {
+  el.replaceChildren();
+  const index = message.indexOf(EMAIL_LINK_TEXT);
+  if (index === -1) {
+    el.textContent = message;
+    return;
+  }
+  el.append(message.slice(0, index));
+  const link = document.createElement('a');
+  link.href = CONTACT_EMAIL_HREF;
+  link.textContent = EMAIL_LINK_TEXT;
+  el.append(link, message.slice(index + EMAIL_LINK_TEXT.length));
+}
 
 export type ChatRole = 'user' | 'assistant';
 
@@ -202,7 +228,7 @@ export function followUpsFor(topic: ChipTopic, exclude: string[] = [], offset = 
 
 function errorMessageFor(code?: string): string {
   if (code === 'rate_limited') {
-    return 'Jordy is getting a lot of messages right now — give it a minute and try again.';
+    return 'Jordy is getting a lot of messages right now — give it a minute and try again, or email Jordan directly.';
   }
   return NETWORK_ERROR_MESSAGE;
 }
@@ -648,7 +674,7 @@ function initChatWidget(): void {
     sendButton!.disabled = full;
     notice!.hidden = !full;
     if (full) {
-      notice!.textContent = LIMIT_NOTICE;
+      renderNoticeInto(notice!, LIMIT_NOTICE);
       if (!announcedFull) {
         announcedFull = true;
         announce(LIMIT_NOTICE);
@@ -725,8 +751,8 @@ function initChatWidget(): void {
       }
     } else {
       const bubble = makeBubble('assistant');
-      bubble.textContent = result.message;
       bubble.classList.add('role-system');
+      renderNoticeInto(bubble, result.message);
       announce(result.message);
     }
 

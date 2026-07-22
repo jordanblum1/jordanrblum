@@ -1,6 +1,8 @@
+// @vitest-environment happy-dom
 import { expect, test } from 'vitest';
 import {
   CHAR_COUNT_RATIO,
+  CONTACT_EMAIL_HREF,
   FOLLOW_UP_CHIPS,
   LIMIT_NOTICE,
   MAX_MESSAGES,
@@ -17,6 +19,7 @@ import {
   keyboardInset,
   loadChatState,
   parseSSEBuffer,
+  renderNoticeInto,
   revealDelay,
   saveChatState,
   sha256Hex,
@@ -274,6 +277,34 @@ test('keyboardInset never goes negative and rounds to whole pixels', () => {
 
 test('LIMIT_NOTICE carries the approved conversation-full copy', () => {
   expect(LIMIT_NOTICE).toBe(
-    "This conversation's full — email Jordan directly below, or come back for a fresh start.",
+    "This conversation's full — email Jordan directly, or come back for a fresh start.",
   );
+});
+
+test('CONTACT_EMAIL_HREF resolves to the site mailto', () => {
+  expect(CONTACT_EMAIL_HREF).toBe('mailto:jordanblum16@gmail.com');
+});
+
+// The panel has no persistent mailto anymore — error/limit notices are the
+// one surface keeping the email reachable when the backend is down.
+test('renderNoticeInto turns the email phrase into a real mailto anchor', () => {
+  const el = document.createElement('div');
+  renderNoticeInto(el, LIMIT_NOTICE);
+
+  const link = el.querySelector('a');
+  expect(link).not.toBeNull();
+  expect(link!.getAttribute('href')).toBe('mailto:jordanblum16@gmail.com');
+  expect(link!.textContent).toBe('email Jordan directly');
+  expect(el.textContent).toBe(LIMIT_NOTICE);
+  // Built with createElement, never innerHTML: exactly one element, the anchor.
+  expect(el.querySelectorAll('*')).toHaveLength(1);
+});
+
+test('renderNoticeInto replaces earlier content and falls back to plain text', () => {
+  const el = document.createElement('div');
+  renderNoticeInto(el, LIMIT_NOTICE);
+  renderNoticeInto(el, 'Jordy is getting a lot of messages right now — give it a minute and try again.');
+
+  expect(el.querySelector('a')).toBeNull();
+  expect(el.textContent).toBe('Jordy is getting a lot of messages right now — give it a minute and try again.');
 });
