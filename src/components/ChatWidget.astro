@@ -635,6 +635,31 @@ const starters = [
     .chat-panel:not(.is-open) {
       transform: translateY(var(--space-6));
     }
+
+    /* iOS safe areas: keep the header clear of the notch and the composer
+       clear of the home indicator. */
+    .chat-header {
+      padding-top: calc(var(--space-4) + env(safe-area-inset-top));
+    }
+
+    .chat-form {
+      padding-left: calc(var(--space-4) + env(safe-area-inset-left));
+      padding-right: calc(var(--space-4) + env(safe-area-inset-right));
+    }
+
+    .chat-footer {
+      padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+    }
+
+    /* Momentum scrolling in the log on iOS. */
+    .chat-body {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ≥16px so iOS Safari does not zoom the page when the input focuses. */
+    .chat-input {
+      font-size: 1rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -351,3 +351,56 @@ test('a quiet character counter appears once the input nears the 2000-char cap',
   await input.fill('short again');
   await expect(counter).toBeHidden();
 });
+
+test.describe('mobile sheet', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('opening the sheet locks the page scroll behind it and closing restores it', async ({ page }) => {
+    const cta = page.locator('[data-footer-chat-cta]');
+    await cta.scrollIntoViewIfNeeded();
+    const scrollBefore = await page.evaluate(() => Math.round(window.scrollY));
+    expect(scrollBefore).toBeGreaterThan(0);
+
+    await cta.click();
+    await expect(page.locator('[data-chat-panel]')).toBeVisible();
+
+    // position:fixed body lock, preserving the scroll offset.
+    const lock = await page.evaluate(() => ({
+      position: document.body.style.position,
+      top: document.body.style.top,
+    }));
+    expect(lock.position).toBe('fixed');
+    expect(lock.top).toBe(`-${scrollBefore}px`);
+
+    // Wheeling over the open sheet must not scroll the page behind it.
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => document.body.style.position)).toBe('fixed');
+    expect(await page.evaluate(() => document.body.style.top)).toBe(`-${scrollBefore}px`);
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-chat-panel]')).toBeHidden();
+    expect(await page.evaluate(() => document.body.style.position)).toBe('');
+    expect(await page.evaluate(() => Math.round(window.scrollY))).toBe(scrollBefore);
+  });
+
+  test('the composer stays visible when the viewport shrinks like a software keyboard', async ({ page }) => {
+    const cta = page.locator('[data-footer-chat-cta]');
+    await cta.scrollIntoViewIfNeeded();
+    await cta.click();
+    await expect(page.locator('[data-chat-panel]')).toBeVisible();
+
+    // ≥16px input font so iOS Safari does not zoom on focus.
+    const fontSize = await page
+      .locator('[data-chat-input]')
+      .evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(fontSize).toBeGreaterThanOrEqual(16);
+
+    await page.locator('[data-chat-input]').click();
+    await page.setViewportSize({ width: 390, height: 500 });
+
+    await expect(page.locator('[data-chat-form]')).toBeInViewport();
+    await expect(page.locator('[data-chat-input]')).toBeInViewport();
+    await expect(page.locator('[data-chat-send]')).toBeInViewport();
+  });
+});

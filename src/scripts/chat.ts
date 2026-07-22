@@ -309,6 +309,8 @@ function initChatWidget(): void {
   // launcher; every trigger mirrors the panel's state.
   const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-chat-trigger]'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Mirrors the CSS breakpoint where the panel becomes a full-screen sheet.
+  const mobileSheet = window.matchMedia('(max-width: 30rem)');
 
   let state = loadChatState(sessionStorage, STORAGE_KEY);
   if (!state) {
@@ -354,6 +356,67 @@ function initChatWidget(): void {
       announcer!.textContent = text;
     }, 30);
   }
+
+  // --- Native-feeling mobile sheet -------------------------------------------
+  // While the sheet is open on small screens the page behind it must not
+  // scroll: the position-fixed body lock freezes it and restores the scroll
+  // position on close. The sheet also tracks the visual viewport so the
+  // composer stays above the iOS software keyboard, which shrinks the visual
+  // viewport but not the layout viewport.
+
+  let savedScrollY = 0;
+  let bodyLocked = false;
+
+  function lockBody(): void {
+    if (bodyLocked) return;
+    savedScrollY = Math.round(window.scrollY);
+    const { style } = document.body;
+    style.position = 'fixed';
+    style.top = `-${savedScrollY}px`;
+    style.left = '0';
+    style.right = '0';
+    style.width = '100%';
+    bodyLocked = true;
+  }
+
+  function unlockBody(): void {
+    if (!bodyLocked) return;
+    const { style } = document.body;
+    style.position = '';
+    style.top = '';
+    style.left = '';
+    style.right = '';
+    style.width = '';
+    bodyLocked = false;
+    // Instant, not smooth: the page has scroll-behavior:smooth, and an
+    // animated restore would be stomped by the focus() that follows close.
+    window.scrollTo({ top: savedScrollY, left: 0, behavior: 'instant' });
+  }
+
+  function syncBodyLock(): void {
+    if (!panel!.hidden && mobileSheet.matches) lockBody();
+    else unlockBody();
+  }
+
+  function syncViewport(): void {
+    const vv = window.visualViewport;
+    if (panel!.hidden || !mobileSheet.matches || !vv) {
+      panel!.style.top = '';
+      panel!.style.bottom = '';
+      panel!.style.height = '';
+      return;
+    }
+    panel!.style.top = `${Math.round(vv.offsetTop)}px`;
+    panel!.style.bottom = 'auto';
+    panel!.style.height = `${Math.round(vv.height)}px`;
+  }
+
+  window.visualViewport?.addEventListener('resize', syncViewport);
+  window.visualViewport?.addEventListener('scroll', syncViewport);
+  mobileSheet.addEventListener?.('change', () => {
+    syncBodyLock();
+    syncViewport();
+  });
 
   // --- Scroll behavior -------------------------------------------------------
   // Research-verified pattern: a new assistant reply is top-anchored (the
@@ -652,6 +715,8 @@ function initChatWidget(): void {
       panel!.getBoundingClientRect();
     }
     panel!.classList.add('is-open');
+    syncBodyLock();
+    syncViewport();
     lastTrigger = trigger;
     setTriggersExpanded(true);
     renderHistory();
@@ -665,12 +730,15 @@ function initChatWidget(): void {
     setTriggersExpanded(false);
     document.removeEventListener('keydown', onKeydown);
     controller?.abort();
+    unlockBody();
     if (reducedMotion.matches) {
       panel!.hidden = true;
+      syncViewport();
     } else {
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => {
         panel!.hidden = true;
+        syncViewport();
       }, 280);
     }
     // Focus goes back to whichever trigger opened the panel.
