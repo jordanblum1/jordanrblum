@@ -19,6 +19,13 @@ const FENCE_RE = /^\s*```/;
 const UL_ITEM_RE = /^\s*[-*]\s+/;
 const OL_ITEM_RE = /^\s*(\d+)[.)]\s+/;
 
+// appendInline recurses into emphasis inner content and link text. Model
+// text like '*'.repeat(32000) nests one emphasis level per ~4 characters and
+// would overflow the call stack, so past this depth the remaining content is
+// appended as literal text instead of being parsed further. Real-world
+// markdown stays far below this.
+const MAX_INLINE_DEPTH = 16;
+
 // Splits markdown into block strings. Blocks are separated by blank lines,
 // except inside a code fence, which absorbs blank lines (and, when
 // unterminated, everything to the end of the text).
@@ -62,8 +69,14 @@ export function splitBlocks(text: string): string[] {
 }
 
 // Renders inline markdown (bold/italic/code/links) into `parent` as DOM nodes.
-// Unterminated markers fall through as literal characters.
-function appendInline(parent: Node, text: string): void {
+// Unterminated markers fall through as literal characters. `depth` bounds the
+// recursion through nested emphasis/link text (see MAX_INLINE_DEPTH).
+function appendInline(parent: Node, text: string, depth = 0): void {
+  if (depth > MAX_INLINE_DEPTH) {
+    parent.appendChild(document.createTextNode(text));
+    return;
+  }
+
   let plain = '';
   let i = 0;
 
@@ -103,7 +116,7 @@ function appendInline(parent: Node, text: string): void {
       if (end > 0 && inner && !/^\s/.test(inner) && !/\s$/.test(inner) && !intraword) {
         flushPlain();
         const el = document.createElement(double ? 'strong' : 'em');
-        appendInline(el, inner);
+        appendInline(el, inner, depth + 1);
         parent.appendChild(el);
         i = end + marker.length;
         continue;
@@ -121,7 +134,7 @@ function appendInline(parent: Node, text: string): void {
             a.href = url;
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
-            appendInline(a, text.slice(i + 1, close));
+            appendInline(a, text.slice(i + 1, close), depth + 1);
             parent.appendChild(a);
             i = endParen + 1;
             continue;

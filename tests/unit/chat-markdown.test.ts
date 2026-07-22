@@ -144,6 +144,56 @@ test('empty emphasis markers render literally', () => {
   expect(render('** ** and * *').querySelector('em')).toBeNull();
 });
 
+// --- Recursion depth bound (stack-overflow DoS) ------------------------------
+
+test('a 50k run of * renders without throwing', () => {
+  const text = '*'.repeat(50000);
+  let el!: HTMLDivElement;
+  expect(() => {
+    el = render(text);
+  }).not.toThrow();
+  // Past the depth cap the remainder is literal text; nothing is lost except
+  // the marker pairs consumed by the bounded outer levels.
+  expect(el.textContent?.replace(/\*/g, '')).toBe('');
+  expect(el.textContent!.length).toBeGreaterThan(49000);
+});
+
+test('a 50k run of _ renders without throwing', () => {
+  const text = '_'.repeat(50000);
+  let el!: HTMLDivElement;
+  expect(() => {
+    el = render(text);
+  }).not.toThrow();
+  expect(el.textContent?.replace(/_/g, '')).toBe('');
+  expect(el.textContent!.length).toBeGreaterThan(49000);
+});
+
+test('nesting beyond the depth cap renders without throwing and keeps visible text', () => {
+  let text = 'core';
+  for (let n = 0; n < 40; n += 1) {
+    text = n % 2 ? `*b ${text} b*` : `**a ${text} a**`;
+  }
+  let el!: HTMLDivElement;
+  expect(() => {
+    el = render(text);
+  }).not.toThrow();
+  // Every non-marker character survives: parsed levels drop their marker
+  // pairs, levels past the cap keep theirs as literal text.
+  expect(el.textContent?.replace(/[*_]/g, '')).toBe(text.replace(/[*_]/g, ''));
+  expect(el.textContent).toContain('core');
+});
+
+test('normal three-level nesting still produces correct strong/em structure', () => {
+  const el = render('**outer *middle _inner_ middle* outer**');
+  const strong = el.querySelector('strong');
+  const em = strong?.querySelector('em');
+  const innerEm = em?.querySelector('em');
+  expect(strong).toBeTruthy();
+  expect(em).toBeTruthy();
+  expect(innerEm?.textContent).toBe('inner');
+  expect(el.textContent).toBe('outer middle inner middle outer');
+});
+
 // --- Streaming ---------------------------------------------------------------
 
 test('MarkdownStream finalizes completed blocks once and never reprocesses them', () => {
