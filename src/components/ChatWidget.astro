@@ -65,6 +65,8 @@ const starters = [
 
     <p class="chat-notice" data-chat-notice hidden></p>
 
+    <p class="chat-count" data-chat-count hidden aria-hidden="true"></p>
+
     <form class="chat-form" data-chat-form>
       <label class="visually-hidden" for="chat-input">Message Jordy, Jordan’s assistant</label>
       <textarea
@@ -517,6 +519,22 @@ const starters = [
   }
 
   .chat-notice[hidden] {
+    display: none;
+  }
+
+  /* Quiet character counter — appears only once the input crosses ~85% of
+     the 2000-character cap (aria-hidden: the input hint already states the
+     limit for assistive tech). */
+  .chat-count {
+    margin: 0 var(--space-5) var(--space-1);
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
+    text-align: right;
+  }
+
+  .chat-count[hidden] {
     display: none;
   }
 

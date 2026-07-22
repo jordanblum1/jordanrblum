@@ -1,17 +1,21 @@
 import { expect, test } from 'vitest';
 import {
+  CHAR_COUNT_RATIO,
   FOLLOW_UP_CHIPS,
+  LIMIT_NOTICE,
   MAX_MESSAGES,
   MAX_MESSAGE_CHARS,
   appendMessage,
   detectTopic,
   followUpsFor,
+  formatCharCount,
   hasRoomForTurn,
   hexEncode,
   loadChatState,
   parseSSEBuffer,
   saveChatState,
   sha256Hex,
+  shouldShowCharCount,
   truncateMessage,
   type ChatMessage,
   type ChatState,
@@ -199,4 +203,33 @@ test('followUpsFor backfills from the default pool when exclusions bite', () => 
   const chips = followUpsFor('contact', FOLLOW_UP_CHIPS.contact);
   expect(chips.length).toBeGreaterThanOrEqual(2);
   for (const chip of chips) expect(FOLLOW_UP_CHIPS.contact).not.toContain(chip);
+});
+
+// --- Character counter -------------------------------------------------------
+
+test('shouldShowCharCount trips at 85% of the cap', () => {
+  expect(CHAR_COUNT_RATIO).toBe(0.85);
+  expect(shouldShowCharCount(1699, 2000)).toBe(false);
+  expect(shouldShowCharCount(1700, 2000)).toBe(true);
+  expect(shouldShowCharCount(2000, 2000)).toBe(true);
+  expect(shouldShowCharCount(0, 2000)).toBe(false);
+});
+
+test('shouldShowCharCount rounds the threshold up for odd caps', () => {
+  // 85% of 10 is 8.5 — the counter should not appear until 9.
+  expect(shouldShowCharCount(8, 10)).toBe(false);
+  expect(shouldShowCharCount(9, 10)).toBe(true);
+});
+
+test('formatCharCount renders thousands-separated "used / max"', () => {
+  expect(formatCharCount(1840, 2000)).toBe('1,840 / 2,000');
+  expect(formatCharCount(1700, 2000)).toBe('1,700 / 2,000');
+});
+
+// --- Copy --------------------------------------------------------------------
+
+test('LIMIT_NOTICE carries the approved conversation-full copy', () => {
+  expect(LIMIT_NOTICE).toBe(
+    "This conversation's full — email Jordan directly below, or come back for a fresh start.",
+  );
 });

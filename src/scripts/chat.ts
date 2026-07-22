@@ -8,8 +8,8 @@ const ENDPOINT = (import.meta.env.PUBLIC_CHAT_ENDPOINT as string | undefined) ??
 
 const NETWORK_ERROR_MESSAGE =
   'Something went wrong reaching Jordy. Please try again, or email Jordan directly below.';
-const LIMIT_NOTICE =
-  'This conversation has reached its message limit. Feel free to start a new visit later, or email Jordan directly below.';
+export const LIMIT_NOTICE =
+  "This conversation's full — email Jordan directly below, or come back for a fresh start.";
 
 export type ChatRole = 'user' | 'assistant';
 
@@ -36,6 +36,22 @@ interface StorageLike {
 
 export function truncateMessage(content: string, max: number = MAX_MESSAGE_CHARS): string {
   return content.length > max ? content.slice(0, max) : content;
+}
+
+// The character counter stays out of the way until the input approaches the
+// cap, then quietly shows how much room is left.
+export const CHAR_COUNT_RATIO = 0.85;
+
+export function shouldShowCharCount(
+  length: number,
+  max: number = MAX_MESSAGE_CHARS,
+  ratio: number = CHAR_COUNT_RATIO,
+): boolean {
+  return length >= Math.ceil(max * ratio);
+}
+
+export function formatCharCount(length: number, max: number = MAX_MESSAGE_CHARS): string {
+  return `${length.toLocaleString('en-US')} / ${max.toLocaleString('en-US')}`;
 }
 
 // A turn always writes a user message and (on success) an assistant reply, so a
@@ -279,10 +295,12 @@ function initChatWidget(): void {
   const jumpButton = document.querySelector<HTMLButtonElement>('[data-chat-jump]');
   const notice = document.querySelector<HTMLElement>('[data-chat-notice]');
   const announcer = document.querySelector<HTMLElement>('[data-chat-announce]');
+  const counter = document.querySelector<HTMLElement>('[data-chat-count]');
 
   if (
     !panel || !closeButton || !scroller || !intro || !log || !form ||
-    !input || !sendButton || !stopButton || !jumpButton || !notice || !announcer
+    !input || !sendButton || !stopButton || !jumpButton || !notice ||
+    !announcer || !counter
   ) {
     return;
   }
@@ -471,6 +489,13 @@ function initChatWidget(): void {
     input!.style.height = `${input!.scrollHeight}px`;
   }
 
+  function syncCharCount(): void {
+    const length = input!.value.length;
+    const show = shouldShowCharCount(length, MAX_MESSAGE_CHARS);
+    counter!.hidden = !show;
+    if (show) counter!.textContent = formatCharCount(length, MAX_MESSAGE_CHARS);
+  }
+
   // Announce the limit notice only when the conversation fills during this
   // session — a restored already-full conversation is history, not news.
   let announcedFull = !hasRoomForTurn(state.messages, MAX_MESSAGES);
@@ -511,6 +536,7 @@ function initChatWidget(): void {
     const userBubble = renderMessageBubble('user', content);
     input!.value = '';
     autosizeInput();
+    syncCharCount();
     input!.disabled = true;
     sendButton!.disabled = true;
 
@@ -663,7 +689,10 @@ function initChatWidget(): void {
     chip.addEventListener('click', () => void sendMessage(chip.textContent ?? ''));
   }
 
-  input.addEventListener('input', autosizeInput);
+  input.addEventListener('input', () => {
+    autosizeInput();
+    syncCharCount();
+  });
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();

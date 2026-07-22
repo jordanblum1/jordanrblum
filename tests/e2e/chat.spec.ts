@@ -331,3 +331,23 @@ test('the question anchors near the top of the log on the second exchange', asyn
   expect(Math.abs(measured.scrollTop - measured.target)).toBeLessThanOrEqual(2);
   expect(measured.spacer).toBe(true);
 });
+
+test('a quiet character counter appears once the input nears the 2000-char cap', async ({ page }) => {
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  const input = page.locator('[data-chat-input]');
+  const counter = page.locator('[data-chat-count]');
+
+  await input.fill('x'.repeat(1699));
+  await expect(counter).toBeHidden();
+
+  await input.fill('x'.repeat(1700));
+  await expect(counter).toBeVisible();
+  await expect(counter).toHaveText('1,700 / 2,000');
+
+  await input.fill('x'.repeat(1840));
+  await expect(counter).toHaveText('1,840 / 2,000');
+
+  // Clearing the field puts the counter away again.
+  await input.fill('short again');
+  await expect(counter).toBeHidden();
+});
