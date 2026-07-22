@@ -1,8 +1,8 @@
 ---
 // Chat chrome fonts, latin subsets only (~20KB woff2 each): Knewave for the
-// big painted display moments, Baloo 2 SemiBold for chip/label legibility.
+// big painted display moments, Baloo 2 Regular for chip/label legibility.
 import '@fontsource/knewave/latin-400.css';
-import '@fontsource/baloo-2/latin-600.css';
+import '@fontsource/baloo-2/latin-400.css';
 
 const starters = [
   'What does Jordan do at Roam?',
@@ -127,10 +127,12 @@ const starters = [
        - display: Knewave, a fat paint-stroke face that matches the blobby
          hand-painted BLUM hero mark. Single-weight display face, so it only
          appears LARGE — the Jordy header and the intro's accent word.
-       - label: Baloo 2 SemiBold, a round warm face whose conventional
+       - label: Baloo 2 Regular, a round warm face whose conventional
          skeletons keep every chip word instantly legible at 13-14px
          (Sedgwick Ave's lowercase 'k' read as 'h' at chip size; Shantell
-         Sans was legible but read plain).
+         Sans was legible but read plain). Regular, not SemiBold — owner
+         wanted the chips lighter/cleaner, and the skeletons carry legibility
+         without the extra weight.
        Message text stays in the readable site stack. */
     --font-fun-display: 'Knewave', 'Marker Felt', cursive;
     --font-fun-label: 'Baloo 2', 'Trebuchet MS', 'Comic Sans MS', sans-serif;
@@ -244,7 +246,7 @@ const starters = [
   .chat-intro-title {
     font-family: var(--font-fun-label);
     font-size: 1.18rem;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.4;
     color: var(--heading);
     text-wrap: balance;
@@ -288,7 +290,7 @@ const starters = [
     color: var(--ink);
     font-family: var(--font-fun-label);
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.35;
     text-align: left;
     cursor: pointer;
