@@ -16,6 +16,12 @@ test.describe('no JavaScript', () => {
     await expect(page.locator('.personal-note img.personal-note-image')).toBeVisible();
     await expect(page.locator('.personal-note img.note-logo')).toBeVisible();
     await expect(page.locator('footer .social a')).toHaveCount(4);
+    await expect(page.getByRole('contentinfo').getByRole('link', { name: 'Email me' })).toHaveAttribute(
+      'href',
+      'mailto:jordanblum16@gmail.com',
+    );
+    await expect(page.locator('[data-chat-widget]')).toBeHidden();
+    await expect(page.locator('[data-footer-chat-cta]')).toBeHidden();
     await expect(page.locator('html')).not.toHaveClass(/\bjs\b/);
     for (const revealTarget of await page.locator('[data-page-reveal]').all()) {
       await expect(revealTarget).toBeVisible();
