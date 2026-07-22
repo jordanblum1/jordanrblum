@@ -267,6 +267,9 @@ jobs:
           fi
           echo "FUNCTION_URL=${FUNCTION_URL}" >> "$GITHUB_ENV"
 
+          # Since October 2025, CloudFront OAC access to a Lambda Function URL
+          # requires the resource policy to grant cloudfront.amazonaws.com BOTH
+          # lambda:InvokeFunctionUrl AND lambda:InvokeFunction.
           DISTRIBUTION_ARN="arn:aws:cloudfront::${ACCOUNT_ID}:distribution/${CLOUDFRONT_DISTRIBUTION_ID}"
           if ! aws lambda add-permission \
             --function-name "$FUNCTION_NAME" \
@@ -279,6 +282,22 @@ jobs:
               echo "CloudFront invoke permission already present"
             else
               echo "::error::Failed to grant CloudFront permission to invoke the Function URL"
+              cat /tmp/perm.err >&2
+              exit 1
+            fi
+          fi
+
+          if ! aws lambda add-permission \
+            --function-name "$FUNCTION_NAME" \
+            --statement-id AllowCloudFrontInvokeFunction \
+            --action lambda:InvokeFunction \
+            --principal cloudfront.amazonaws.com \
+            --source-arn "$DISTRIBUTION_ARN" \
+            --source-account "$ACCOUNT_ID" 2>/tmp/perm.err; then
+            if grep -q "ResourceConflictException" /tmp/perm.err; then
+              echo "CloudFront invoke-function permission already present"
+            else
+              echo "::error::Failed to grant CloudFront permission to invoke the function"
               cat /tmp/perm.err >&2
               exit 1
             fi
