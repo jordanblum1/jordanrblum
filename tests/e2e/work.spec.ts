@@ -42,7 +42,10 @@ test('homepage archive includes the featured projects and omits weaker retired e
   await expect(rows.nth(1)).toContainText('Chicks of NYC');
   await expect(rows.nth(2)).toContainText('Citi Bike Wrapped');
   await expect(rows.nth(2)).toContainText('A personal year in review for your Citi Bike rides');
+  await expect(rows.nth(3).locator('.archive-date')).toHaveText('2024');
+  await expect(rows.nth(4).locator('.archive-date')).toHaveText('2024');
   await expect(rows.nth(5)).toContainText('My hand-rolled version of Linktree, Beacons, and lnk.bio.');
+  await expect(rows.nth(6).locator('.archive-date')).toHaveText('2021 - ongoing');
   await expect(page.locator('.more-section thead')).toHaveCount(0);
   await expect(page.locator('.more-section .section-kicker')).toHaveCount(0);
   await expect(page.locator('.more-section')).not.toContainText('Flâneur');

@@ -243,13 +243,13 @@ export const projectArchive: ArchiveItem[] = [
   },
   {
     title: 'wimdy',
-    date: '2026',
+    date: '2024',
     description: 'Checks the weather against what you actually want to do outside.',
     href: 'https://wimdy.io',
   },
   {
     title: 'Roast My Friend',
-    date: '2026',
+    date: '2024',
     description: 'A joke that escaped the group chat.',
     href: 'https://roastmyfriend.vercel.app',
   },
@@ -261,7 +261,7 @@ export const projectArchive: ArchiveItem[] = [
   },
   {
     title: 'Photo archive',
-    date: 'ongoing',
+    date: '2021 - ongoing',
     description: 'Travel photographs from a period when I carried a much bigger camera.',
     href: 'https://blumblumblum-gallery.vercel.app/',
   },

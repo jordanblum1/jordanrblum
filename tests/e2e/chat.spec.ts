@@ -27,15 +27,16 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(panel).toHaveAttribute('aria-modal', 'true');
   await expect(navChat).toHaveAttribute('aria-expanded', 'true');
 
-  // Header identity: just the painted "ask Jordy" title — no tagline. The
-  // dialog's accessible name carries the assistant context instead.
-  await expect(panel.locator('#chat-panel-title')).toHaveText('ask Jordy');
+  // The BLUM mark is the only visible header identity; hidden text keeps the
+  // heading available to assistive technology.
+  await expect(panel.locator('#chat-panel-title')).toHaveText('Jordy');
   await expect(panel.locator('.chat-tagline')).toHaveCount(0);
   await expect(panel).toHaveAttribute('aria-label', 'Chat with Jordy, Jordan’s assistant');
   const intro = page.locator('[data-chat-intro]');
   await expect(intro).toBeVisible();
-  await expect(intro).not.toContainText('Hi, I’m Jordy');
-  await expect(intro).toContainText('I’m Jordan’s assistant — ask me about his work, his projects, or his background.');
+  await expect(intro).toContainText('Hey — I’m Jordy, Jordan’s assistant.');
+  await expect(intro).toContainText('I can give you the quick version of his work, side projects, and background.');
+  await expect(intro).toContainText('Pick a question below, or ask your own.');
 
   // No persistent mailto in the panel — the email only surfaces inside
   // error/limit notices.
@@ -43,29 +44,68 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(panel.locator('a[href^="mailto:"]')).toHaveCount(0);
 });
 
-test('a decorative doodle sits beside the title without shifting the layout', async ({ page }) => {
+test('the BLUM mark animates in without shifting the header layout', async ({ page }) => {
   await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
   const panel = page.locator('[data-chat-panel]');
   await expect(panel).toBeVisible();
   // Let the 240ms open transition settle before measuring geometry.
   await page.waitForTimeout(500);
 
-  // The squiggle is pure decoration: an aria-hidden inline SVG in the header
-  // that must not leak into the accessible title text.
-  const doodle = panel.locator('.chat-header [data-chat-doodle]');
-  await expect(doodle).toBeVisible();
-  await expect(doodle).toHaveAttribute('aria-hidden', 'true');
-  await expect(doodle.locator('svg path')).toHaveCount(1);
-  await expect(panel.locator('#chat-panel-title')).toHaveText('ask Jordy');
+  const logo = panel.locator('.chat-header [data-chat-logo]');
+  await expect(logo).toBeVisible();
+  await expect(logo).toHaveAttribute('aria-hidden', 'true');
+  await expect(logo.locator('svg .logo-piece')).toHaveCount(4);
+  await expect(panel.locator('.chat-doodle')).toHaveCount(0);
+  await expect(panel.locator('#chat-panel-title')).toHaveText('Jordy');
 
-  // Fixed-size slot: the animation is stroke-dashoffset only, so the title
-  // and doodle boxes hold perfectly still across the loop.
+  // The pieces animate inside a fixed-size mark, so the header does not move.
   const title = panel.locator('#chat-panel-title');
   const titleBefore = await title.boundingBox();
-  const doodleBefore = await doodle.boundingBox();
-  await page.waitForTimeout(1500);
+  const logoBefore = await logo.boundingBox();
+  await page.waitForTimeout(800);
   expect(await title.boundingBox()).toEqual(titleBefore);
-  expect(await doodle.boundingBox()).toEqual(doodleBefore);
+  expect(await logo.boundingBox()).toEqual(logoBefore);
+});
+
+test('the panel unfolds from the composer corner and reverses before hiding', async ({ page }) => {
+  const navChat = page.locator('nav[aria-label="Primary"] button[data-nav-chat]');
+  const panel = page.locator('[data-chat-panel]');
+
+  await navChat.click();
+  await expect(panel).toBeVisible();
+
+  const motion = await panel.evaluate((element) => {
+    const panelStyle = getComputedStyle(element);
+    const bounds = element.getBoundingClientRect();
+    const [originX, originY] = panelStyle.transformOrigin.split(' ').map(Number.parseFloat);
+    const delay = (selector: string) => getComputedStyle(element.querySelector(selector)!).transitionDelay;
+    return {
+      transitionProperty: panelStyle.transitionProperty,
+      transitionDuration: panelStyle.transitionDuration,
+      originX,
+      originY,
+      width: bounds.width,
+      height: bounds.height,
+      headerDelay: delay('.chat-header'),
+      bodyDelay: delay('.chat-body'),
+      formDelay: delay('.chat-form'),
+    };
+  });
+
+  expect(motion.transitionProperty).toContain('transform');
+  expect(motion.transitionProperty).toContain('box-shadow');
+  expect(motion.transitionDuration).toContain('0.48s');
+  expect(motion.originX).toBeGreaterThan(motion.width / 2);
+  expect(motion.originY).toBeGreaterThan(motion.height / 2);
+  expect(motion.headerDelay).toBe('0.04s');
+  expect(motion.bodyDelay).toBe('0.08s');
+  expect(motion.formDelay).toBe('0.12s');
+
+  await page.locator('[data-chat-close]').click();
+  await expect(panel).not.toHaveClass(/is-open/);
+  await expect(panel).not.toHaveAttribute('hidden', '');
+  await expect(panel).toBeHidden();
+  await expect(navChat).toBeFocused();
 });
 
 test('the empty state shows four starter chips with the suggested questions', async ({ page }) => {

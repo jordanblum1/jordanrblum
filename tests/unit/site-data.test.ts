@@ -13,9 +13,11 @@ const footerSource = readFileSync('src/components/Footer.astro', 'utf8');
 const aboutSource = readFileSync('src/pages/about.astro', 'utf8');
 const roamWorkSamplesSource = readFileSync('src/components/RoamWorkSamples.astro', 'utf8');
 const archiveSource = readFileSync('src/components/ArchiveList.astro', 'utf8');
+const chatSource = readFileSync('src/components/ChatWidget.astro', 'utf8');
 const globalSource = readFileSync('src/styles/global.css', 'utf8');
 const tokenSource = readFileSync('src/styles/tokens.css', 'utf8');
 const readmeSource = readFileSync('README.md', 'utf8');
+const brandSource = readFileSync('docs/brand.md', 'utf8');
 const ogSource = readFileSync('public/og-image.svg', 'utf8');
 const llmsSource = readFileSync('public/llms.txt', 'utf8');
 const deploySource = readFileSync('.github/workflows/deploy.yml', 'utf8');
@@ -25,6 +27,26 @@ const block = (start: string, end: string) => src.slice(src.indexOf(start), src.
 const selectedWorkBlock = block('export const selectedWork', 'export const experience');
 const experienceBlock = block('export const experience', 'export const education');
 const archiveBlock = block('export const projectArchive', 'export const about');
+
+test('the repo brand book is discoverable and its core tokens stay implemented', () => {
+  expect(readmeSource).toContain('[`docs/brand.md`](docs/brand.md)');
+  expect(brandSource).toContain('The canonical source is `Design/brands/jordanrblum.md`');
+
+  for (const [name, value] of [
+    ['paper', '#F7F3ED'],
+    ['paper-raised', '#FCFAF6'],
+    ['ink', '#2B2521'],
+    ['ink-muted', '#746960'],
+    ['hairline', '#DDD5CB'],
+    ['accent', '#9C4037'],
+  ]) {
+    expect(tokenSource).toContain(`--${name}: ${value}`);
+    expect(brandSource).toContain(value);
+  }
+
+  expect(tokenSource).toContain('--font-ui-accent: "Baloo 2"');
+  expect(chatSource).toContain('font-family: var(--font-ui-accent)');
+});
 
 test('surface radii stay Apple-like without turning cards into capsules', () => {
   expect(tokenSource).toContain('--radius-xl: 2rem');

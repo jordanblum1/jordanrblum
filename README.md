@@ -4,7 +4,7 @@ Jordan Blum's personal site, built with Astro 7, Tailwind 4, and Motion.
 
 The current system is an editorial portfolio with one expressive workbench, a two-era Roam story, artifact-led side projects, and a small photo coda. Content lives in `src/data/site.ts`; the four photos used by the site are Jordan's confirmed gallery images.
 
-The visual tokens in `src/styles/tokens.css` are generated from the canonical Obsidian brand book at `Design/brands/jordanrblum.md`. Older design specs under `docs/superpowers/` are implementation history, not the current source of truth.
+The visual tokens in `src/styles/tokens.css` are generated from the canonical Obsidian brand book at `Design/brands/jordanrblum.md`. A readable repo mirror lives at [`docs/brand.md`](docs/brand.md). Older design specs under `docs/superpowers/` are implementation history, not the current source of truth.
 
 ## Design contract
 

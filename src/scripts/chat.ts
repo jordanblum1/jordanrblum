@@ -382,6 +382,19 @@ function initChatWidget(): void {
   let hideTimer = 0;
   let defaultChipOffset = 0;
 
+  function finishPanelClose(): void {
+    if (panel!.classList.contains('is-open')) return;
+    window.clearTimeout(hideTimer);
+    panel!.hidden = true;
+  }
+
+  // The transform is the longest shell transition. Waiting for its real end
+  // keeps CSS and JS in sync if the motion tokens change; the timer below is
+  // only a fallback for interrupted or unsupported transition events.
+  panel.addEventListener('transitionend', (event) => {
+    if (event.target === panel && event.propertyName === 'transform') finishPanelClose();
+  });
+
   function persist(): void {
     saveChatState(sessionStorage, state!, STORAGE_KEY);
   }
@@ -847,9 +860,7 @@ function initChatWidget(): void {
       panel!.hidden = true;
     } else {
       window.clearTimeout(hideTimer);
-      hideTimer = window.setTimeout(() => {
-        panel!.hidden = true;
-      }, 280);
+      hideTimer = window.setTimeout(finishPanelClose, 650);
     }
     // Focus goes back to whichever trigger opened the panel.
     lastTrigger?.focus();

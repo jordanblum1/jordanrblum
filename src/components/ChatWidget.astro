@@ -1,8 +1,12 @@
 ---
-// Chat chrome fonts, latin subsets only (~20KB woff2 each): Knewave for the
-// big painted display moments, Baloo 2 Regular for chip/label legibility.
-import '@fontsource/knewave/latin-400.css';
+// Chat chrome uses Baloo 2 Regular for chip/label legibility. The header uses
+// the site's existing BLUM mark instead of loading a second display face.
 import '@fontsource/baloo-2/latin-400.css';
+import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
+
+const blumMark = blumMarkSource
+  .replace(/<\?xml[^>]*>\s*/, '')
+  .replace(/<defs>[\s\S]*?<\/defs>/, '');
 
 // Starter questions wear a recruiter's hat: what someone reaching out cold
 // would actually ask, with no insider knowledge assumed (no company names).
@@ -25,11 +29,11 @@ const starters = [
     hidden
   >
     <header class="chat-header">
-      <!-- Just the painted title and the close button, floating over the
-           panel surface — the dialog's aria-label carries the "Jordan's
-           assistant" context now that the visible tagline is gone. -->
+      <!-- The BLUM mark is the only visible header identity. The hidden text
+           keeps the dialog heading useful without repeating visible copy. -->
       <h2 id="chat-panel-title" class="chat-name">
-        <span class="chat-name-ask">ask</span> Jordy<span class="chat-doodle" data-chat-doodle aria-hidden="true"><svg viewBox="0 0 36 26" fill="none"><path class="chat-doodle-squiggle" d="M2.5 17.5 C5 9, 9.5 7.5, 12.5 13.5 C15.5 19.5, 19 21, 22 14 C25 7.5, 28.5 7, 32.5 12.5" pathLength="100" /></svg></span>
+        <span class="chat-logo" data-chat-logo aria-hidden="true" set:html={blumMark}></span>
+        <span class="visually-hidden">Jordy</span>
       </h2>
       <button type="button" class="chat-close" data-chat-close aria-label="Close chat">
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
@@ -41,8 +45,8 @@ const starters = [
     <div class="chat-body" data-chat-scroll>
       <div class="chat-intro" data-chat-intro>
         <p class="chat-intro-copy">
-          I’m Jordan’s assistant — ask me about his work, his projects, or his background. Pick a question below,
-          or type your own to get started.
+          Hey — I’m Jordy, Jordan’s assistant. I can give you the quick version of his work, side projects, and
+          background. Pick a question below, or ask your own.
         </p>
         <div class="chat-starters" role="group" aria-label="Suggested questions">
           {starters.map((starter) => <button type="button" class="chat-chip" data-chat-chip>{starter}</button>)}
@@ -126,19 +130,13 @@ const starters = [
        3.54:1, below WCAG AA. Mixing 70% warning into ink yields ~#80572f,
        5.3:1 on that surface, while staying inside the token system. */
     --warning-ink: color-mix(in oklab, var(--warning) 70%, var(--ink));
-    /* Chat-only personality fonts, split by role after the font bake-off:
-       - display: Knewave, a fat paint-stroke face that matches the blobby
-         hand-painted BLUM hero mark. Single-weight display face, so it only
-         appears LARGE — the Jordy header.
-       - label: Baloo 2 Regular, a round warm face whose conventional
-         skeletons keep every chip word instantly legible at 13-14px
+    /* Baloo 2 Regular gives chips a warmer personality while its conventional
+         skeletons keep every word instantly legible at 13-14px
          (Sedgwick Ave's lowercase 'k' read as 'h' at chip size; Shantell
          Sans was legible but read plain). Regular, not SemiBold — owner
          wanted the chips lighter/cleaner, and the skeletons carry legibility
          without the extra weight.
        Message text stays in the readable site stack. */
-    --font-fun-display: 'Knewave', 'Marker Felt', cursive;
-    --font-fun-label: 'Baloo 2', 'Trebuchet MS', 'Comic Sans MS', sans-serif;
     position: fixed;
     right: var(--space-6);
     bottom: var(--space-6);
@@ -151,15 +149,64 @@ const starters = [
     border-radius: var(--radius-xl);
     background: var(--paper-raised);
     box-shadow: var(--shadow-lifted);
-    transition: opacity 240ms var(--ease), transform 240ms var(--ease);
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    transform-origin: calc(100% - var(--space-6)) calc(100% - var(--space-6));
+    transition:
+      opacity var(--duration-default) var(--ease),
+      transform var(--duration-slow) var(--spring),
+      box-shadow var(--duration-slow) var(--ease);
   }
 
-  /* Enter/exit: a short ease-out rise + fade, driven by chat.ts toggling
-     `.is-open` around the `hidden` attribute. */
+  /* The shell unfolds from the composer corner while its shadow lifts. The
+     child planes settle in behind it with a short tokenized stagger below. */
   .chat-panel:not(.is-open) {
     opacity: 0;
-    transform: translateY(0.75rem) scale(0.985);
+    transform: translate3d(var(--space-2), var(--space-4), 0) scale(0.98);
+    box-shadow: var(--shadow-small);
+    transition-duration: var(--duration-slow), var(--duration-slow), var(--duration-slow);
     pointer-events: none;
+  }
+
+  .chat-header,
+  .chat-body,
+  .chat-form {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+      opacity var(--duration-fast) var(--ease),
+      transform var(--duration-default) var(--spring);
+  }
+
+  .chat-panel.is-open .chat-header {
+    transition-delay: var(--duration-stagger);
+  }
+
+  .chat-panel.is-open .chat-body {
+    transition-delay: calc(var(--duration-stagger) + var(--duration-stagger));
+  }
+
+  .chat-panel.is-open .chat-form {
+    transition-delay: calc(var(--duration-stagger) + var(--duration-stagger) + var(--duration-stagger));
+  }
+
+  .chat-panel:not(.is-open) .chat-header,
+  .chat-panel:not(.is-open) .chat-body,
+  .chat-panel:not(.is-open) .chat-form {
+    opacity: 0;
+    transition-delay: 0ms;
+  }
+
+  .chat-panel:not(.is-open) .chat-header {
+    transform: translate3d(0, var(--space-2), 0);
+  }
+
+  .chat-panel:not(.is-open) .chat-body {
+    transform: translate3d(0, var(--space-3), 0);
+  }
+
+  .chat-panel:not(.is-open) .chat-form {
+    transform: translate3d(0, var(--space-2), 0);
   }
 
   /* The header floats over the shared panel surface — no divider. A soft
@@ -187,68 +234,117 @@ const starters = [
   }
 
   .chat-name {
-    font-family: var(--font-fun-display);
-    font-weight: 400;
-    font-size: 1.5rem;
-    line-height: 1;
-    letter-spacing: 0.01em;
+    width: 5rem;
+    margin: 0;
+    color: var(--accent);
+    line-height: 0;
   }
 
-  /* "ask" steps back a touch so the name carries the header — the one place
-     the name appears now that the intro heading is gone. */
-  .chat-name-ask {
-    font-size: 0.78em;
-    color: var(--ink-muted);
-  }
-
-  /* --- Header doodle ------------------------------------------------------ */
-  /* A little brush squiggle Jordan might have doodled beside the title. The
-     slot is fixed-size and inline-block, so the stroke animation can never
-     shift the title layout. It lazily draws itself on, holds, un-draws, and
-     rests — a 6s cycle that is mostly idle, so it never competes with
-     reading a conversation. Under reduced motion the animation is disabled
-     below and the base stroke-dashoffset of 0 shows the fully drawn state. */
-  .chat-doodle {
-    display: inline-block;
-    width: 1.25em;
-    height: 1.05em;
-    margin-left: 0.3em;
-    vertical-align: -0.08em;
-  }
-
-  .chat-doodle svg {
+  .chat-logo,
+  .chat-logo :global(svg) {
     display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
     overflow: visible;
   }
 
-  .chat-doodle-squiggle {
-    stroke: var(--accent);
-    stroke-width: 4.5;
-    stroke-linecap: round;
-    stroke-dasharray: 100;
-    stroke-dashoffset: 0;
-    animation: chat-doodle-draw 6s ease-in-out infinite;
+  .chat-logo :global(.logo-piece) {
+    --piece-x: 0;
+    --piece-y: var(--space-1);
+    --piece-rotate: 0deg;
+    transform-box: fill-box;
+    transform-origin: center;
   }
 
-  /* ~1s draw, ~2.9s hold, ~1s un-draw (out the far end, like the pen kept
-     going), ~1.1s blank rest before it doodles itself again. */
-  @keyframes chat-doodle-draw {
+  .chat-logo :global(path) {
+    fill: var(--accent);
+    fill-opacity: 1;
+    stroke: var(--accent);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-opacity: 0;
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .chat-logo :global(.logo-piece-1) {
+    --piece-x: calc(-1 * var(--space-2));
+    --piece-rotate: -4deg;
+  }
+
+  .chat-logo :global(.logo-piece-2) {
+    --piece-x: calc(-1 * var(--space-1));
+    --piece-y: var(--space-2);
+    --piece-rotate: 3deg;
+  }
+
+  .chat-logo :global(.logo-piece-3) {
+    --piece-x: var(--space-1);
+    --piece-y: calc(-1 * var(--space-1));
+    --piece-rotate: -3deg;
+  }
+
+  .chat-logo :global(.logo-piece-4) {
+    --piece-x: var(--space-2);
+    --piece-rotate: 4deg;
+  }
+
+  .chat-panel.is-open .chat-logo :global(.logo-piece) {
+    animation: chat-blum-assemble var(--duration-slow) var(--ease) backwards;
+  }
+
+  .chat-panel.is-open .chat-logo :global(.logo-piece path) {
+    animation: chat-blum-ink var(--duration-slow) var(--ease) backwards;
+  }
+
+  .chat-panel.is-open .chat-logo :global(.logo-piece-2),
+  .chat-panel.is-open .chat-logo :global(.logo-piece-2 path) {
+    animation-delay: 40ms;
+  }
+
+  .chat-panel.is-open .chat-logo :global(.logo-piece-3),
+  .chat-panel.is-open .chat-logo :global(.logo-piece-3 path) {
+    animation-delay: 80ms;
+  }
+
+  .chat-panel.is-open .chat-logo :global(.logo-piece-4),
+  .chat-panel.is-open .chat-logo :global(.logo-piece-4 path) {
+    animation-delay: 120ms;
+  }
+
+  @keyframes chat-blum-assemble {
     0% {
-      stroke-dashoffset: 100;
+      transform: translate3d(var(--piece-x), var(--piece-y), 0) rotate(var(--piece-rotate)) scale(0.94);
     }
-    16% {
-      stroke-dashoffset: 0;
+
+    72% {
+      transform: translate3d(0, -0.08rem, 0) rotate(0deg) scale(1.01);
     }
-    65% {
-      stroke-dashoffset: 0;
-    }
-    81% {
-      stroke-dashoffset: -100;
-    }
+
     100% {
-      stroke-dashoffset: -100;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  @keyframes chat-blum-ink {
+    0% {
+      fill-opacity: 0;
+      stroke-dashoffset: 1;
+      stroke-opacity: 0;
+    }
+
+    12%,
+    68% {
+      fill-opacity: 0;
+      stroke-opacity: 1;
+    }
+
+    100% {
+      fill-opacity: 1;
+      stroke-dashoffset: 0;
+      stroke-opacity: 0;
     }
   }
 
@@ -333,7 +429,7 @@ const starters = [
     border-radius: var(--radius-pill);
     background: var(--paper-raised);
     color: var(--ink);
-    font-family: var(--font-fun-label);
+    font-family: var(--font-ui-accent);
     font-size: 0.85rem;
     font-weight: 400;
     line-height: 1.35;
@@ -625,6 +721,7 @@ const starters = [
     padding: 0.55rem 0.8rem;
     resize: none;
     overflow-y: auto;
+    scrollbar-width: none;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
     background: var(--surface);
@@ -633,6 +730,10 @@ const starters = [
     font-size: 0.86rem;
     line-height: 1.5;
     transition: border-color var(--duration-default) var(--ease);
+  }
+
+  .chat-input::-webkit-scrollbar {
+    display: none;
   }
 
   .chat-input:focus-visible {
@@ -702,10 +803,11 @@ const starters = [
       border: none;
       border-radius: 0;
       overscroll-behavior: none;
+      transform-origin: 50% 100%;
     }
 
     .chat-panel:not(.is-open) {
-      transform: translateY(var(--space-6));
+      transform: translate3d(0, var(--space-6), 0);
     }
 
     .chat-body {
@@ -740,12 +842,20 @@ const starters = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .chat-doodle svg,
-    .chat-doodle path {
+    .chat-logo :global(.logo-piece),
+    .chat-logo :global(.logo-piece path) {
       animation: none;
     }
 
+    .chat-logo :global(path) {
+      fill-opacity: 1;
+      stroke: none;
+    }
+
     .chat-panel,
+    .chat-header,
+    .chat-body,
+    .chat-form,
     .chat-close,
     .chat-send,
     .chat-pill,
@@ -755,6 +865,12 @@ const starters = [
     }
 
     .chat-panel:not(.is-open) {
+      transform: none;
+    }
+
+    .chat-panel:not(.is-open) .chat-header,
+    .chat-panel:not(.is-open) .chat-body,
+    .chat-panel:not(.is-open) .chat-form {
       transform: none;
     }
 

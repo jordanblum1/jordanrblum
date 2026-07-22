@@ -17,9 +17,6 @@ importers:
       '@fontsource/geist-mono':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/knewave':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@tailwindcss/vite':
         specifier: ^4.3.2
         version: 4.3.2(vite@8.1.4(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
@@ -531,9 +528,6 @@ packages:
 
   '@fontsource/geist-mono@5.2.8':
     resolution: {integrity: sha512-YqZUb3X42GjRaHkibUNyE8K4Rk9A6I9Ez81YpJYiuJN4ggmTW2ixoQpa9EWCPfXZtIsCQJTyrDoV9OJOZO/UcA==}
-
-  '@fontsource/knewave@5.3.0':
-    resolution: {integrity: sha512-Ftlumu01eE3sgzn/gPOC/FFlYVA8uud93Bpl1Ilr72EjSWLdWUTkGHeB7ivOpAXatrdmnT/qkorEwAzm7hqXpQ==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2582,8 +2576,6 @@ snapshots:
   '@fontsource/baloo-2@5.3.0': {}
 
   '@fontsource/geist-mono@5.2.8': {}
-
-  '@fontsource/knewave@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 

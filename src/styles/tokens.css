@@ -28,6 +28,7 @@
   --font-body: "Switzer", "Switzer Fallback", system-ui, sans-serif;
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-ui-accent: "Baloo 2", "Trebuchet MS", "Comic Sans MS", sans-serif;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -60,6 +61,7 @@
   --duration-fast: 140ms;
   --duration-default: 220ms;
   --duration-slow: 480ms;
+  --duration-stagger: 40ms;
 
   --measure: 42rem;
   --wide: 72rem;
