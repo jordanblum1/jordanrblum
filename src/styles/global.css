@@ -30,10 +30,20 @@
   descent-override: 24%;
 }
 
+@font-face {
+  font-family: "Super Bouncer";
+  src: url("../assets/fonts/super-bouncer-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Switzer", "Switzer Fallback", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-graffiti: "Super Bouncer", "Arial Rounded MT Bold", sans-serif;
+  --font-personality: "Chillax", "Switzer", "Switzer Fallback", system-ui, sans-serif;
   --color-surface: var(--surface);
   --color-ink: var(--ink);
   --color-heading: var(--heading);
