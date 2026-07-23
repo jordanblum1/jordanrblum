@@ -91,7 +91,7 @@ Color mode is light only. Do not add dark token branches, persisted theme overri
 | Metadata | Geist Mono | 500 | Dates, traces, labels, counters, and tiny interface artifacts |
 | Assistant accent | Baloo 2 | 400 | Jordy suggestion chips only; never body copy or headings |
 | Graffiti display | Super Bouncer | 400 | Short, oversized expressive titles or artifact lettering; never body copy or interface labels |
-| Personality display | Chillax | 600 | Short destination headings only: project archive, experience/archive sections, and footer CTA |
+| Personality display | Chillax | 600 | Primary page heroes and short destination headings: home/About heroes, About teaser, project/experience/archive sections, and footer CTA |
 
 Fallback stacks:
 
@@ -105,9 +105,10 @@ Fallback stacks:
 ### Display-font library
 
 These are approved directions, not interchangeable defaults. Switzer remains the
-site heading family until a specific composition calls for a display face. Use at
-most one novelty face in a local composition, keep expressive lettering to a short
-phrase, and preserve ordinary text in Switzer.
+default reading and interface heading family; Chillax carries primary page heroes
+and selected destination headings. Use at most one novelty face in a local
+composition, keep expressive lettering to a short phrase, and preserve ordinary
+text in Switzer.
 
 | Candidate | Intended role | Project status | Source |
 | --- | --- | --- | --- |
@@ -136,7 +137,7 @@ API; do not commit or self-host its proprietary font files.
 | Creamy Chicken | [Sharpie](https://www.fontshare.com/fonts/sharpie/) | Bold or Black | Marker-written, sign-painter energy; more angular and less bubbly than the reference |
 | Boring Time | [Pally](https://www.fontshare.com/fonts/pally/) | Bold | Wobbly, informal sans that stays legible in short display phrases |
 | Akira Expanded | [Panchang](https://www.fontshare.com/fonts/panchang/) | Bold or ExtraBold | Wide, industrial construction and the closest structural match in the catalog |
-| Coolvetica | [Chillax](https://www.fontshare.com/fonts/chillax/) | Semibold | Active as `--font-personality` for short destination headings; friendly and retro-geometric without displacing Switzer |
+| Coolvetica | [Chillax](https://www.fontshare.com/fonts/chillax/) | Semibold | Active as `--font-personality` for primary page heroes and short destination headings; friendly and retro-geometric without displacing Switzer |
 
 Pally is also the cleaner Fontshare fallback for the Super Bouncer role. Keep
 Super Bouncer when the composition wants the fuller bubble-letter personality.

@@ -16,7 +16,7 @@ history are documented in `docs/superpowers/plans/2026-07-14-darkroom-redesign.m
 
 | Family | Loading and permission record |
 | --- | --- |
-| Chillax Semibold | [Fontshare source](https://www.fontshare.com/fonts/chillax/), by Indian Type Foundry under the [ITF Free Font License](https://www.fontshare.com/licenses/itf-ffl). Activated July 23, 2026 through Fontshare's hosted CSS API: `https://api.fontshare.com/v2/css?f[]=chillax@600&display=swap`. Used only through `--font-personality`. |
+| Chillax Semibold | [Fontshare source](https://www.fontshare.com/fonts/chillax/), by Indian Type Foundry under the [ITF Free Font License](https://www.fontshare.com/licenses/itf-ffl). Activated July 23, 2026 through Fontshare's hosted CSS API: `https://api.fontshare.com/v2/css?f[]=chillax@600&display=swap`. Used only through `--font-personality` for primary page heroes and short destination headings. |
 
 ## Saved candidates
 
