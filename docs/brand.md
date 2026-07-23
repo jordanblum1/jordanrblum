@@ -91,7 +91,7 @@ Color mode is light only. Do not add dark token branches, persisted theme overri
 | Metadata | Geist Mono | 500 | Dates, traces, labels, counters, and tiny interface artifacts |
 | Assistant accent | Baloo 2 | 400 | Jordy suggestion chips only; never body copy or headings |
 | Graffiti display | Super Bouncer | 400 | Short, oversized expressive titles or artifact lettering; never body copy or interface labels |
-| Personality display | Chillax | 600 | Primary page heroes and short destination headings: home/About heroes, About teaser, project/experience/archive sections, and footer CTA |
+| Personality display | Chillax | 600 | Visible portfolio page heroes and major section/destination headings: home/About heroes, selected work, project/experience/archive sections, About teaser, and footer CTA |
 
 Fallback stacks:
 
