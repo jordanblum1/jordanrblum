@@ -30,14 +30,19 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
   await expect(page.locator('.personal-note')).not.toContainText('old internet corner');
 });
 
-test('page heroes and the About teaser share the Chillax personality face', async ({ page }) => {
+test('portfolio display headings share the Chillax personality face', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.locator('#hero-title')).toHaveCSS('font-family', /Chillax/);
+  await expect(page.locator('#work-heading')).toHaveCSS('font-family', /Chillax/);
+  await expect(page.locator('#more-heading')).toHaveCSS('font-family', /Chillax/);
   await expect(page.locator('#about-preview-heading')).toHaveCSS('font-family', /Chillax/);
+  await expect(page.locator('.footer-title')).toHaveCSS('font-family', /Chillax/);
 
   await page.goto('/about');
   await expect(page.locator('.about-hero h1')).toHaveCSS('font-family', /Chillax/);
+  await expect(page.locator('#experience-heading')).toHaveCSS('font-family', /Chillax/);
+  await expect(page.locator('#archive-heading')).toHaveCSS('font-family', /Chillax/);
 });
 
 test('home and About heroes develop in without double-animating the work field', async ({ page }) => {
