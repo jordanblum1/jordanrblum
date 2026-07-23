@@ -41,10 +41,10 @@ test('about page carries the broader story, experience, and education', async ({
   const disclosures = mediaRegion.locator('details[data-roam-track]');
   await expect(disclosures).toHaveCount(3);
   await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
-  await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
+  await expect(mediaRegion.locator('.media-shot')).toHaveCount(8);
   await expect(mediaRegion.locator('img')).toHaveCount(4);
-  await expect(mediaRegion.locator('video')).toHaveCount(2);
-  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(2);
+  await expect(mediaRegion.locator('video')).toHaveCount(4);
+  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(4);
   await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
   await expect(mediaRegion).toContainText('synthetic demo data');
   await expect(mediaRegion).not.toContainText('2 screens');
@@ -68,7 +68,9 @@ test('about page carries the broader story, experience, and education', async ({
     expect(summaryBox).not.toBeNull();
     expect(summaryBox!.height).toBeGreaterThanOrEqual(80);
     expect(summaryBox!.height).toBeLessThan(150);
-    await expect(disclosure.locator(`[data-roam-sample="${id}"] .media-shot`)).toHaveCount(2);
+    await expect(disclosure.locator(`[data-roam-sample="${id}"] .media-shot`)).toHaveCount(
+      id === 'roam-marketplace' ? 4 : 2,
+    );
   }
 
   const roamBox = await page.locator('#roam').boundingBox();
@@ -89,22 +91,31 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(marketplaceDisclosure.locator('.media-shot').first()).toBeVisible();
   await expect(marketplaceDisclosure).not.toHaveAttribute('data-track-motion', 'opening');
 
-  const desktopCalculatorDemo = marketplaceDisclosure.locator('[data-product-video]').first();
-  const desktopCalculatorVideo = desktopCalculatorDemo.locator('video');
-  await desktopCalculatorDemo.hover();
-  await expect(desktopCalculatorDemo).toHaveAttribute('aria-pressed', 'true');
+  const searchTab = marketplaceDisclosure.getByRole('tab', { name: 'Search' });
+  const paymentsTab = marketplaceDisclosure.getByRole('tab', { name: 'Payments' });
+  const searchPanel = marketplaceDisclosure.locator('[data-product-panel="search"]');
+  const paymentsPanel = marketplaceDisclosure.locator('[data-product-panel="payments"]');
+  await expect(searchTab).toHaveAttribute('aria-selected', 'true');
+  await expect(paymentsTab).toHaveAttribute('aria-selected', 'false');
+  await expect(searchPanel).toBeVisible();
+  await expect(paymentsPanel).toBeHidden();
+
+  const desktopSearchDemo = searchPanel.locator('[data-product-video]').first();
+  const desktopSearchVideo = desktopSearchDemo.locator('video');
+  await desktopSearchDemo.hover();
+  await expect(desktopSearchDemo).toHaveAttribute('aria-pressed', 'true');
   await expect
-    .poll(() => desktopCalculatorVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .poll(() => desktopSearchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
     .toBeGreaterThan(0.1);
-  const desktopVideoDimensions = await desktopCalculatorVideo.evaluate((video) => ({
+  const desktopSearchDimensions = await desktopSearchVideo.evaluate((video) => ({
     width: (video as HTMLVideoElement).videoWidth,
     height: (video as HTMLVideoElement).videoHeight,
   }));
-  expect(desktopVideoDimensions).toEqual({ width: 1280, height: 800 });
+  expect(desktopSearchDimensions).toEqual({ width: 1280, height: 800 });
   await page.mouse.move(8, 8);
-  await expect(desktopCalculatorDemo).toHaveAttribute('aria-pressed', 'false');
+  await expect(desktopSearchDemo).toHaveAttribute('aria-pressed', 'false');
 
-  const mobileSearchDemo = marketplaceDisclosure.locator('.media-shot--phone [data-product-video]');
+  const mobileSearchDemo = searchPanel.locator('.media-shot--phone [data-product-video]');
   const mobileSearchVideo = mobileSearchDemo.locator('video');
   await mobileSearchDemo.hover();
   await expect(mobileSearchDemo).toHaveAttribute('aria-pressed', 'true');
@@ -122,6 +133,44 @@ test('about page carries the broader story, experience, and education', async ({
   await expect
     .poll(() => mobileSearchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
     .toBeLessThan(0.1);
+
+  await paymentsTab.focus();
+  await page.keyboard.press('Enter');
+  await expect(paymentsTab).toHaveAttribute('aria-selected', 'true');
+  await expect(searchTab).toHaveAttribute('aria-selected', 'false');
+  await expect(searchPanel).toBeHidden();
+  await expect(paymentsPanel).toBeVisible();
+  await expect(desktopSearchDemo).toHaveAttribute('aria-pressed', 'false');
+
+  const desktopCalculatorDemo = paymentsPanel.locator('[data-product-video]').first();
+  const desktopCalculatorVideo = desktopCalculatorDemo.locator('video');
+  await desktopCalculatorDemo.hover();
+  await expect(desktopCalculatorDemo).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() => desktopCalculatorVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .toBeGreaterThan(0.1);
+  const desktopCalculatorDimensions = await desktopCalculatorVideo.evaluate((video) => ({
+    width: (video as HTMLVideoElement).videoWidth,
+    height: (video as HTMLVideoElement).videoHeight,
+  }));
+  expect(desktopCalculatorDimensions).toEqual({ width: 1280, height: 800 });
+  await page.mouse.move(8, 8);
+
+  const mobileCalculatorDemo = paymentsPanel.locator('.media-shot--phone [data-product-video]');
+  const mobileCalculatorVideo = mobileCalculatorDemo.locator('video');
+  const mobileCalculatorDimensions = await mobileCalculatorVideo.evaluate((video) => ({
+    width: (video as HTMLVideoElement).videoWidth,
+    height: (video as HTMLVideoElement).videoHeight,
+  }));
+  expect(mobileCalculatorDimensions).toEqual({ width: 390, height: 844 });
+  await expect(mobileCalculatorDemo.locator('[data-phone-frame]')).toHaveCount(1);
+
+  await paymentsTab.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(searchTab).toHaveAttribute('aria-selected', 'true');
+  await expect(searchTab).toBeFocused();
+  await expect(searchPanel).toBeVisible();
+  await expect(paymentsPanel).toBeHidden();
 
   const reedSummary = reedDisclosure.locator('summary');
   await reedSummary.focus();
@@ -238,14 +287,14 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   await marketplaceTrack.locator('summary').click();
   await expect(marketplaceTrack).toHaveAttribute('open', '');
   await expect(marketplaceTrack.locator('.experience-track-detail')).toBeVisible();
-  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(2);
+  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(4);
   await expect(marketplaceTrack).not.toHaveAttribute('data-track-motion', 'opening');
   const marketplaceExpandedHeight = (await marketplaceTrack.boundingBox())!.height;
   expect(marketplaceExpandedHeight).toBeGreaterThan(marketplaceCollapsedHeight + 200);
-  const mediaRail = marketplaceTrack.locator('.media-pair');
+  const mediaRail = marketplaceTrack.locator('[data-product-panel="search"]');
   expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(false);
-  const firstShotBox = await marketplaceTrack.locator('.media-shot').nth(0).boundingBox();
-  const secondShotBox = await marketplaceTrack.locator('.media-shot').nth(1).boundingBox();
+  const firstShotBox = await mediaRail.locator('.media-shot').nth(0).boundingBox();
+  const secondShotBox = await mediaRail.locator('.media-shot').nth(1).boundingBox();
   expect(firstShotBox).not.toBeNull();
   expect(secondShotBox).not.toBeNull();
   expect(secondShotBox!.x).toBeGreaterThan(firstShotBox!.x + firstShotBox!.width);

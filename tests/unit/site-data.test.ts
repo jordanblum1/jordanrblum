@@ -246,6 +246,14 @@ test('Roam experience media uses public product screens and a sanitized harness 
   expect(roamWorkSamplesSource).toContain('roam-search-mobile.webm');
   expect(roamWorkSamplesSource).toContain('roam-search-mobile.mp4');
   expect(roamWorkSamplesSource).toContain('roam-search-mobile-poster.webp');
+  expect(roamWorkSamplesSource).toContain('roam-search.webm');
+  expect(roamWorkSamplesSource).toContain('roam-search.mp4');
+  expect(roamWorkSamplesSource).toContain('roam-search-poster.webp');
+  expect(roamWorkSamplesSource).toContain('roam-calculator-mobile.webm');
+  expect(roamWorkSamplesSource).toContain('roam-calculator-mobile.mp4');
+  expect(roamWorkSamplesSource).toContain('roam-calculator-mobile-poster.webp');
+  expect(roamWorkSamplesSource).toContain('data-product-modes');
+  expect(roamWorkSamplesSource).toContain('data-product-panel');
   expect(experienceReadme).toContain('roam-search-mobile.*');
   expect(experienceReadme).toContain('roam-calculator.*');
   expect(experienceReadme).toContain('roam-search.*');
