@@ -4,7 +4,7 @@ import { buildSystemPrompt } from './systemPrompt.js';
 import { evaluateEmailReveal } from './tools/revealEmail.js';
 import type { ChatMessage, ResumeOfferLogEntry, RevealLogEntry } from './types.js';
 
-export const DEFAULT_MODEL = 'claude-sonnet-5';
+export const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 export const DEFAULT_MAX_TOKENS = 1200;
 
 let client: Anthropic | undefined;
