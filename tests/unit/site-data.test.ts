@@ -240,14 +240,13 @@ test('Roam experience media uses public product screens and a sanitized harness 
   for (const id of ['roam-marketplace', 'reed', 'agent-harness']) {
     expect(roamWorkSamplesSource).toContain(`id: '${id}'`);
   }
-  expect(roamWorkSamplesSource).toContain('roam-search.webm');
-  expect(roamWorkSamplesSource).toContain('roam-calculator-mobile.webm');
-  expect(roamWorkSamplesSource).toContain('roam-search.mp4');
-  expect(roamWorkSamplesSource).toContain('roam-calculator-mobile.mp4');
-  expect(roamWorkSamplesSource).toContain('roam-search-poster.webp');
-  expect(roamWorkSamplesSource).toContain('roam-calculator-mobile-poster.webp');
+  expect(roamWorkSamplesSource).toContain('roam-calculator-authenticated.webp');
+  expect(roamWorkSamplesSource).toContain('roam-search-mobile.webm');
+  expect(roamWorkSamplesSource).toContain('roam-search-mobile.mp4');
+  expect(roamWorkSamplesSource).toContain('roam-search-mobile-poster.webp');
   expect(experienceReadme).toContain('roam-search-mobile.*');
   expect(experienceReadme).toContain('roam-calculator.*');
+  expect(experienceReadme).toContain('normalized to 30 fps');
   expect(experienceReadme).toContain('ROAM_STORAGE_STATE');
   expect(roamWorkSamplesSource).toContain('data-product-video');
   expect(roamWorkSamplesSource).toContain('data-phone-frame');

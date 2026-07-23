@@ -4,6 +4,7 @@ import agentHarnessChat from '../assets/experience/agent-harness-chat.png';
 import agentHarnessSubagents from '../assets/experience/agent-harness-subagents.png';
 import reedChat from '../assets/experience/reed-chat.jpg';
 import reedHome from '../assets/experience/reed-home.jpg';
+import roamCalculatorAuthenticated from '../assets/experience/roam-calculator-authenticated.webp';
 
 interface Props {
   group: 'roam-marketplace' | 'reed' | 'agent-harness';
@@ -34,25 +35,22 @@ const groups = [
   {
     id: 'roam-marketplace',
     title: 'Roam marketplace',
-    description: 'Authenticated home search on desktop and payment details on mobile.',
+    description: 'Authenticated payment details on desktop and live search filtering on mobile.',
     shots: [
       {
-        kind: 'video',
-        src: '/media/roam-search.webm',
-        fallback: '/media/roam-search.mp4',
-        poster: '/media/roam-search-poster.webp',
-        duration: '6s',
-        label: 'Search & rate filters · Desktop',
-        alt: "Play a short demo of Roam's Austin map search filtering homes to mortgage rates at or below 3.5 percent",
+        kind: 'image',
+        src: roamCalculatorAuthenticated,
+        label: 'Assumable-loan calculator · Desktop',
+        alt: "Roam's authenticated payment calculator comparing an assumable 3.96 percent mortgage with the market rate",
       },
       {
         kind: 'video',
-        src: '/media/roam-calculator-mobile.webm',
-        fallback: '/media/roam-calculator-mobile.mp4',
-        poster: '/media/roam-calculator-mobile-poster.webp',
-        duration: '7s',
-        label: 'Payment details · Mobile',
-        alt: "Play a short mobile demo of Roam's assumable-loan calculator and expandable payment details",
+        src: '/media/roam-search-mobile.webm',
+        fallback: '/media/roam-search-mobile.mp4',
+        poster: '/media/roam-search-mobile-poster.webp',
+        duration: '6s',
+        label: 'Search & rate filters · Mobile',
+        alt: "Play a short mobile recording of Roam's Austin home search applying a maximum mortgage-rate filter",
         frame: 'phone',
       },
     ] satisfies WorkShot[],
