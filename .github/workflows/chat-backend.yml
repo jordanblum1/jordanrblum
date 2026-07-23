@@ -382,7 +382,8 @@ jobs:
           fi
           aws lambda update-function-code \
             --function-name "$FUNCTION_NAME" \
-            --zip-file fileb://server/lambda.zip
+            --zip-file fileb://server/lambda.zip \
+            >/dev/null
           aws lambda wait function-updated --function-name "$FUNCTION_NAME"
 
           CURRENT_CHAT_MODEL=$(aws lambda get-function-configuration \
