@@ -42,9 +42,9 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(disclosures).toHaveCount(3);
   await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
   await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
-  await expect(mediaRegion.locator('img')).toHaveCount(5);
-  await expect(mediaRegion.locator('video')).toHaveCount(1);
-  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(1);
+  await expect(mediaRegion.locator('img')).toHaveCount(4);
+  await expect(mediaRegion.locator('video')).toHaveCount(2);
+  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(2);
   await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
   await expect(mediaRegion).toContainText('synthetic demo data');
   await expect(mediaRegion).not.toContainText('2 screens');
@@ -89,7 +89,22 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(marketplaceDisclosure.locator('.media-shot').first()).toBeVisible();
   await expect(marketplaceDisclosure).not.toHaveAttribute('data-track-motion', 'opening');
 
-  const mobileSearchDemo = marketplaceDisclosure.locator('[data-product-video]');
+  const desktopCalculatorDemo = marketplaceDisclosure.locator('[data-product-video]').first();
+  const desktopCalculatorVideo = desktopCalculatorDemo.locator('video');
+  await desktopCalculatorDemo.hover();
+  await expect(desktopCalculatorDemo).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() => desktopCalculatorVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .toBeGreaterThan(0.1);
+  const desktopVideoDimensions = await desktopCalculatorVideo.evaluate((video) => ({
+    width: (video as HTMLVideoElement).videoWidth,
+    height: (video as HTMLVideoElement).videoHeight,
+  }));
+  expect(desktopVideoDimensions).toEqual({ width: 1280, height: 800 });
+  await page.mouse.move(8, 8);
+  await expect(desktopCalculatorDemo).toHaveAttribute('aria-pressed', 'false');
+
+  const mobileSearchDemo = marketplaceDisclosure.locator('.media-shot--phone [data-product-video]');
   const mobileSearchVideo = mobileSearchDemo.locator('video');
   await mobileSearchDemo.hover();
   await expect(mobileSearchDemo).toHaveAttribute('aria-pressed', 'true');

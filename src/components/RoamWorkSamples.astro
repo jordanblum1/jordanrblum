@@ -4,7 +4,6 @@ import agentHarnessChat from '../assets/experience/agent-harness-chat.png';
 import agentHarnessSubagents from '../assets/experience/agent-harness-subagents.png';
 import reedChat from '../assets/experience/reed-chat.jpg';
 import reedHome from '../assets/experience/reed-home.jpg';
-import roamCalculatorAuthenticated from '../assets/experience/roam-calculator-authenticated.webp';
 
 interface Props {
   group: 'roam-marketplace' | 'reed' | 'agent-harness';
@@ -16,7 +15,6 @@ type WorkShot =
   | {
       kind: 'image';
       src: typeof reedHome;
-      label: string;
       alt: string;
       frame?: 'phone';
     }
@@ -26,7 +24,6 @@ type WorkShot =
       fallback: string;
       poster: string;
       duration: string;
-      label: string;
       alt: string;
       frame?: 'phone';
     };
@@ -38,10 +35,12 @@ const groups = [
     description: 'Authenticated payment details on desktop and live search filtering on mobile.',
     shots: [
       {
-        kind: 'image',
-        src: roamCalculatorAuthenticated,
-        label: 'Assumable-loan calculator · Desktop',
-        alt: "Roam's authenticated payment calculator comparing an assumable 3.96 percent mortgage with the market rate",
+        kind: 'video',
+        src: '/media/roam-calculator.webm',
+        fallback: '/media/roam-calculator.mp4',
+        poster: '/media/roam-calculator-poster.webp',
+        duration: '8s',
+        alt: "Play a short desktop recording of Roam's authenticated payment calculator and expanded payment details",
       },
       {
         kind: 'video',
@@ -49,7 +48,6 @@ const groups = [
         fallback: '/media/roam-search-mobile.mp4',
         poster: '/media/roam-search-mobile-poster.webp',
         duration: '6s',
-        label: 'Search & rate filters · Mobile',
         alt: "Play a short mobile recording of Roam's Austin home search applying a maximum mortgage-rate filter",
         frame: 'phone',
       },
@@ -63,13 +61,11 @@ const groups = [
       {
         kind: 'image',
         src: reedHome,
-        label: 'Homepage',
         alt: "Reed's public homepage introducing its AI real estate expert",
       },
       {
         kind: 'image',
         src: reedChat,
-        label: 'Buyer chat',
         alt: "Reed's buyer chat offering paths to explore areas, find homes, inspect a home, or make an offer",
       },
     ] satisfies WorkShot[],
@@ -82,13 +78,11 @@ const groups = [
       {
         kind: 'image',
         src: agentHarnessChat,
-        label: 'Chat',
         alt: 'A synthetic agent-harness chat showing an orchestrator coordinating a product review',
       },
       {
         kind: 'image',
         src: agentHarnessSubagents,
-        label: 'Sub-agents',
         alt: 'A synthetic agent-harness graph showing an orchestrator supervising four parallel sub-agents',
       },
     ] satisfies WorkShot[],
@@ -144,7 +138,6 @@ if (!selectedGroup) {
             />
           </div>
         )}
-        <figcaption class="shot-label mono-meta">{shot.label}</figcaption>
       </figure>
     ))}
   </div>
@@ -351,12 +344,6 @@ if (!selectedGroup) {
     width: 100%;
     height: auto;
     filter: none;
-  }
-
-  .shot-label {
-    color: var(--ink-muted);
-    font-size: 0.6875rem;
-    line-height: 1.4;
   }
 
   @container (max-width: 30rem) {

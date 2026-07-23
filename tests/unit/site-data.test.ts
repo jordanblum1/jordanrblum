@@ -240,7 +240,9 @@ test('Roam experience media uses public product screens and a sanitized harness 
   for (const id of ['roam-marketplace', 'reed', 'agent-harness']) {
     expect(roamWorkSamplesSource).toContain(`id: '${id}'`);
   }
-  expect(roamWorkSamplesSource).toContain('roam-calculator-authenticated.webp');
+  expect(roamWorkSamplesSource).toContain('roam-calculator.webm');
+  expect(roamWorkSamplesSource).toContain('roam-calculator.mp4');
+  expect(roamWorkSamplesSource).toContain('roam-calculator-poster.webp');
   expect(roamWorkSamplesSource).toContain('roam-search-mobile.webm');
   expect(roamWorkSamplesSource).toContain('roam-search-mobile.mp4');
   expect(roamWorkSamplesSource).toContain('roam-search-mobile-poster.webp');
@@ -250,6 +252,7 @@ test('Roam experience media uses public product screens and a sanitized harness 
   expect(experienceReadme).toContain('ROAM_STORAGE_STATE');
   expect(roamWorkSamplesSource).toContain('data-product-video');
   expect(roamWorkSamplesSource).toContain('data-phone-frame');
+  expect(roamWorkSamplesSource).not.toContain('<figcaption');
   expect(roamWorkSamplesSource).toContain('prefers-reduced-motion: reduce');
   expect(roamWorkSamplesSource).toContain('reed-home.jpg');
   expect(roamWorkSamplesSource).toContain('reed-chat.jpg');
