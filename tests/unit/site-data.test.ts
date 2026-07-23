@@ -252,12 +252,20 @@ test('Roam experience media uses public product screens and a sanitized harness 
   expect(roamWorkSamplesSource).toContain('roam-calculator-mobile.webm');
   expect(roamWorkSamplesSource).toContain('roam-calculator-mobile.mp4');
   expect(roamWorkSamplesSource).toContain('roam-calculator-mobile-poster.webp');
+  expect(roamWorkSamplesSource).toContain('roam-product-tour.webm');
+  expect(roamWorkSamplesSource).toContain('roam-product-tour.mp4');
+  expect(roamWorkSamplesSource).toContain('roam-product-tour-poster.webp');
+  expect(roamWorkSamplesSource).toContain('roam-product-tour-mobile.webm');
+  expect(roamWorkSamplesSource).toContain('roam-product-tour-mobile.mp4');
+  expect(roamWorkSamplesSource).toContain('roam-product-tour-mobile-poster.webp');
   expect(roamWorkSamplesSource).toContain('data-product-modes');
   expect(roamWorkSamplesSource).toContain('data-product-panel');
   expect(experienceReadme).toContain('roam-search-mobile.*');
   expect(experienceReadme).toContain('roam-calculator.*');
   expect(experienceReadme).toContain('roam-search.*');
   expect(experienceReadme).toContain('roam-calculator-mobile.*');
+  expect(experienceReadme).toContain('roam-product-tour.*');
+  expect(experienceReadme).toContain('roam-product-tour-mobile.*');
   for (const mediaName of [
     'roam-search.mp4',
     'roam-search.webm',
@@ -265,6 +273,12 @@ test('Roam experience media uses public product screens and a sanitized harness 
     'roam-calculator-mobile.mp4',
     'roam-calculator-mobile.webm',
     'roam-calculator-mobile-poster.webp',
+    'roam-product-tour.mp4',
+    'roam-product-tour.webm',
+    'roam-product-tour-poster.webp',
+    'roam-product-tour-mobile.mp4',
+    'roam-product-tour-mobile.webm',
+    'roam-product-tour-mobile-poster.webp',
   ]) {
     expect(readFileSync(`public/media/${mediaName}`).byteLength).toBeGreaterThan(10_000);
   }

@@ -41,10 +41,10 @@ test('about page carries the broader story, experience, and education', async ({
   const disclosures = mediaRegion.locator('details[data-roam-track]');
   await expect(disclosures).toHaveCount(3);
   await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
-  await expect(mediaRegion.locator('.media-shot')).toHaveCount(8);
+  await expect(mediaRegion.locator('.media-shot')).toHaveCount(10);
   await expect(mediaRegion.locator('img')).toHaveCount(4);
-  await expect(mediaRegion.locator('video')).toHaveCount(4);
-  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(4);
+  await expect(mediaRegion.locator('video')).toHaveCount(6);
+  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(6);
   await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
   await expect(mediaRegion).toContainText('synthetic demo data');
   await expect(mediaRegion).not.toContainText('2 screens');
@@ -69,7 +69,7 @@ test('about page carries the broader story, experience, and education', async ({
     expect(summaryBox!.height).toBeGreaterThanOrEqual(80);
     expect(summaryBox!.height).toBeLessThan(150);
     await expect(disclosure.locator(`[data-roam-sample="${id}"] .media-shot`)).toHaveCount(
-      id === 'roam-marketplace' ? 4 : 2,
+      id === 'roam-marketplace' ? 6 : 2,
     );
   }
 
@@ -93,12 +93,16 @@ test('about page carries the broader story, experience, and education', async ({
 
   const searchTab = marketplaceDisclosure.getByRole('tab', { name: 'Search' });
   const paymentsTab = marketplaceDisclosure.getByRole('tab', { name: 'Payments' });
+  const tourTab = marketplaceDisclosure.getByRole('tab', { name: 'Tour' });
   const searchPanel = marketplaceDisclosure.locator('[data-product-panel="search"]');
   const paymentsPanel = marketplaceDisclosure.locator('[data-product-panel="payments"]');
+  const tourPanel = marketplaceDisclosure.locator('[data-product-panel="tour"]');
   await expect(searchTab).toHaveAttribute('aria-selected', 'true');
   await expect(paymentsTab).toHaveAttribute('aria-selected', 'false');
+  await expect(tourTab).toHaveAttribute('aria-selected', 'false');
   await expect(searchPanel).toBeVisible();
   await expect(paymentsPanel).toBeHidden();
+  await expect(tourPanel).toBeHidden();
 
   const desktopSearchDemo = searchPanel.locator('[data-product-video]').first();
   const desktopSearchVideo = desktopSearchDemo.locator('video');
@@ -164,6 +168,25 @@ test('about page carries the broader story, experience, and education', async ({
   }));
   expect(mobileCalculatorDimensions).toEqual({ width: 390, height: 844 });
   await expect(mobileCalculatorDemo.locator('[data-phone-frame]')).toHaveCount(1);
+
+  await tourTab.click();
+  await expect(tourTab).toHaveAttribute('aria-selected', 'true');
+  await expect(paymentsPanel).toBeHidden();
+  await expect(tourPanel).toBeVisible();
+  const desktopTourVideo = tourPanel.locator('[data-product-video] video').first();
+  const mobileTourVideo = tourPanel.locator('.media-shot--phone video');
+  expect(
+    await desktopTourVideo.evaluate((video) => ({
+      width: (video as HTMLVideoElement).videoWidth,
+      height: (video as HTMLVideoElement).videoHeight,
+    })),
+  ).toEqual({ width: 1280, height: 800 });
+  expect(
+    await mobileTourVideo.evaluate((video) => ({
+      width: (video as HTMLVideoElement).videoWidth,
+      height: (video as HTMLVideoElement).videoHeight,
+    })),
+  ).toEqual({ width: 390, height: 844 });
 
   await paymentsTab.focus();
   await page.keyboard.press('ArrowLeft');
@@ -287,7 +310,7 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   await marketplaceTrack.locator('summary').click();
   await expect(marketplaceTrack).toHaveAttribute('open', '');
   await expect(marketplaceTrack.locator('.experience-track-detail')).toBeVisible();
-  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(4);
+  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(6);
   await expect(marketplaceTrack).not.toHaveAttribute('data-track-motion', 'opening');
   const marketplaceExpandedHeight = (await marketplaceTrack.boundingBox())!.height;
   expect(marketplaceExpandedHeight).toBeGreaterThan(marketplaceCollapsedHeight + 200);
