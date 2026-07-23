@@ -42,7 +42,9 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(disclosures).toHaveCount(3);
   await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
   await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
-  await expect(mediaRegion.locator('img')).toHaveCount(6);
+  await expect(mediaRegion.locator('img')).toHaveCount(4);
+  await expect(mediaRegion.locator('video')).toHaveCount(2);
+  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(2);
   await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
   await expect(mediaRegion).toContainText('synthetic demo data');
   await expect(mediaRegion).not.toContainText('2 screens');
@@ -85,6 +87,25 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(marketplaceDisclosure).toHaveAttribute('data-track-motion', 'opening');
   await expect(marketplaceDisclosure.locator('.experience-track-detail')).toBeVisible();
   await expect(marketplaceDisclosure.locator('.media-shot').first()).toBeVisible();
+  await expect(marketplaceDisclosure).not.toHaveAttribute('data-track-motion', 'opening');
+
+  const searchDemo = marketplaceDisclosure.locator('[data-product-video]').first();
+  const searchVideo = searchDemo.locator('video');
+  await searchDemo.hover();
+  await expect(searchDemo).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() => searchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .toBeGreaterThan(0.1);
+  const videoDimensions = await searchVideo.evaluate((video) => ({
+    width: (video as HTMLVideoElement).videoWidth,
+    height: (video as HTMLVideoElement).videoHeight,
+  }));
+  expect(videoDimensions).toEqual({ width: 1280, height: 800 });
+  await page.mouse.move(8, 8);
+  await expect(searchDemo).toHaveAttribute('aria-pressed', 'false');
+  await expect
+    .poll(() => searchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .toBeLessThan(0.1);
 
   const reedSummary = reedDisclosure.locator('summary');
   await reedSummary.focus();

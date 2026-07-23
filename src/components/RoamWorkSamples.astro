@@ -4,8 +4,6 @@ import agentHarnessChat from '../assets/experience/agent-harness-chat.png';
 import agentHarnessSubagents from '../assets/experience/agent-harness-subagents.png';
 import reedChat from '../assets/experience/reed-chat.jpg';
 import reedHome from '../assets/experience/reed-home.jpg';
-import roamListing from '../assets/experience/roam-listing.jpg';
-import roamMarketplace from '../assets/experience/roam-marketplace.jpg';
 
 interface Props {
   group: 'roam-marketplace' | 'reed' | 'agent-harness';
@@ -13,23 +11,48 @@ interface Props {
 
 const { group } = Astro.props;
 
+type WorkShot =
+  | {
+      kind: 'image';
+      src: typeof reedHome;
+      label: string;
+      alt: string;
+    }
+  | {
+      kind: 'video';
+      src: string;
+      fallback: string;
+      poster: string;
+      duration: string;
+      label: string;
+      alt: string;
+    };
+
 const groups = [
   {
     id: 'roam-marketplace',
     title: 'Roam marketplace',
-    description: 'Map search and the home-detail flow.',
+    description: 'Live rate filtering and the assumable-loan calculator.',
     shots: [
       {
-        src: roamMarketplace,
-        label: 'Map search',
-        alt: "Roam's public home search with a map, buyer filters, and listing cards",
+        kind: 'video',
+        src: '/media/roam-search.webm',
+        fallback: '/media/roam-search.mp4',
+        poster: '/media/roam-search-poster.webp',
+        duration: '6s',
+        label: 'Rate filtering',
+        alt: "Play a short demo of Roam's Austin map search filtering homes to mortgage rates at or below 3.5 percent",
       },
       {
-        src: roamListing,
-        label: 'Listing detail',
-        alt: "A Roam home listing with its photo gallery, address, and price",
+        kind: 'video',
+        src: '/media/roam-calculator.webm',
+        fallback: '/media/roam-calculator.mp4',
+        poster: '/media/roam-calculator-poster.webp',
+        duration: '9s',
+        label: 'Payment calculator',
+        alt: "Play a short demo of Roam's assumable-loan calculator and expandable payment details",
       },
-    ],
+    ] satisfies WorkShot[],
   },
   {
     id: 'reed',
@@ -37,16 +60,18 @@ const groups = [
     description: 'The public starting point and a guided buyer conversation.',
     shots: [
       {
+        kind: 'image',
         src: reedHome,
         label: 'Homepage',
         alt: "Reed's public homepage introducing its AI real estate expert",
       },
       {
+        kind: 'image',
         src: reedChat,
         label: 'Buyer chat',
         alt: "Reed's buyer chat offering paths to explore areas, find homes, inspect a home, or make an offer",
       },
-    ],
+    ] satisfies WorkShot[],
   },
   {
     id: 'agent-harness',
@@ -54,16 +79,18 @@ const groups = [
     description: 'Chat and sub-agent supervision with synthetic demo data.',
     shots: [
       {
+        kind: 'image',
         src: agentHarnessChat,
         label: 'Chat',
         alt: 'A synthetic agent-harness chat showing an orchestrator coordinating a product review',
       },
       {
+        kind: 'image',
         src: agentHarnessSubagents,
         label: 'Sub-agents',
         alt: 'A synthetic agent-harness graph showing an orchestrator supervising four parallel sub-agents',
       },
-    ],
+    ] satisfies WorkShot[],
   },
 ];
 
@@ -79,20 +106,90 @@ if (!selectedGroup) {
   <div class="media-pair">
     {selectedGroup.shots.map((shot) => (
       <figure class="media-shot">
-        <div class="media-frame">
-          <Image
-            src={shot.src}
-            alt={shot.alt}
-            loading="lazy"
-            widths={[360, 480, 640, 960, 1440]}
-            sizes="(max-width: 48rem) calc(100vw - 64px), min(30rem, 38vw)"
-          />
-        </div>
+        {shot.kind === 'video' ? (
+          <button
+            class="media-frame media-frame--video"
+            type="button"
+            data-product-video
+            aria-label={shot.alt}
+            aria-pressed="false"
+          >
+            <video muted loop playsinline preload="metadata" poster={shot.poster}>
+              <source src={shot.src} type="video/webm" />
+              <source src={shot.fallback} type="video/mp4" />
+            </video>
+            <span class="video-cue mono-meta" aria-hidden="true">
+              <svg viewBox="0 0 12 12">
+                <path d="M3.5 2.25 9 6l-5.5 3.75v-7.5Z" fill="currentColor"></path>
+              </svg>
+              Play · {shot.duration}
+            </span>
+          </button>
+        ) : (
+          <div class="media-frame">
+            <Image
+              src={shot.src}
+              alt={shot.alt}
+              loading="lazy"
+              widths={[360, 480, 640, 960, 1440]}
+              sizes="(max-width: 48rem) calc(100vw - 64px), min(30rem, 38vw)"
+            />
+          </div>
+        )}
         <figcaption class="shot-label mono-meta">{shot.label}</figcaption>
       </figure>
     ))}
   </div>
 </section>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-product-video]').forEach((control) => {
+    if (control.dataset.videoReady === 'true') return;
+    control.dataset.videoReady = 'true';
+
+    const video = control.querySelector('video');
+    if (!video) return;
+
+    const play = async () => {
+      try {
+        await video.play();
+        control.classList.add('is-playing');
+        control.setAttribute('aria-pressed', 'true');
+      } catch {
+        control.classList.remove('is-playing');
+      }
+    };
+
+    const reset = () => {
+      video.pause();
+      video.currentTime = 0;
+      control.classList.remove('is-playing');
+      control.setAttribute('aria-pressed', 'false');
+    };
+
+    control.addEventListener('pointerenter', (event) => {
+      if (event.pointerType !== 'touch' && !reducedMotion.matches) void play();
+    });
+    control.addEventListener('pointerleave', (event) => {
+      if (event.pointerType !== 'touch') reset();
+    });
+    control.addEventListener('focus', () => {
+      if (!reducedMotion.matches) void play();
+    });
+    control.addEventListener('blur', reset);
+    control.addEventListener('click', () => {
+      if (video.paused) void play();
+      else reset();
+    });
+
+    const disclosure = control.closest('details');
+    disclosure?.addEventListener('toggle', () => {
+      if (!disclosure.open) reset();
+    });
+  });
+</script>
 
 <style>
   .work-samples {
@@ -131,6 +228,58 @@ if (!selectedGroup) {
     box-shadow: var(--shadow-small);
   }
 
+  .media-frame--video {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .media-frame--video:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .media-frame--video video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    object-fit: cover;
+    background: white;
+  }
+
+  .video-cue {
+    position: absolute;
+    right: var(--space-3);
+    bottom: var(--space-3);
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.4rem 0.65rem;
+    color: white;
+    font-size: 0.625rem;
+    line-height: 1;
+    background: color-mix(in srgb, var(--ink) 82%, transparent);
+    border-radius: 999px;
+    box-shadow: 0 1px 8px rgb(0 0 0 / 18%);
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  .video-cue svg {
+    width: 0.65rem;
+    height: 0.65rem;
+  }
+
+  .media-frame--video.is-playing .video-cue {
+    opacity: 0;
+    transform: translateY(0.2rem);
+  }
+
   .media-frame :global(img) {
     display: block;
     width: 100%;
@@ -162,6 +311,12 @@ if (!selectedGroup) {
 
     .media-shot {
       scroll-snap-align: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-cue {
+      transition: none;
     }
   }
 </style>

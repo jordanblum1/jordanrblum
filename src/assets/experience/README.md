@@ -1,9 +1,11 @@
 # Experience screen provenance
 
-These local images support the Roam work samples on `/about`. The section does not link to the live products, so the visual record remains useful if a public route changes or disappears.
+These local images and the public video assets in `public/media/` support the Roam work samples on `/about`. The section does not link to the live products, so the visual record remains useful if a public route changes or disappears.
 
-- `roam-marketplace.jpg` was captured from Roam's public Miami map search.
-- `roam-listing.jpg` was captured from the public listing shown in that map result. The capture stays on Roam's top-level product UI and photo gallery rather than lower-page agent or MLS details.
+- `public/media/roam-search.webm` (with an MP4 fallback) is an authenticated 1280×800 capture of Austin map search applying a maximum mortgage-rate filter. The property cards show their real assumable rates, and the full desktop navigation—including Account—is visible. Its compressed poster is `roam-search-poster.webp`.
+- `public/media/roam-calculator.webm` (with an MP4 fallback) is an authenticated capture of the public Austin listing's payment calculator. It expands Principal/interest, Property tax, and Home insurance. It contains listing and mortgage figures already shown by Roam's product, with no customer or account data. Its compressed poster is `roam-calculator-poster.webp`.
+- `public/media/roam-search-mobile.*` and `public/media/roam-calculator-mobile.*` are optional 390×844 WebM/MP4/poster variants. They are intentionally not rendered on `/about` yet, so an iPhone-shell treatment can be evaluated later without making the current section busier.
+- `scripts/record-roam-demos.mjs` regenerates the authenticated desktop search and calculator captures, WebP posters, and MP4 fallbacks when the selected ffmpeg build includes `libx264`. `ROAM_STORAGE_STATE` is required and must point to a deliberately exported Playwright storage-state file; the script never reads the in-app browser's session.
 - `reed-home.jpg` and `reed-chat.jpg` were captured from Reed's public homepage and unauthenticated buyer-start flow.
 - `agent-harness-chat.png` and `agent-harness-subagents.png` were captured from an isolated Mission Control test server. The harness used temporary storage, fake CLIs, and a manually seeded synthetic launch-review transcript; it did not read live Mission Control state.
 
