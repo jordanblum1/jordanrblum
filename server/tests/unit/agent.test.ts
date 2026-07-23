@@ -44,7 +44,7 @@ describe('runAgentTurn', () => {
     expect(chunks.join('')).toBe('Hello world');
   });
 
-  it('defaults to claude-sonnet-5 and 1200 max_tokens, with cache_control on the system prompt', async () => {
+  it('defaults to Claude Haiku 4.5 and 1200 max_tokens, with cache_control on the system prompt', async () => {
     const { runAgentTurn } = await import('../../src/lib/agent.js');
     const messages: ChatMessage[] = [{ role: 'user', content: 'Hi' }];
 
@@ -52,7 +52,7 @@ describe('runAgentTurn', () => {
       // drain the generator
     }
 
-    expect(capturedParams?.model).toBe('claude-sonnet-5');
+    expect(capturedParams?.model).toBe('claude-haiku-4-5-20251001');
     expect(capturedParams?.max_tokens).toBe(1200);
     const system = capturedParams?.system as Array<{ cache_control?: unknown }>;
     expect(system[0]?.cache_control).toEqual({ type: 'ephemeral' });
