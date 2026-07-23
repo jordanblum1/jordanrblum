@@ -76,9 +76,8 @@ test('saveChatState and loadChatState round-trip', () => {
     conversationId: 'abc-123',
     messages: [
       { role: 'user', content: 'Can I get his resume?' },
-      { role: 'assistant', content: 'Use the form below.', resumeOffered: true },
+      { role: 'assistant', content: 'Use the download below.', resumeOffered: true },
     ],
-    resumeAccess: { token: 'a'.repeat(64), expiresAt: 1_900_000_000 },
   };
   saveChatState(storage, state, 'k');
   expect(loadChatState(storage, 'k')).toEqual(state);
@@ -109,8 +108,16 @@ test('loadChatState returns null when the shape does not match', () => {
   }));
   expect(loadChatState(storage, 'k')).toBeNull();
 
-  storage.setItem('k', JSON.stringify({ conversationId: 'x', messages: [], resumeAccess: { token: 123 } }));
-  expect(loadChatState(storage, 'k')).toBeNull();
+});
+
+test('loadChatState strips obsolete verification state', () => {
+  const storage = new MemoryStorage();
+  storage.setItem('k', JSON.stringify({
+    conversationId: 'x',
+    messages: [],
+    resumeAccess: { token: 'legacy', expiresAt: 1_900_000_000 },
+  }));
+  expect(loadChatState(storage, 'k')).toEqual({ conversationId: 'x', messages: [] });
 });
 
 test('hexEncode produces lowercase hex with zero-padded bytes', () => {

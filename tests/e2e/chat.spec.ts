@@ -120,41 +120,20 @@ test('the empty state includes the resume download among its starter questions',
   await expect(chips.nth(4)).toHaveText('How can I get in touch?');
 });
 
-test('a resume request opens an inline verified-email gate and downloads the PDF', async ({ page }) => {
+test('a resume request opens a direct download card and downloads the PDF', async ({ page }) => {
   await page.route('**/api/chat', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'text/event-stream',
       body: sseBody([
         { type: 'resume_offer' },
-        { type: 'delta', text: 'Absolutely — use the private form below and I’ll unlock it.' },
+        { type: 'delta', text: 'Absolutely — use the download below.' },
         { type: 'done' },
       ]),
     });
   });
-  await page.route('**/api/resume/request', async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ email: 'recruiter@example.com' });
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        ok: true,
-        token: 'a'.repeat(64),
-        maskedEmail: 're••••••@example.com',
-        expiresAt: 1_900_000_000,
-      }),
-    });
-  });
-  await page.route('**/api/resume/verify', async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ token: 'a'.repeat(64), code: '123456' });
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ ok: true, token: 'a'.repeat(64), expiresAt: 1_900_000_000 }),
-    });
-  });
   await page.route('**/api/resume/download', async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ token: 'a'.repeat(64) });
+    expect(route.request().postDataJSON()).toEqual({});
     await route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\nmock resume' });
   });
 
@@ -163,20 +142,21 @@ test('a resume request opens an inline verified-email gate and downloads the PDF
 
   const gate = page.locator('[data-resume-gate]');
   await expect(gate).toBeVisible();
-  await expect(gate.getByRole('heading', { name: "Get Jordan's resume" })).toBeVisible();
-  await gate.getByLabel('Email address').fill('recruiter@example.com');
-  await gate.getByRole('button', { name: 'Email me a code' }).click();
-
-  await expect(gate.getByRole('heading', { name: 'Check your inbox' })).toBeVisible();
-  await expect(gate).toContainText('re••••••@example.com');
-  await gate.getByLabel('Verification code').fill('123456');
-  await gate.getByRole('button', { name: 'Unlock resume' }).click();
-
-  await expect(gate.getByRole('heading', { name: 'Resume unlocked' })).toBeVisible();
+  await expect(gate.getByRole('heading', { name: 'Jordan Blum — Product Engineer' })).toBeVisible();
+  await expect(gate).not.toContainText('RESUME');
+  await expect(gate).not.toContainText('A one-page overview');
+  await expect(gate).not.toContainText('email');
+  await expect(gate.locator('input')).toHaveCount(0);
   const downloadEvent = page.waitForEvent('download');
-  await gate.getByRole('button', { name: 'Download PDF ↓' }).click();
+  const downloadButton = gate.locator('.resume-download-button');
+  await expect(downloadButton).toHaveAccessibleName('Download PDF ↓');
+  await downloadButton.click();
   const download = await downloadEvent;
   expect(download.suggestedFilename()).toBe('Jordan_Blum_Product_Engineer.pdf');
+  await expect(downloadButton).toHaveAccessibleName('Downloaded');
+  await expect(downloadButton).toBeDisabled();
+  await expect(downloadButton.locator('.resume-download-check')).toHaveText('✓');
+  await expect(gate.locator('.resume-gate-status')).toBeHidden();
 });
 
 test('the inset send action activates only when the composer has meaningful text', async ({ page }) => {

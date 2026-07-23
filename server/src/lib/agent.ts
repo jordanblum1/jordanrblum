@@ -58,12 +58,12 @@ export async function* runAgentTurn({
   const offerResumeTool = betaTool({
     name: 'offer_resume',
     description:
-      "Show the visitor Jordan's private resume request form. Call this whenever they ask to see, get, download, or receive Jordan's resume or CV.",
+      "Show the visitor Jordan's resume download card. Call this whenever they ask to see, get, download, or receive Jordan's resume or CV.",
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     run: async () => {
       resumeOfferLog.push({ timestamp: new Date().toISOString() });
       onResumeOffer?.();
-      return 'A secure resume form will appear automatically below your reply. Briefly tell the visitor to use it; do not invent or paste a resume URL.';
+      return 'A resume download button will appear automatically below your reply. Briefly tell the visitor to use it; do not invent or paste a resume URL.';
     },
   });
 

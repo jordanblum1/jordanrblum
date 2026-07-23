@@ -5,11 +5,6 @@ import { runAgentTurn, DEFAULT_MODEL } from './lib/agent.js';
 import { clientIp, rateLimitBucket } from './lib/clientIp.js';
 import { hashIp } from './lib/ipHash.js';
 import { checkRateLimit } from './lib/rateLimit.js';
-import {
-  hasVerifiedResumeAccess,
-  requestResumeAccess,
-  verifyResumeAccess,
-} from './lib/resumeVerification.js';
 import { formatSseEvent } from './lib/sse.js';
 import { saveTranscript } from './lib/transcripts.js';
 import type { ResumeOfferLogEntry, RevealLogEntry } from './lib/types.js';
@@ -55,19 +50,6 @@ function decodeBody(event: LambdaFunctionUrlEvent): string {
   return event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body;
 }
 
-function parseJsonBody(event: LambdaFunctionUrlEvent): Record<string, unknown> | null {
-  const raw = decodeBody(event);
-  if (!checkBodySize(raw)) return null;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
-}
-
 function respond(
   responseStream: NodeJS.WritableStream,
   statusCode: number,
@@ -87,47 +69,7 @@ function respondJson(
   respond(responseStream, statusCode, JSON.stringify(body));
 }
 
-async function handleResumeRequest(event: LambdaFunctionUrlEvent, responseStream: NodeJS.WritableStream): Promise<void> {
-  const body = parseJsonBody(event);
-  if (!body) {
-    respondJson(responseStream, 400, { ok: false, error: 'invalid_request' });
-    return;
-  }
-
-  const result = await requestResumeAccess(body.email, hashIp(rateLimitBucket(clientIp(event))));
-  if (result.ok) {
-    respondJson(responseStream, 200, result);
-    return;
-  }
-  const status = result.reason === 'rate_limited' ? 429 : result.reason === 'invalid_email' ? 400 : 503;
-  respondJson(responseStream, status, { ok: false, error: result.reason });
-}
-
-async function handleResumeVerify(event: LambdaFunctionUrlEvent, responseStream: NodeJS.WritableStream): Promise<void> {
-  const body = parseJsonBody(event);
-  if (!body || typeof body.token !== 'string' || typeof body.code !== 'string') {
-    respondJson(responseStream, 400, { ok: false, error: 'invalid_request' });
-    return;
-  }
-
-  const result = await verifyResumeAccess(body.token, body.code);
-  if (result.ok) {
-    respondJson(responseStream, 200, result);
-    return;
-  }
-  respondJson(responseStream, result.reason === 'too_many_attempts' ? 429 : 400, {
-    ok: false,
-    error: result.reason,
-  });
-}
-
-async function handleResumeDownload(event: LambdaFunctionUrlEvent, responseStream: NodeJS.WritableStream): Promise<void> {
-  const body = parseJsonBody(event);
-  if (!body || typeof body.token !== 'string' || !(await hasVerifiedResumeAccess(body.token))) {
-    respondJson(responseStream, 403, { ok: false, error: 'resume_access_required' });
-    return;
-  }
-
+function handleResumeDownload(responseStream: NodeJS.WritableStream): void {
   const pdf = readFileSync(join(__dirname, RESUME_FILENAME));
   respond(responseStream, 200, pdf, {
     'Content-Type': 'application/pdf',
@@ -241,9 +183,7 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
   if (path === '/api/chat') return await handleChat(event, responseStream);
 
   try {
-    if (path === '/api/resume/request') return await handleResumeRequest(event, responseStream);
-    if (path === '/api/resume/verify') return await handleResumeVerify(event, responseStream);
-    if (path === '/api/resume/download') return await handleResumeDownload(event, responseStream);
+    if (path === '/api/resume/download') return handleResumeDownload(responseStream);
     respondJson(responseStream, 404, { ok: false, error: 'not_found' });
   } catch (error) {
     console.error('request failed', error);

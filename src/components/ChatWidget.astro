@@ -594,7 +594,7 @@ const starters = [
     margin-top: calc(-1 * var(--space-2));
   }
 
-  /* --- Verified resume download -------------------------------------------- */
+  /* --- Resume download ----------------------------------------------------- */
 
   :global(.chat-log .resume-gate) {
     display: flex;
@@ -606,23 +606,8 @@ const starters = [
     background: var(--accent-soft);
   }
 
-  :global(.chat-log .resume-gate-kicker),
-  :global(.chat-log .resume-gate-verified) {
-    margin: 0;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    line-height: 1.4;
-  }
-
-  :global(.chat-log .resume-gate-verified) {
-    color: var(--success);
-  }
-
   :global(.chat-log .resume-gate-title) {
-    margin: calc(-1 * var(--space-1)) 0 0;
+    margin: 0;
     color: var(--heading);
     font-size: 1rem;
     font-weight: 600;
@@ -630,69 +615,14 @@ const starters = [
     letter-spacing: -0.012em;
   }
 
-  :global(.chat-log .resume-gate-copy) {
-    max-width: 34ch;
-    margin: calc(-1 * var(--space-1)) 0 0;
-    color: var(--ink-muted);
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }
-
-  :global(.chat-log .resume-gate-form) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--space-2);
-    align-items: end;
-    margin-top: var(--space-1);
-  }
-
-  :global(.chat-log .resume-gate-label) {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    gap: var(--space-1);
-    color: var(--ink);
-    font-size: 0.72rem;
-    font-weight: 500;
-    line-height: 1.4;
-  }
-
-  :global(.chat-log .resume-gate-input) {
-    width: 100%;
-    min-height: 2.65rem;
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-sm);
-    background: var(--paper-raised);
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 0.82rem;
-    line-height: 1.4;
-    transition: border-color var(--duration-default) var(--ease), box-shadow var(--duration-default) var(--ease);
-  }
-
-  :global(.chat-log .resume-gate-input::placeholder) {
-    color: var(--ink-muted);
-  }
-
-  :global(.chat-log .resume-gate-input:focus-visible) {
-    border-color: var(--accent);
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  :global(.chat-log .resume-gate-code) {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    letter-spacing: 0.14em;
-  }
-
   :global(.chat-log .resume-gate-button) {
     display: inline-flex;
     min-height: 2.65rem;
     align-items: center;
     justify-content: center;
+    gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
+    overflow: hidden;
     border: 1px solid var(--accent);
     border-radius: var(--radius-sm);
     background: var(--accent);
@@ -711,6 +641,11 @@ const starters = [
     cursor: wait;
   }
 
+  :global(.chat-log .resume-gate-button[data-state='downloaded']) {
+    opacity: 1;
+    cursor: default;
+  }
+
   :global(html.pointer-moved .chat-log .resume-gate-button:not(:disabled):hover) {
     background: color-mix(in oklab, var(--accent) 88%, var(--ink));
     transform: translateY(-1px);
@@ -721,43 +656,50 @@ const starters = [
     margin-top: var(--space-1);
   }
 
-  :global(.chat-log .resume-gate-link) {
-    width: fit-content;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent);
-    font-family: var(--font-body);
-    font-size: 0.72rem;
-    line-height: 1.4;
-    text-decoration: underline;
-    text-decoration-color: color-mix(in oklab, var(--accent) 42%, transparent);
-    text-underline-offset: 0.22em;
-    cursor: pointer;
+  :global(.chat-log .resume-download-button[data-state='downloaded']) {
+    animation: resume-download-settle var(--duration-default) var(--ease) both;
   }
 
-  :global(.chat-log .resume-gate-status),
-  :global(.chat-log .resume-gate-privacy) {
-    grid-column: 1 / -1;
-    margin: 0;
-    font-size: 0.68rem;
-    line-height: 1.5;
+  :global(.chat-log .resume-download-check) {
+    display: inline-grid;
+    width: var(--space-5);
+    height: var(--space-5);
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--accent-contrast);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    animation: resume-check-in var(--duration-default) var(--spring) both;
   }
 
   :global(.chat-log .resume-gate-status) {
+    margin: 0;
+    font-size: 0.68rem;
+    line-height: 1.5;
     color: var(--error);
-  }
-
-  :global(.chat-log .resume-gate-status[data-kind='info']) {
-    color: var(--success);
   }
 
   :global(.chat-log .resume-gate-status[hidden]) {
     display: none;
   }
 
-  :global(.chat-log .resume-gate-privacy) {
-    color: var(--ink-muted);
+  @keyframes resume-download-settle {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.015); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes resume-check-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6) rotate(-12deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
   }
 
   /* --- Floating pills (stop / jump) ----------------------------------------- */
@@ -1026,9 +968,6 @@ const starters = [
       font-size: 1rem;
     }
 
-    :global(.chat-log .resume-gate-input) {
-      font-size: 1rem;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1051,10 +990,14 @@ const starters = [
     .chat-send,
     .chat-pill,
     .chat-input,
-    :global(.chat-log .resume-gate-input),
     :global(.chat-log .resume-gate-button),
     :global(.chat-panel .chat-chip) {
       transition: none;
+    }
+
+    :global(.chat-log .resume-download-button[data-state='downloaded']),
+    :global(.chat-log .resume-download-check) {
+      animation: none;
     }
 
     .chat-panel:not(.is-open) {
