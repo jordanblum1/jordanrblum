@@ -41,12 +41,12 @@ test.describe('no JavaScript', () => {
     const disclosures = mediaRegion.locator('details[data-roam-track]');
     await expect(disclosures).toHaveCount(3);
     await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
-    await expect(mediaRegion.locator('.media-shot')).toHaveCount(10);
+    await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
     await expect(mediaRegion.locator('img')).toHaveCount(4);
     await expect(mediaRegion).not.toContainText('2 screens');
-    for (const [index, disclosure] of (await disclosures.all()).entries()) {
+    for (const disclosure of await disclosures.all()) {
       await expect(disclosure).not.toHaveAttribute('open', '');
-      await expect(disclosure.locator('.media-shot')).toHaveCount(index === 0 ? 6 : 2);
+      await expect(disclosure.locator('.media-shot')).toHaveCount(2);
       await expect(disclosure.locator('summary')).toBeVisible();
       await expect(disclosure.locator('.experience-track-detail')).not.toBeVisible();
       await expect(disclosure.locator('.media-shot').first()).not.toBeVisible();

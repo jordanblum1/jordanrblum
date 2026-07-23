@@ -41,10 +41,10 @@ test('about page carries the broader story, experience, and education', async ({
   const disclosures = mediaRegion.locator('details[data-roam-track]');
   await expect(disclosures).toHaveCount(3);
   await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
-  await expect(mediaRegion.locator('.media-shot')).toHaveCount(10);
+  await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
   await expect(mediaRegion.locator('img')).toHaveCount(4);
-  await expect(mediaRegion.locator('video')).toHaveCount(6);
-  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(6);
+  await expect(mediaRegion.locator('video')).toHaveCount(2);
+  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(2);
   await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
   await expect(mediaRegion).toContainText('synthetic demo data');
   await expect(mediaRegion).not.toContainText('2 screens');
@@ -68,9 +68,7 @@ test('about page carries the broader story, experience, and education', async ({
     expect(summaryBox).not.toBeNull();
     expect(summaryBox!.height).toBeGreaterThanOrEqual(80);
     expect(summaryBox!.height).toBeLessThan(150);
-    await expect(disclosure.locator(`[data-roam-sample="${id}"] .media-shot`)).toHaveCount(
-      id === 'roam-marketplace' ? 6 : 2,
-    );
+    await expect(disclosure.locator(`[data-roam-sample="${id}"] .media-shot`)).toHaveCount(2);
   }
 
   const roamBox = await page.locator('#roam').boundingBox();
@@ -91,90 +89,18 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(marketplaceDisclosure.locator('.media-shot').first()).toBeVisible();
   await expect(marketplaceDisclosure).not.toHaveAttribute('data-track-motion', 'opening');
 
-  const searchTab = marketplaceDisclosure.getByRole('tab', { name: 'Search' });
-  const paymentsTab = marketplaceDisclosure.getByRole('tab', { name: 'Payments' });
-  const tourTab = marketplaceDisclosure.getByRole('tab', { name: 'Tour' });
-  const searchPanel = marketplaceDisclosure.locator('[data-product-panel="search"]');
-  const paymentsPanel = marketplaceDisclosure.locator('[data-product-panel="payments"]');
   const tourPanel = marketplaceDisclosure.locator('[data-product-panel="tour"]');
-  await expect(searchTab).toHaveAttribute('aria-selected', 'true');
-  await expect(paymentsTab).toHaveAttribute('aria-selected', 'false');
-  await expect(tourTab).toHaveAttribute('aria-selected', 'false');
-  await expect(searchPanel).toBeVisible();
-  await expect(paymentsPanel).toBeHidden();
-  await expect(tourPanel).toBeHidden();
-
-  const desktopSearchDemo = searchPanel.locator('[data-product-video]').first();
-  const desktopSearchVideo = desktopSearchDemo.locator('video');
-  await desktopSearchDemo.hover();
-  await expect(desktopSearchDemo).toHaveAttribute('aria-pressed', 'true');
-  await expect
-    .poll(() => desktopSearchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
-    .toBeGreaterThan(0.1);
-  const desktopSearchDimensions = await desktopSearchVideo.evaluate((video) => ({
-    width: (video as HTMLVideoElement).videoWidth,
-    height: (video as HTMLVideoElement).videoHeight,
-  }));
-  expect(desktopSearchDimensions).toEqual({ width: 1280, height: 800 });
-  await page.mouse.move(8, 8);
-  await expect(desktopSearchDemo).toHaveAttribute('aria-pressed', 'false');
-
-  const mobileSearchDemo = searchPanel.locator('.media-shot--phone [data-product-video]');
-  const mobileSearchVideo = mobileSearchDemo.locator('video');
-  await mobileSearchDemo.hover();
-  await expect(mobileSearchDemo).toHaveAttribute('aria-pressed', 'true');
-  await expect
-    .poll(() => mobileSearchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
-    .toBeGreaterThan(0.1);
-  const videoDimensions = await mobileSearchVideo.evaluate((video) => ({
-    width: (video as HTMLVideoElement).videoWidth,
-    height: (video as HTMLVideoElement).videoHeight,
-  }));
-  expect(videoDimensions).toEqual({ width: 390, height: 844 });
-  await expect(mobileSearchDemo.locator('[data-phone-frame]')).toHaveCount(1);
-  await page.mouse.move(8, 8);
-  await expect(mobileSearchDemo).toHaveAttribute('aria-pressed', 'false');
-  await expect
-    .poll(() => mobileSearchVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
-    .toBeLessThan(0.1);
-
-  await paymentsTab.focus();
-  await page.keyboard.press('Enter');
-  await expect(paymentsTab).toHaveAttribute('aria-selected', 'true');
-  await expect(searchTab).toHaveAttribute('aria-selected', 'false');
-  await expect(searchPanel).toBeHidden();
-  await expect(paymentsPanel).toBeVisible();
-  await expect(desktopSearchDemo).toHaveAttribute('aria-pressed', 'false');
-
-  const desktopCalculatorDemo = paymentsPanel.locator('[data-product-video]').first();
-  const desktopCalculatorVideo = desktopCalculatorDemo.locator('video');
-  await desktopCalculatorDemo.hover();
-  await expect(desktopCalculatorDemo).toHaveAttribute('aria-pressed', 'true');
-  await expect
-    .poll(() => desktopCalculatorVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
-    .toBeGreaterThan(0.1);
-  const desktopCalculatorDimensions = await desktopCalculatorVideo.evaluate((video) => ({
-    width: (video as HTMLVideoElement).videoWidth,
-    height: (video as HTMLVideoElement).videoHeight,
-  }));
-  expect(desktopCalculatorDimensions).toEqual({ width: 1280, height: 800 });
-  await page.mouse.move(8, 8);
-
-  const mobileCalculatorDemo = paymentsPanel.locator('.media-shot--phone [data-product-video]');
-  const mobileCalculatorVideo = mobileCalculatorDemo.locator('video');
-  const mobileCalculatorDimensions = await mobileCalculatorVideo.evaluate((video) => ({
-    width: (video as HTMLVideoElement).videoWidth,
-    height: (video as HTMLVideoElement).videoHeight,
-  }));
-  expect(mobileCalculatorDimensions).toEqual({ width: 390, height: 844 });
-  await expect(mobileCalculatorDemo.locator('[data-phone-frame]')).toHaveCount(1);
-
-  await tourTab.click();
-  await expect(tourTab).toHaveAttribute('aria-selected', 'true');
-  await expect(paymentsPanel).toBeHidden();
+  await expect(marketplaceDisclosure.getByRole('tab')).toHaveCount(0);
   await expect(tourPanel).toBeVisible();
+  const desktopTourDemo = tourPanel.locator('[data-product-video]').first();
   const desktopTourVideo = tourPanel.locator('[data-product-video] video').first();
+  const mobileTourDemo = tourPanel.locator('.media-shot--phone [data-product-video]');
   const mobileTourVideo = tourPanel.locator('.media-shot--phone video');
+  await desktopTourDemo.hover();
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() => desktopTourVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .toBeGreaterThan(0.1);
   expect(
     await desktopTourVideo.evaluate((video) => ({
       width: (video as HTMLVideoElement).videoWidth,
@@ -189,13 +115,9 @@ test('about page carries the broader story, experience, and education', async ({
   ).toEqual({ width: 390, height: 844 });
   await expect(desktopTourVideo).toHaveCSS('object-fit', 'contain');
   await expect(mobileTourVideo).toHaveCSS('object-fit', 'contain');
-
-  await paymentsTab.focus();
-  await page.keyboard.press('ArrowLeft');
-  await expect(searchTab).toHaveAttribute('aria-selected', 'true');
-  await expect(searchTab).toBeFocused();
-  await expect(searchPanel).toBeVisible();
-  await expect(paymentsPanel).toBeHidden();
+  await expect(mobileTourDemo.locator('[data-phone-frame]')).toHaveCount(1);
+  await page.mouse.move(8, 8);
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'false');
 
   const reedSummary = reedDisclosure.locator('summary');
   await reedSummary.focus();
@@ -312,11 +234,11 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   await marketplaceTrack.locator('summary').click();
   await expect(marketplaceTrack).toHaveAttribute('open', '');
   await expect(marketplaceTrack.locator('.experience-track-detail')).toBeVisible();
-  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(6);
+  await expect(marketplaceTrack.locator('.media-shot')).toHaveCount(2);
   await expect(marketplaceTrack).not.toHaveAttribute('data-track-motion', 'opening');
   const marketplaceExpandedHeight = (await marketplaceTrack.boundingBox())!.height;
   expect(marketplaceExpandedHeight).toBeGreaterThan(marketplaceCollapsedHeight + 200);
-  const mediaRail = marketplaceTrack.locator('[data-product-panel="search"]');
+  const mediaRail = marketplaceTrack.locator('[data-product-panel="tour"]');
   expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(false);
   const firstShotBox = await mediaRail.locator('.media-shot').nth(0).boundingBox();
   const secondShotBox = await mediaRail.locator('.media-shot').nth(1).boundingBox();
@@ -381,4 +303,34 @@ test('company wordmarks and screenshots stay unchanged under a dark system prefe
   for (const image of await page.locator('#roam .work-samples img').all()) {
     await expect(image).toHaveCSS('filter', 'none');
   }
+});
+
+test.describe('Roam videos on touch devices', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test('the phone demo uses tap-to-play and a second tap resets it', async ({ page }) => {
+    await page.goto('/about#roam');
+
+    const marketplaceTrack = page.locator('#roam details[data-roam-track="roam-marketplace"]');
+    await marketplaceTrack.locator('summary').tap();
+    await expect(marketplaceTrack).toHaveAttribute('open', '');
+
+    const mobileDemo = marketplaceTrack.locator('.media-shot--phone [data-product-video]');
+    const mobileVideo = mobileDemo.locator('video');
+    await expect(mobileDemo.locator('.video-cue-action--touch')).toHaveText('Tap to play');
+    await expect(mobileDemo.locator('.video-cue-action--touch')).toBeVisible();
+    await expect(mobileDemo.locator('.video-cue-action--pointer')).toBeHidden();
+
+    await mobileDemo.tap();
+    await expect(mobileDemo).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(() => mobileVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+      .toBeGreaterThan(0.1);
+
+    await mobileDemo.tap();
+    await expect(mobileDemo).toHaveAttribute('aria-pressed', 'false');
+    await expect
+      .poll(() => mobileVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+      .toBeLessThan(0.1);
+  });
 });

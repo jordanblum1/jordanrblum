@@ -32,6 +32,7 @@ const roamModes = [
   {
     id: 'search',
     label: 'Search',
+    enabled: false,
     shots: [
       {
         kind: 'video',
@@ -55,6 +56,7 @@ const roamModes = [
   {
     id: 'payments',
     label: 'Payments',
+    enabled: false,
     shots: [
       {
         kind: 'video',
@@ -78,6 +80,7 @@ const roamModes = [
   {
     id: 'tour',
     label: 'Tour',
+    enabled: true,
     shots: [
       {
         kind: 'video',
@@ -100,12 +103,15 @@ const roamModes = [
   },
 ];
 
+const visibleRoamModes = roamModes.filter((mode) => mode.enabled);
+const showRoamModeSwitcher = visibleRoamModes.length > 1;
+
 const groups = [
   {
     id: 'roam-marketplace',
     title: 'Roam marketplace',
-    description: 'Authenticated search, listing, and payment tools across desktop and mobile.',
-    shots: roamModes[0].shots,
+    description: 'A complete authenticated listing tour, captured on desktop and mobile.',
+    shots: visibleRoamModes[0].shots,
   },
   {
     id: 'reed',
@@ -151,16 +157,16 @@ if (!selectedGroup) {
 
 const mediaPanels =
   selectedGroup.id === 'roam-marketplace'
-    ? roamModes
+    ? visibleRoamModes
     : [{ id: selectedGroup.id, label: selectedGroup.title, shots: selectedGroup.shots }];
 ---
 
 <section class="work-samples" data-roam-sample={selectedGroup.id} aria-label={`${selectedGroup.title} screens`}>
   <div class="work-sample-heading">
     <p class="work-sample-description mono-meta">{selectedGroup.description}</p>
-    {selectedGroup.id === 'roam-marketplace' && (
+    {selectedGroup.id === 'roam-marketplace' && showRoamModeSwitcher && (
       <div class="product-mode-switcher" data-product-modes role="tablist" aria-label="Roam demo">
-        {roamModes.map((mode, index) => (
+        {visibleRoamModes.map((mode, index) => (
           <button
             class="product-mode-tab mono-meta"
             type="button"
@@ -183,8 +189,8 @@ const mediaPanels =
       class:list={['media-pair', { 'media-pair--product': selectedGroup.id === 'roam-marketplace' }]}
       data-product-panel={selectedGroup.id === 'roam-marketplace' ? panel.id : undefined}
       data-product-active={selectedGroup.id === 'roam-marketplace' ? (panelIndex === 0 ? 'true' : 'false') : undefined}
-      role={selectedGroup.id === 'roam-marketplace' ? 'tabpanel' : undefined}
-      aria-labelledby={selectedGroup.id === 'roam-marketplace' ? `roam-mode-tab-${panel.id}` : undefined}
+      role={showRoamModeSwitcher ? 'tabpanel' : undefined}
+      aria-labelledby={showRoamModeSwitcher ? `roam-mode-tab-${panel.id}` : undefined}
     >
       {panel.shots.map((shot) => (
         <figure class:list={['media-shot', { 'media-shot--phone': shot.frame === 'phone' }]}>
@@ -211,7 +217,9 @@ const mediaPanels =
                 <svg viewBox="0 0 12 12">
                   <path d="M3.5 2.25 9 6l-5.5 3.75v-7.5Z" fill="currentColor"></path>
                 </svg>
-                Play · {shot.duration}
+                <span class="video-cue-action video-cue-action--pointer">Play</span>
+                <span class="video-cue-action video-cue-action--touch">Tap to play</span>
+                <span>· {shot.duration}</span>
               </span>
             </button>
           ) : (
@@ -316,9 +324,6 @@ const mediaPanels =
     });
     control.addEventListener('pointerleave', (event) => {
       if (event.pointerType !== 'touch') reset();
-    });
-    control.addEventListener('focus', () => {
-      if (!reducedMotion.matches) void play();
     });
     control.addEventListener('blur', reset);
     control.addEventListener('click', () => {
@@ -542,6 +547,10 @@ const mediaPanels =
     height: 0.65rem;
   }
 
+  .video-cue-action--touch {
+    display: none;
+  }
+
   .media-frame--video.is-playing .video-cue {
     opacity: 0;
     transform: translateY(0.2rem);
@@ -600,6 +609,16 @@ const mediaPanels =
 
     :global(html.js) [data-product-panel][data-product-active='true'] {
       animation: none;
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .video-cue-action--pointer {
+      display: none;
+    }
+
+    .video-cue-action--touch {
+      display: inline;
     }
   }
 
