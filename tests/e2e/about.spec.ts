@@ -187,6 +187,8 @@ test('about page carries the broader story, experience, and education', async ({
       height: (video as HTMLVideoElement).videoHeight,
     })),
   ).toEqual({ width: 390, height: 844 });
+  await expect(desktopTourVideo).toHaveCSS('object-fit', 'contain');
+  await expect(mobileTourVideo).toHaveCSS('object-fit', 'contain');
 
   await paymentsTab.focus();
   await page.keyboard.press('ArrowLeft');

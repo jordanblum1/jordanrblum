@@ -81,18 +81,18 @@ const roamModes = [
     shots: [
       {
         kind: 'video',
-        src: '/media/roam-product-tour.webm',
-        fallback: '/media/roam-product-tour.mp4',
-        poster: '/media/roam-product-tour-poster.webp',
-        duration: '17s',
+        src: '/media/roam-product-tour.webm?v=2',
+        fallback: '/media/roam-product-tour.mp4?v=2',
+        poster: '/media/roam-product-tour-poster.webp?v=2',
+        duration: '13s',
         alt: "Play a full desktop tour of a Roam listing, its assumable-loan calculator, and editable payment details",
       },
       {
         kind: 'video',
-        src: '/media/roam-product-tour-mobile.webm',
-        fallback: '/media/roam-product-tour-mobile.mp4',
-        poster: '/media/roam-product-tour-mobile-poster.webp',
-        duration: '19s',
+        src: '/media/roam-product-tour-mobile.webm?v=2',
+        fallback: '/media/roam-product-tour-mobile.mp4?v=2',
+        poster: '/media/roam-product-tour-mobile-poster.webp?v=2',
+        duration: '9s',
         alt: "Play a mobile Roam tour that filters authenticated search results, opens a featured home, and explores its photo gallery",
         frame: 'phone',
       },
@@ -470,7 +470,7 @@ const mediaPanels =
     display: block;
     width: 100%;
     aspect-ratio: 8 / 5;
-    object-fit: cover;
+    object-fit: contain;
     background: white;
   }
 
@@ -485,6 +485,7 @@ const mediaPanels =
   }
 
   .media-frame--video.media-frame--phone video {
+    height: 100%;
     aspect-ratio: 390 / 844;
   }
 
