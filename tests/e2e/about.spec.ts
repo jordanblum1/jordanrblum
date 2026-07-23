@@ -101,6 +101,13 @@ test('about page carries the broader story, experience, and education', async ({
     height: (video as HTMLVideoElement).videoHeight,
   }));
   expect(videoDimensions).toEqual({ width: 1280, height: 800 });
+  const calculatorDemo = marketplaceDisclosure.locator('[data-product-video]').nth(1);
+  const calculatorDimensions = await calculatorDemo.locator('video').evaluate((video) => ({
+    width: (video as HTMLVideoElement).videoWidth,
+    height: (video as HTMLVideoElement).videoHeight,
+  }));
+  expect(calculatorDimensions).toEqual({ width: 390, height: 844 });
+  await expect(calculatorDemo.locator('[data-phone-frame]')).toHaveCount(1);
   await page.mouse.move(8, 8);
   await expect(searchDemo).toHaveAttribute('aria-pressed', 'false');
   await expect
@@ -227,13 +234,14 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   const marketplaceExpandedHeight = (await marketplaceTrack.boundingBox())!.height;
   expect(marketplaceExpandedHeight).toBeGreaterThan(marketplaceCollapsedHeight + 200);
   const mediaRail = marketplaceTrack.locator('.media-pair');
-  expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(false);
   const firstShotBox = await marketplaceTrack.locator('.media-shot').nth(0).boundingBox();
   const secondShotBox = await marketplaceTrack.locator('.media-shot').nth(1).boundingBox();
   expect(firstShotBox).not.toBeNull();
   expect(secondShotBox).not.toBeNull();
-  expect(Math.abs(secondShotBox!.y - firstShotBox!.y)).toBeLessThanOrEqual(1);
   expect(secondShotBox!.x).toBeGreaterThan(firstShotBox!.x + firstShotBox!.width);
+  expect(secondShotBox!.y).toBeLessThan(firstShotBox!.y);
+  expect(secondShotBox!.y + secondShotBox!.height).toBeGreaterThan(firstShotBox!.y + firstShotBox!.height);
 
   const reedTrack = roamTracks.nth(1);
   await reedTrack.locator('summary').click();
