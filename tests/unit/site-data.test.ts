@@ -248,6 +248,18 @@ test('Roam experience media uses public product screens and a sanitized harness 
   expect(roamWorkSamplesSource).toContain('roam-search-mobile-poster.webp');
   expect(experienceReadme).toContain('roam-search-mobile.*');
   expect(experienceReadme).toContain('roam-calculator.*');
+  expect(experienceReadme).toContain('roam-search.*');
+  expect(experienceReadme).toContain('roam-calculator-mobile.*');
+  for (const mediaName of [
+    'roam-search.mp4',
+    'roam-search.webm',
+    'roam-search-poster.webp',
+    'roam-calculator-mobile.mp4',
+    'roam-calculator-mobile.webm',
+    'roam-calculator-mobile-poster.webp',
+  ]) {
+    expect(readFileSync(`public/media/${mediaName}`).byteLength).toBeGreaterThan(10_000);
+  }
   expect(experienceReadme).toContain('normalized to 30 fps');
   expect(experienceReadme).toContain('ROAM_STORAGE_STATE');
   expect(roamWorkSamplesSource).toContain('data-product-video');
