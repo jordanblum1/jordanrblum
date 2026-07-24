@@ -4,8 +4,6 @@ import agentHarnessChat from '../assets/experience/agent-harness-chat.png';
 import agentHarnessSubagents from '../assets/experience/agent-harness-subagents.png';
 import reedChat from '../assets/experience/reed-chat.jpg';
 import reedHome from '../assets/experience/reed-home.jpg';
-import roamListing from '../assets/experience/roam-listing.jpg';
-import roamMarketplace from '../assets/experience/roam-marketplace.jpg';
 
 interface Props {
   group: 'roam-marketplace' | 'reed' | 'agent-harness';
@@ -13,23 +11,107 @@ interface Props {
 
 const { group } = Astro.props;
 
+type WorkShot =
+  | {
+      kind: 'image';
+      src: typeof reedHome;
+      alt: string;
+      frame?: 'phone';
+    }
+  | {
+      kind: 'video';
+      src: string;
+      fallback: string;
+      poster: string;
+      duration: string;
+      alt: string;
+      frame?: 'phone';
+    };
+
+const roamModes = [
+  {
+    id: 'search',
+    label: 'Search',
+    enabled: false,
+    shots: [
+      {
+        kind: 'video',
+        src: '/media/roam-search.webm',
+        fallback: '/media/roam-search.mp4',
+        poster: '/media/roam-search-poster.webp',
+        duration: '7s',
+        alt: "Play a short desktop recording of Roam's authenticated Austin home search and filtering",
+      },
+      {
+        kind: 'video',
+        src: '/media/roam-search-mobile.webm',
+        fallback: '/media/roam-search-mobile.mp4',
+        poster: '/media/roam-search-mobile-poster.webp',
+        duration: '7s',
+        alt: "Play a short authenticated mobile recording of Roam's Austin home search applying a maximum mortgage-rate filter",
+        frame: 'phone',
+      },
+    ] satisfies WorkShot[],
+  },
+  {
+    id: 'payments',
+    label: 'Payments',
+    enabled: false,
+    shots: [
+      {
+        kind: 'video',
+        src: '/media/roam-calculator.webm',
+        fallback: '/media/roam-calculator.mp4',
+        poster: '/media/roam-calculator-poster.webp',
+        duration: '8s',
+        alt: "Play a short desktop recording of Roam's authenticated payment calculator and expanded payment details",
+      },
+      {
+        kind: 'video',
+        src: '/media/roam-calculator-mobile.webm',
+        fallback: '/media/roam-calculator-mobile.mp4',
+        poster: '/media/roam-calculator-mobile-poster.webp',
+        duration: '7s',
+        alt: "Play a short mobile recording of Roam's payment calculator and expanded payment details",
+        frame: 'phone',
+      },
+    ] satisfies WorkShot[],
+  },
+  {
+    id: 'tour',
+    label: 'Tour',
+    enabled: true,
+    shots: [
+      {
+        kind: 'video',
+        src: '/media/roam-product-tour.webm?v=2',
+        fallback: '/media/roam-product-tour.mp4?v=2',
+        poster: '/media/roam-product-tour-poster.webp?v=2',
+        duration: '13s',
+        alt: "Play a full desktop tour of a Roam listing, its assumable-loan calculator, and editable payment details",
+      },
+      {
+        kind: 'video',
+        src: '/media/roam-product-tour-mobile.webm?v=2',
+        fallback: '/media/roam-product-tour-mobile.mp4?v=2',
+        poster: '/media/roam-product-tour-mobile-poster.webp?v=2',
+        duration: '9s',
+        alt: "Play a mobile Roam tour that filters authenticated search results, opens a featured home, and explores its photo gallery",
+        frame: 'phone',
+      },
+    ] satisfies WorkShot[],
+  },
+];
+
+const visibleRoamModes = roamModes.filter((mode) => mode.enabled);
+const showRoamModeSwitcher = visibleRoamModes.length > 1;
+
 const groups = [
   {
     id: 'roam-marketplace',
     title: 'Roam marketplace',
-    description: 'Map search and the home-detail flow.',
-    shots: [
-      {
-        src: roamMarketplace,
-        label: 'Map search',
-        alt: "Roam's public home search with a map, buyer filters, and listing cards",
-      },
-      {
-        src: roamListing,
-        label: 'Listing detail',
-        alt: "A Roam home listing with its photo gallery, address, and price",
-      },
-    ],
+    description: 'A complete authenticated listing tour, captured on desktop and mobile.',
+    shots: visibleRoamModes[0].shots,
   },
   {
     id: 'reed',
@@ -37,16 +119,16 @@ const groups = [
     description: 'The public starting point and a guided buyer conversation.',
     shots: [
       {
+        kind: 'image',
         src: reedHome,
-        label: 'Homepage',
         alt: "Reed's public homepage introducing its AI real estate expert",
       },
       {
+        kind: 'image',
         src: reedChat,
-        label: 'Buyer chat',
         alt: "Reed's buyer chat offering paths to explore areas, find homes, inspect a home, or make an offer",
       },
-    ],
+    ] satisfies WorkShot[],
   },
   {
     id: 'agent-harness',
@@ -54,16 +136,16 @@ const groups = [
     description: 'Chat and sub-agent supervision with synthetic demo data.',
     shots: [
       {
+        kind: 'image',
         src: agentHarnessChat,
-        label: 'Chat',
         alt: 'A synthetic agent-harness chat showing an orchestrator coordinating a product review',
       },
       {
+        kind: 'image',
         src: agentHarnessSubagents,
-        label: 'Sub-agents',
         alt: 'A synthetic agent-harness graph showing an orchestrator supervising four parallel sub-agents',
       },
-    ],
+    ] satisfies WorkShot[],
   },
 ];
 
@@ -72,27 +154,189 @@ const selectedGroup = groups.find((item) => item.id === group);
 if (!selectedGroup) {
   throw new Error(`Unknown Roam work-sample group: ${group}`);
 }
+
+const mediaPanels =
+  selectedGroup.id === 'roam-marketplace'
+    ? visibleRoamModes
+    : [{ id: selectedGroup.id, label: selectedGroup.title, shots: selectedGroup.shots }];
 ---
 
 <section class="work-samples" data-roam-sample={selectedGroup.id} aria-label={`${selectedGroup.title} screens`}>
-  <p class="work-sample-description mono-meta">{selectedGroup.description}</p>
-  <div class="media-pair">
-    {selectedGroup.shots.map((shot) => (
-      <figure class="media-shot">
-        <div class="media-frame">
-          <Image
-            src={shot.src}
-            alt={shot.alt}
-            loading="lazy"
-            widths={[360, 480, 640, 960, 1440]}
-            sizes="(max-width: 48rem) calc(100vw - 64px), min(30rem, 38vw)"
-          />
-        </div>
-        <figcaption class="shot-label mono-meta">{shot.label}</figcaption>
-      </figure>
-    ))}
+  <div class="work-sample-heading">
+    <p class="work-sample-description mono-meta">{selectedGroup.description}</p>
+    {selectedGroup.id === 'roam-marketplace' && showRoamModeSwitcher && (
+      <div class="product-mode-switcher" data-product-modes role="tablist" aria-label="Roam demo">
+        {visibleRoamModes.map((mode, index) => (
+          <button
+            class="product-mode-tab mono-meta"
+            type="button"
+            role="tab"
+            id={`roam-mode-tab-${mode.id}`}
+            aria-controls={`roam-mode-panel-${mode.id}`}
+            aria-selected={index === 0 ? 'true' : 'false'}
+            tabindex={index === 0 ? '0' : '-1'}
+            data-product-mode={mode.id}
+          >
+            {mode.label}
+          </button>
+        ))}
+      </div>
+    )}
   </div>
+  {mediaPanels.map((panel, panelIndex) => (
+    <div
+      id={selectedGroup.id === 'roam-marketplace' ? `roam-mode-panel-${panel.id}` : undefined}
+      class:list={['media-pair', { 'media-pair--product': selectedGroup.id === 'roam-marketplace' }]}
+      data-product-panel={selectedGroup.id === 'roam-marketplace' ? panel.id : undefined}
+      data-product-active={selectedGroup.id === 'roam-marketplace' ? (panelIndex === 0 ? 'true' : 'false') : undefined}
+      role={showRoamModeSwitcher ? 'tabpanel' : undefined}
+      aria-labelledby={showRoamModeSwitcher ? `roam-mode-tab-${panel.id}` : undefined}
+    >
+      {panel.shots.map((shot) => (
+        <figure class:list={['media-shot', { 'media-shot--phone': shot.frame === 'phone' }]}>
+          {shot.kind === 'video' ? (
+            <button
+              class:list={['media-frame', 'media-frame--video', { 'media-frame--phone': shot.frame === 'phone' }]}
+              type="button"
+              data-product-video
+              aria-label={shot.alt}
+              aria-pressed="false"
+            >
+              <video muted loop playsinline preload="metadata" poster={shot.poster}>
+                <source src={shot.src} type="video/webm" />
+                <source src={shot.fallback} type="video/mp4" />
+              </video>
+              {shot.frame === 'phone' && (
+                <svg class="phone-frame" data-phone-frame viewBox="0 0 390 844" aria-hidden="true">
+                  <rect x="3" y="3" width="384" height="838" rx="46" />
+                  <rect class="phone-frame-speaker" x="157" y="14" width="76" height="8" rx="4" />
+                  <rect class="phone-frame-home" x="145" y="824" width="100" height="5" rx="2.5" />
+                </svg>
+              )}
+              <span class="video-cue mono-meta" aria-hidden="true">
+                <svg viewBox="0 0 12 12">
+                  <path d="M3.5 2.25 9 6l-5.5 3.75v-7.5Z" fill="currentColor"></path>
+                </svg>
+                <span class="video-cue-action video-cue-action--pointer">Play</span>
+                <span class="video-cue-action video-cue-action--touch">Tap to play</span>
+                <span>· {shot.duration}</span>
+              </span>
+            </button>
+          ) : (
+            <div class="media-frame">
+              <Image
+                src={shot.src}
+                alt={shot.alt}
+                loading="lazy"
+                widths={[360, 480, 640, 960, 1440]}
+                sizes="(max-width: 48rem) calc(100vw - 64px), min(30rem, 38vw)"
+              />
+            </div>
+          )}
+        </figure>
+      ))}
+    </div>
+  ))}
 </section>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const resetVideoControl = (control: HTMLElement) => {
+    const video = control.querySelector('video');
+    if (!video) return;
+    video.pause();
+    video.currentTime = 0;
+    control.classList.remove('is-playing');
+    control.setAttribute('aria-pressed', 'false');
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-product-modes]').forEach((switcher) => {
+    if (switcher.dataset.modeReady === 'true') return;
+    switcher.dataset.modeReady = 'true';
+
+    const section = switcher.closest<HTMLElement>('[data-roam-sample]');
+    if (!section) return;
+
+    const tabs = Array.from(switcher.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = Array.from(section.querySelectorAll<HTMLElement>('[data-product-panel]'));
+
+    const activate = (tab: HTMLButtonElement, moveFocus = false) => {
+      const activeMode = tab.dataset.productMode;
+
+      tabs.forEach((item) => {
+        const isActive = item === tab;
+        item.setAttribute('aria-selected', String(isActive));
+        item.tabIndex = isActive ? 0 : -1;
+      });
+
+      panels.forEach((panel) => {
+        const isActive = panel.dataset.productPanel === activeMode;
+        if (!isActive) {
+          panel.querySelectorAll<HTMLElement>('[data-product-video]').forEach(resetVideoControl);
+        }
+        panel.hidden = !isActive;
+        panel.dataset.productActive = String(isActive);
+      });
+
+      if (moveFocus) tab.focus();
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => activate(tab));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex: number | undefined;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (nextIndex === undefined) return;
+        event.preventDefault();
+        activate(tabs[nextIndex], true);
+      });
+    });
+
+    const selectedTab = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
+    if (selectedTab) activate(selectedTab);
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-product-video]').forEach((control) => {
+    if (control.dataset.videoReady === 'true') return;
+    control.dataset.videoReady = 'true';
+
+    const video = control.querySelector('video');
+    if (!video) return;
+
+    const play = async () => {
+      try {
+        await video.play();
+        control.classList.add('is-playing');
+        control.setAttribute('aria-pressed', 'true');
+      } catch {
+        control.classList.remove('is-playing');
+      }
+    };
+
+    const reset = () => resetVideoControl(control);
+
+    control.addEventListener('pointerenter', (event) => {
+      if (event.pointerType !== 'touch' && !reducedMotion.matches) void play();
+    });
+    control.addEventListener('pointerleave', (event) => {
+      if (event.pointerType !== 'touch') reset();
+    });
+    control.addEventListener('blur', reset);
+    control.addEventListener('click', () => {
+      if (video.paused) void play();
+      else reset();
+    });
+
+    const disclosure = control.closest('details');
+    disclosure?.addEventListener('toggle', () => {
+      if (!disclosure.open) reset();
+    });
+  });
+</script>
 
 <style>
   .work-samples {
@@ -103,9 +347,79 @@ if (!selectedGroup) {
     border-top: 1px solid var(--hairline);
   }
 
-  .work-sample-description {
+  .work-sample-heading {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: var(--space-4);
+  }
+
+  .work-sample-description {
+    margin: 0;
     color: var(--ink-muted);
+  }
+
+  .product-mode-switcher {
+    display: inline-flex;
+    flex: none;
+    align-items: stretch;
+    gap: var(--space-4);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .product-mode-tab {
+    position: relative;
+    min-height: 2.5rem;
+    padding: 0;
+    color: var(--ink-muted);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease);
+  }
+
+  .product-mode-tab::after {
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    content: '';
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--duration-default) var(--ease);
+  }
+
+  .product-mode-tab:hover,
+  .product-mode-tab[aria-selected='true'] {
+    color: var(--ink);
+  }
+
+  .product-mode-tab[aria-selected='true']::after {
+    transform: scaleX(1);
+  }
+
+  .product-mode-tab:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  :global(html:not(.js)) .product-mode-switcher {
+    display: none;
+  }
+
+  :global(html.js) [data-product-panel][data-product-active='false'] {
+    display: none;
+  }
+
+  :global(html.js) [data-product-panel][data-product-active='true'] {
+    animation: product-mode-reveal var(--duration-default) var(--ease) both;
+  }
+
+  :global(html:not(.js)) [data-product-panel] + [data-product-panel] {
+    margin-top: var(--space-6);
   }
 
   .media-pair {
@@ -116,11 +430,22 @@ if (!selectedGroup) {
     min-width: 0;
   }
 
+  .media-pair--product {
+    grid-template-columns: minmax(0, 1fr) clamp(8.75rem, 23cqw, 10rem);
+    gap: var(--space-6);
+    align-items: center;
+  }
+
   .media-shot {
     display: grid;
     gap: var(--space-2);
     min-width: 0;
     margin: 0;
+  }
+
+  .media-shot--phone {
+    width: 100%;
+    justify-self: end;
   }
 
   .media-frame {
@@ -131,6 +456,110 @@ if (!selectedGroup) {
     box-shadow: var(--shadow-small);
   }
 
+  .media-frame--video {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .media-frame--video:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .media-frame--video video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    object-fit: contain;
+    background: white;
+  }
+
+  .media-frame--phone {
+    aspect-ratio: 390 / 844;
+    border: 0;
+    border-radius: 11.8% / 5.45%;
+    background: var(--ink);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--ink) 18%, transparent),
+      0 12px 24px rgb(43 37 33 / 12%);
+  }
+
+  .media-frame--video.media-frame--phone video {
+    height: 100%;
+    aspect-ratio: 390 / 844;
+  }
+
+  .phone-frame {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    color: var(--ink);
+    pointer-events: none;
+  }
+
+  .phone-frame > rect:first-child {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 6;
+  }
+
+  .phone-frame-speaker,
+  .phone-frame-home {
+    fill: currentColor;
+    opacity: 0.82;
+  }
+
+  .video-cue {
+    position: absolute;
+    right: var(--space-3);
+    bottom: var(--space-3);
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.4rem 0.65rem;
+    color: white;
+    font-size: 0.625rem;
+    line-height: 1;
+    background: color-mix(in srgb, var(--ink) 82%, transparent);
+    border-radius: 999px;
+    box-shadow: 0 1px 8px rgb(0 0 0 / 18%);
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  .media-frame--phone .video-cue {
+    right: 50%;
+    bottom: var(--space-4);
+    white-space: nowrap;
+    transform: translateX(50%);
+  }
+
+  .video-cue svg {
+    width: 0.65rem;
+    height: 0.65rem;
+  }
+
+  .video-cue-action--touch {
+    display: none;
+  }
+
+  .media-frame--video.is-playing .video-cue {
+    opacity: 0;
+    transform: translateY(0.2rem);
+  }
+
+  .media-frame--phone.is-playing .video-cue {
+    transform: translate(50%, 0.2rem);
+  }
+
   .media-frame :global(img) {
     display: block;
     width: 100%;
@@ -138,14 +567,14 @@ if (!selectedGroup) {
     filter: none;
   }
 
-  .shot-label {
-    color: var(--ink-muted);
-    font-size: 0.6875rem;
-    line-height: 1.4;
-  }
-
   @container (max-width: 30rem) {
-    .media-pair {
+    .work-sample-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .media-pair:not(.media-pair--product) {
       grid-template-columns: none;
       grid-auto-flow: column;
       grid-auto-columns: calc(100% - var(--space-8));
@@ -156,12 +585,52 @@ if (!selectedGroup) {
       scrollbar-width: none;
     }
 
-    .media-pair::-webkit-scrollbar {
+    .media-pair:not(.media-pair--product)::-webkit-scrollbar {
       display: none;
     }
 
-    .media-shot {
+    .media-pair:not(.media-pair--product) .media-shot {
       scroll-snap-align: start;
+    }
+
+    .media-pair--product {
+      grid-template-columns: minmax(0, 1fr) clamp(7.25rem, 30cqw, 8.25rem);
+      gap: var(--space-3);
+      align-items: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-cue,
+    .product-mode-tab,
+    .product-mode-tab::after {
+      transition: none;
+    }
+
+    :global(html.js) [data-product-panel][data-product-active='true'] {
+      animation: none;
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .video-cue-action--pointer {
+      display: none;
+    }
+
+    .video-cue-action--touch {
+      display: inline;
+    }
+  }
+
+  @keyframes product-mode-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(var(--space-1));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 </style>

@@ -42,7 +42,9 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(disclosures).toHaveCount(3);
   await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
   await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
-  await expect(mediaRegion.locator('img')).toHaveCount(6);
+  await expect(mediaRegion.locator('img')).toHaveCount(4);
+  await expect(mediaRegion.locator('video')).toHaveCount(2);
+  await expect(mediaRegion.locator('[data-product-video]')).toHaveCount(2);
   await expect(mediaRegion.locator('.work-samples a')).toHaveCount(0);
   await expect(mediaRegion).toContainText('synthetic demo data');
   await expect(mediaRegion).not.toContainText('2 screens');
@@ -85,6 +87,37 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(marketplaceDisclosure).toHaveAttribute('data-track-motion', 'opening');
   await expect(marketplaceDisclosure.locator('.experience-track-detail')).toBeVisible();
   await expect(marketplaceDisclosure.locator('.media-shot').first()).toBeVisible();
+  await expect(marketplaceDisclosure).not.toHaveAttribute('data-track-motion', 'opening');
+
+  const tourPanel = marketplaceDisclosure.locator('[data-product-panel="tour"]');
+  await expect(marketplaceDisclosure.getByRole('tab')).toHaveCount(0);
+  await expect(tourPanel).toBeVisible();
+  const desktopTourDemo = tourPanel.locator('[data-product-video]').first();
+  const desktopTourVideo = tourPanel.locator('[data-product-video] video').first();
+  const mobileTourDemo = tourPanel.locator('.media-shot--phone [data-product-video]');
+  const mobileTourVideo = tourPanel.locator('.media-shot--phone video');
+  await desktopTourDemo.hover();
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() => desktopTourVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+    .toBeGreaterThan(0.1);
+  expect(
+    await desktopTourVideo.evaluate((video) => ({
+      width: (video as HTMLVideoElement).videoWidth,
+      height: (video as HTMLVideoElement).videoHeight,
+    })),
+  ).toEqual({ width: 1280, height: 800 });
+  expect(
+    await mobileTourVideo.evaluate((video) => ({
+      width: (video as HTMLVideoElement).videoWidth,
+      height: (video as HTMLVideoElement).videoHeight,
+    })),
+  ).toEqual({ width: 390, height: 844 });
+  await expect(desktopTourVideo).toHaveCSS('object-fit', 'contain');
+  await expect(mobileTourVideo).toHaveCSS('object-fit', 'contain');
+  await expect(mobileTourDemo.locator('[data-phone-frame]')).toHaveCount(1);
+  await page.mouse.move(8, 8);
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'false');
 
   const reedSummary = reedDisclosure.locator('summary');
   await reedSummary.focus();
@@ -205,14 +238,15 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   await expect(marketplaceTrack).not.toHaveAttribute('data-track-motion', 'opening');
   const marketplaceExpandedHeight = (await marketplaceTrack.boundingBox())!.height;
   expect(marketplaceExpandedHeight).toBeGreaterThan(marketplaceCollapsedHeight + 200);
-  const mediaRail = marketplaceTrack.locator('.media-pair');
-  expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
-  const firstShotBox = await marketplaceTrack.locator('.media-shot').nth(0).boundingBox();
-  const secondShotBox = await marketplaceTrack.locator('.media-shot').nth(1).boundingBox();
+  const mediaRail = marketplaceTrack.locator('[data-product-panel="tour"]');
+  expect(await mediaRail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(false);
+  const firstShotBox = await mediaRail.locator('.media-shot').nth(0).boundingBox();
+  const secondShotBox = await mediaRail.locator('.media-shot').nth(1).boundingBox();
   expect(firstShotBox).not.toBeNull();
   expect(secondShotBox).not.toBeNull();
-  expect(Math.abs(secondShotBox!.y - firstShotBox!.y)).toBeLessThanOrEqual(1);
   expect(secondShotBox!.x).toBeGreaterThan(firstShotBox!.x + firstShotBox!.width);
+  expect(secondShotBox!.y).toBeLessThan(firstShotBox!.y);
+  expect(secondShotBox!.y + secondShotBox!.height).toBeGreaterThan(firstShotBox!.y + firstShotBox!.height);
 
   const reedTrack = roamTracks.nth(1);
   await reedTrack.locator('summary').click();
@@ -269,4 +303,34 @@ test('company wordmarks and screenshots stay unchanged under a dark system prefe
   for (const image of await page.locator('#roam .work-samples img').all()) {
     await expect(image).toHaveCSS('filter', 'none');
   }
+});
+
+test.describe('Roam videos on touch devices', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test('the phone demo uses tap-to-play and a second tap resets it', async ({ page }) => {
+    await page.goto('/about#roam');
+
+    const marketplaceTrack = page.locator('#roam details[data-roam-track="roam-marketplace"]');
+    await marketplaceTrack.locator('summary').tap();
+    await expect(marketplaceTrack).toHaveAttribute('open', '');
+
+    const mobileDemo = marketplaceTrack.locator('.media-shot--phone [data-product-video]');
+    const mobileVideo = mobileDemo.locator('video');
+    await expect(mobileDemo.locator('.video-cue-action--touch')).toHaveText('Tap to play');
+    await expect(mobileDemo.locator('.video-cue-action--touch')).toBeVisible();
+    await expect(mobileDemo.locator('.video-cue-action--pointer')).toBeHidden();
+
+    await mobileDemo.tap();
+    await expect(mobileDemo).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(() => mobileVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+      .toBeGreaterThan(0.1);
+
+    await mobileDemo.tap();
+    await expect(mobileDemo).toHaveAttribute('aria-pressed', 'false');
+    await expect
+      .poll(() => mobileVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
+      .toBeLessThan(0.1);
+  });
 });

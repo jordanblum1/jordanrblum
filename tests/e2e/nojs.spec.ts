@@ -42,7 +42,7 @@ test.describe('no JavaScript', () => {
     await expect(disclosures).toHaveCount(3);
     await expect(mediaRegion.locator('.work-samples')).toHaveCount(3);
     await expect(mediaRegion.locator('.media-shot')).toHaveCount(6);
-    await expect(mediaRegion.locator('img')).toHaveCount(6);
+    await expect(mediaRegion.locator('img')).toHaveCount(4);
     await expect(mediaRegion).not.toContainText('2 screens');
     for (const disclosure of await disclosures.all()) {
       await expect(disclosure).not.toHaveAttribute('open', '');
