@@ -8,3 +8,7 @@ export interface RevealLogEntry {
   allowed: boolean;
   reason: string;
 }
+
+export interface ResumeOfferLogEntry {
+  timestamp: string;
+}

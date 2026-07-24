@@ -10,6 +10,10 @@ describe('formatSseEvent', () => {
     expect(formatSseEvent({ type: 'done' })).toBe('data: {"type":"done"}\n\n');
   });
 
+  it('formats a resume offer event', () => {
+    expect(formatSseEvent({ type: 'resume_offer' })).toBe('data: {"type":"resume_offer"}\n\n');
+  });
+
   it('formats an error event with a code', () => {
     expect(formatSseEvent({ type: 'error', code: 'rate_limited' })).toBe('data: {"type":"error","code":"rate_limited"}\n\n');
     expect(formatSseEvent({ type: 'error', code: 'invalid_input' })).toBe('data: {"type":"error","code":"invalid_input"}\n\n');

@@ -6,6 +6,8 @@ export const MAX_MESSAGE_CHARS = 2000;
 
 const STORAGE_KEY = 'jrb-chat-state-v1';
 const ENDPOINT = (import.meta.env.PUBLIC_CHAT_ENDPOINT as string | undefined) ?? '/api/chat';
+const API_BASE = ENDPOINT.replace(/\/chat\/?$/, '');
+const RESUME_DOWNLOAD_ENDPOINT = `${API_BASE}/resume/download`;
 
 const NETWORK_ERROR_MESSAGE =
   'Something went wrong reaching Jordy. Please try again, or email Jordan directly.';
@@ -42,6 +44,7 @@ export type ChatRole = 'user' | 'assistant';
 export interface ChatMessage {
   role: ChatRole;
   content: string;
+  resumeOffered?: boolean;
 }
 
 export interface ChatState {
@@ -50,7 +53,7 @@ export interface ChatState {
 }
 
 export interface ChatEvent {
-  type: 'delta' | 'done' | 'error';
+  type: 'delta' | 'resume_offer' | 'done' | 'error';
   text?: string;
   code?: string;
 }
@@ -131,10 +134,11 @@ export function loadChatState(storage: StorageLike, key: string = STORAGE_KEY): 
           !!m &&
           typeof m === 'object' &&
           ((m as ChatMessage).role === 'user' || (m as ChatMessage).role === 'assistant') &&
-          typeof (m as ChatMessage).content === 'string',
+          typeof (m as ChatMessage).content === 'string' &&
+          ((m as ChatMessage).resumeOffered === undefined || typeof (m as ChatMessage).resumeOffered === 'boolean'),
       )
     ) {
-      return parsed as ChatState;
+      return { conversationId: parsed.conversationId, messages: parsed.messages };
     }
     return null;
   } catch {
@@ -246,8 +250,8 @@ function errorMessageFor(code?: string): string {
 }
 
 type StreamResult =
-  | { ok: true; text: string }
-  | { ok: false; aborted: boolean; message: string; text: string };
+  | { ok: true; text: string; resumeOffered: boolean }
+  | { ok: false; aborted: boolean; message: string; text: string; resumeOffered: boolean };
 
 async function streamAssistantReply(
   messages: ChatMessage[],
@@ -257,6 +261,7 @@ async function streamAssistantReply(
 ): Promise<StreamResult> {
   let buffer = '';
   let text = '';
+  let resumeOffered = false;
 
   try {
     // Serialize once: the hash must cover the exact bytes sent as the body.
@@ -273,7 +278,7 @@ async function streamAssistantReply(
     });
 
     if (!response.ok || !response.body) {
-      return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
+      return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text, resumeOffered };
     }
 
     const reader = response.body.getReader();
@@ -291,25 +296,35 @@ async function streamAssistantReply(
         if (event.type === 'delta' && event.text) {
           text += event.text;
           onDelta(event.text);
+        } else if (event.type === 'resume_offer') {
+          resumeOffered = true;
         } else if (event.type === 'done') {
-          return { ok: true, text };
+          return { ok: true, text, resumeOffered };
         } else if (event.type === 'error') {
-          return { ok: false, aborted: false, message: errorMessageFor(event.code), text };
+          return { ok: false, aborted: false, message: errorMessageFor(event.code), text, resumeOffered };
         }
       }
     }
 
     return text
-      ? { ok: true, text }
-      : { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
+      ? { ok: true, text, resumeOffered }
+      : { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text, resumeOffered };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       // Aborted (stop button or panel close): hand back the partial text so the
       // caller can keep it on screen and in history.
-      return { ok: false, aborted: true, message: '', text };
+      return { ok: false, aborted: true, message: '', text, resumeOffered };
     }
-    return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text };
+    return { ok: false, aborted: false, message: NETWORK_ERROR_MESSAGE, text, resumeOffered };
   }
+}
+
+async function signedPost(path: string, payload: Record<string, string>): Promise<Response> {
+  const body = JSON.stringify(payload);
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const payloadHash = await sha256Hex(body);
+  if (payloadHash) headers['x-amz-content-sha256'] = payloadHash;
+  return fetch(path, { method: 'POST', headers, body });
 }
 
 // --- Open/close API ---------------------------------------------------------
@@ -602,6 +617,81 @@ function initChatWidget(): void {
     return bubble;
   }
 
+  function makeTextElement<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className: string,
+    text: string,
+  ): HTMLElementTagNameMap[K] {
+    const element = document.createElement(tag);
+    element.className = className;
+    element.textContent = text;
+    return element;
+  }
+
+  function makeResumeGate(): HTMLElement {
+    const gate = document.createElement('section');
+    gate.className = 'resume-gate';
+    gate.setAttribute('aria-label', "Download Jordan's resume");
+    gate.dataset.resumeGate = '';
+
+    const status = makeTextElement('p', 'resume-gate-status', '');
+    status.setAttribute('aria-live', 'polite');
+    status.hidden = true;
+
+    function showStatus(status: HTMLElement, message: string): void {
+      status.textContent = message;
+      status.hidden = false;
+    }
+
+    function setButtonBusy(button: HTMLButtonElement, busy: boolean, idleLabel: string, busyLabel: string): void {
+      delete button.dataset.state;
+      button.disabled = busy;
+      button.textContent = busy ? busyLabel : idleLabel;
+      button.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
+    function setButtonDownloaded(button: HTMLButtonElement): void {
+      const label = makeTextElement('span', 'resume-download-label', 'Downloaded');
+      const check = makeTextElement('span', 'resume-download-check', '✓');
+      check.setAttribute('aria-hidden', 'true');
+      button.replaceChildren(label, check);
+      button.dataset.state = 'downloaded';
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'false');
+    }
+
+    const download = makeTextElement('button', 'resume-gate-button resume-download-button', 'Download PDF ↓');
+    download.type = 'button';
+    download.addEventListener('click', async () => {
+      status.hidden = true;
+      setButtonBusy(download, true, 'Download PDF ↓', 'Preparing…');
+      try {
+        const response = await signedPost(RESUME_DOWNLOAD_ENDPOINT, {});
+        if (!response.ok) throw new Error(`Resume download failed with ${response.status}`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = objectUrl;
+        anchor.download = 'Jordan_Blum_Product_Engineer.pdf';
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        setButtonDownloaded(download);
+      } catch {
+        showStatus(status, 'I couldn’t prepare the PDF. Try again.');
+        setButtonBusy(download, false, 'Download PDF ↓', 'Preparing…');
+      }
+    });
+
+    gate.append(
+      makeTextElement('h3', 'resume-gate-title', 'Jordan Blum — Product Engineer'),
+      download,
+      status,
+    );
+    return gate;
+  }
+
   // iMessage-style typing indicator: an assistant bubble holding three
   // staggered bouncing dots. Purely decorative — the aria-live announcer
   // handles assistive tech, so the whole bubble is aria-hidden.
@@ -715,7 +805,11 @@ function initChatWidget(): void {
   function renderHistory(): void {
     log!.replaceChildren();
     intro!.hidden = state!.messages.length > 0;
-    for (const message of state!.messages) renderMessageBubble(message.role, message.content);
+    const lastResumeOffer = state!.messages.findLastIndex((message) => message.resumeOffered === true);
+    state!.messages.forEach((message, index) => {
+      renderMessageBubble(message.role, message.content);
+      if (index === lastResumeOffer) log!.appendChild(makeResumeGate());
+    });
     const last = state!.messages[state!.messages.length - 1];
     if (last?.role === 'assistant') showFollowUps(lastExchangeTopic());
     updateComposerAvailability();
@@ -760,14 +854,26 @@ function initChatWidget(): void {
     typing.remove();
 
     if (result.ok) {
-      state = { ...state, messages: appendMessage(state.messages, { role: 'assistant', content: result.text }, MAX_MESSAGES) };
+      state = {
+        ...state,
+        messages: appendMessage(
+          state.messages,
+          { role: 'assistant', content: result.text, resumeOffered: result.resumeOffered || undefined },
+          MAX_MESSAGES,
+        ),
+      };
       persist();
       const bubble = makeBubble('assistant');
       const blockCount = revealBlocks(bubble, buffered, true);
+      if (result.resumeOffered) {
+        const gate = makeResumeGate();
+        log!.appendChild(gate);
+        applyReveal(gate, blockCount);
+      }
       showFollowUps(detectExchangeTopic(content, result.text));
       // The chips ride in at the tail of the cascade.
       const wrap = log!.querySelector<HTMLElement>('.chat-followups');
-      if (wrap) applyReveal(wrap, blockCount);
+      if (wrap) applyReveal(wrap, blockCount + (result.resumeOffered ? 1 : 0));
       // One announcement per completed reply, as rendered plain text.
       announce(bubble.textContent ?? '');
     } else if (result.aborted) {
@@ -820,7 +926,7 @@ function initChatWidget(): void {
     }
     if (event.key !== 'Tab') return;
 
-    const focusable = Array.from(panel!.querySelectorAll<HTMLElement>('button, textarea, a[href]')).filter(
+    const focusable = Array.from(panel!.querySelectorAll<HTMLElement>('button, input, textarea, a[href]')).filter(
       (el) => !el.hasAttribute('disabled') && !el.hidden && el.getClientRects().length > 0,
     );
     if (!focusable.length) return;

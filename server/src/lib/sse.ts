@@ -2,6 +2,7 @@ export type ErrorCode = 'rate_limited' | 'invalid_input' | 'internal_error';
 
 export type SseEvent =
   | { type: 'delta'; text: string }
+  | { type: 'resume_offer' }
   | { type: 'done' }
   | { type: 'error'; code: ErrorCode };
 

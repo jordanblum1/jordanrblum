@@ -52,11 +52,27 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('name two or three highlights inside one sentence');
   });
 
-  it('includes few-shot examples of the target reply length', () => {
+  it('gives Haiku a map of the information available in the biography', () => {
     const prompt = buildSystemPrompt();
+    expect(prompt).toContain('## Information you can use');
+    expect(prompt).toContain('roles, dates, responsibilities, team context');
+    expect(prompt).toContain('AI systems, product work, evaluation methods');
+    expect(prompt).toContain('Independent products, public work samples');
+    expect(prompt).toContain('Every claim still needs explicit support in the biography');
+  });
+
+  it('includes few-shot examples for the main response shapes', () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toContain('## Reference responses');
     expect(prompt).toContain('Visitor: "What does Jordan do?"');
-    expect(prompt).toContain('Visitor: "What has he built on his own?"');
-    // Examples defer facts to the biography so they cannot go stale.
+    expect(prompt).toContain('Visitor: "What has he built outside work?"');
+    expect(prompt).toContain('Visitor: "How did Jordan contribute to Roam');
+    expect(prompt).toContain('Visitor: "Give me a detailed overview');
+    expect(prompt).toContain('Visitor: "Has Jordan built blockchain products?"');
+    expect(prompt).toContain('Visitor: "Can you help me debug my Python script?"');
+    expect(prompt).toContain('Action: Call the offer_resume tool.');
+    // Examples remain patterns and defer final factual authority to the biography.
+    expect(prompt).toContain('They are patterns, not scripts');
     expect(prompt).toContain(
       'always draw the facts in your real answers from the biography below',
     );
@@ -65,7 +81,7 @@ describe('buildSystemPrompt', () => {
   it('reserves mid-length and long-form replies for when they are asked for', () => {
     const prompt = buildSystemPrompt();
     // 3-4 sentences only when the question genuinely needs context.
-    expect(prompt).toContain('stretch to three or four sentences');
+    expect(prompt).toContain('Use three or four sentences only when the context genuinely needs them');
     // Structure only on an explicit ask for depth — and still tight.
     expect(prompt).toContain('explicitly asks for depth');
     expect(prompt).toContain('keep it as tight as the request allows');

@@ -108,15 +108,55 @@ test('the panel unfolds from the composer corner and reverses before hiding', as
   await expect(navChat).toBeFocused();
 });
 
-test('the empty state shows four starter chips with the suggested questions', async ({ page }) => {
+test('the empty state includes the resume download among its starter questions', async ({ page }) => {
   await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
 
   const chips = page.locator('[data-chat-intro] .chat-chip');
-  await expect(chips).toHaveCount(4);
+  await expect(chips).toHaveCount(5);
   await expect(chips.nth(0)).toHaveText("What's his recent work experience?");
   await expect(chips.nth(1)).toHaveText('What has he built?');
   await expect(chips.nth(2)).toHaveText("What's his tech stack?");
-  await expect(chips.nth(3)).toHaveText('How can I get in touch?');
+  await expect(chips.nth(3)).toHaveText('Can I download his resume?');
+  await expect(chips.nth(4)).toHaveText('How can I get in touch?');
+});
+
+test('a resume request opens a direct download card and downloads the PDF', async ({ page }) => {
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: sseBody([
+        { type: 'resume_offer' },
+        { type: 'delta', text: 'Absolutely — use the download below.' },
+        { type: 'done' },
+      ]),
+    });
+  });
+  await page.route('**/api/resume/download', async (route) => {
+    expect(route.request().postDataJSON()).toEqual({});
+    await route.fulfill({ status: 200, contentType: 'application/pdf', body: '%PDF-1.4\nmock resume' });
+  });
+
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+  await page.getByRole('button', { name: 'Can I download his resume?' }).click();
+
+  const gate = page.locator('[data-resume-gate]');
+  await expect(gate).toBeVisible();
+  await expect(gate.getByRole('heading', { name: 'Jordan Blum — Product Engineer' })).toBeVisible();
+  await expect(gate).not.toContainText('RESUME');
+  await expect(gate).not.toContainText('A one-page overview');
+  await expect(gate).not.toContainText('email');
+  await expect(gate.locator('input')).toHaveCount(0);
+  const downloadEvent = page.waitForEvent('download');
+  const downloadButton = gate.locator('.resume-download-button');
+  await expect(downloadButton).toHaveAccessibleName('Download PDF ↓');
+  await downloadButton.click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe('Jordan_Blum_Product_Engineer.pdf');
+  await expect(downloadButton).toHaveAccessibleName('Downloaded');
+  await expect(downloadButton).toBeDisabled();
+  await expect(downloadButton.locator('.resume-download-check')).toHaveText('✓');
+  await expect(gate.locator('.resume-gate-status')).toBeHidden();
 });
 
 test('the inset send action activates only when the composer has meaningful text', async ({ page }) => {

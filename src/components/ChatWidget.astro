@@ -14,6 +14,7 @@ const starters = [
   "What's his recent work experience?",
   'What has he built?',
   "What's his tech stack?",
+  'Can I download his resume?',
   'How can I get in touch?',
 ];
 ---
@@ -593,6 +594,114 @@ const starters = [
     margin-top: calc(-1 * var(--space-2));
   }
 
+  /* --- Resume download ----------------------------------------------------- */
+
+  :global(.chat-log .resume-gate) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--hairline));
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+  }
+
+  :global(.chat-log .resume-gate-title) {
+    margin: 0;
+    color: var(--heading);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+  }
+
+  :global(.chat-log .resume-gate-button) {
+    display: inline-flex;
+    min-height: 2.65rem;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    overflow: hidden;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--duration-default) var(--ease), transform var(--duration-default) var(--spring);
+  }
+
+  :global(.chat-log .resume-gate-button:disabled) {
+    opacity: 0.68;
+    cursor: wait;
+  }
+
+  :global(.chat-log .resume-gate-button[data-state='downloaded']) {
+    opacity: 1;
+    cursor: default;
+  }
+
+  :global(html.pointer-moved .chat-log .resume-gate-button:not(:disabled):hover) {
+    background: color-mix(in oklab, var(--accent) 88%, var(--ink));
+    transform: translateY(-1px);
+  }
+
+  :global(.chat-log .resume-download-button) {
+    width: 100%;
+    margin-top: var(--space-1);
+  }
+
+  :global(.chat-log .resume-download-button[data-state='downloaded']) {
+    animation: resume-download-settle var(--duration-default) var(--ease) both;
+  }
+
+  :global(.chat-log .resume-download-check) {
+    display: inline-grid;
+    width: var(--space-5);
+    height: var(--space-5);
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--accent-contrast);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    animation: resume-check-in var(--duration-default) var(--spring) both;
+  }
+
+  :global(.chat-log .resume-gate-status) {
+    margin: 0;
+    font-size: 0.68rem;
+    line-height: 1.5;
+    color: var(--error);
+  }
+
+  :global(.chat-log .resume-gate-status[hidden]) {
+    display: none;
+  }
+
+  @keyframes resume-download-settle {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.015); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes resume-check-in {
+    from {
+      opacity: 0;
+      transform: scale(0.6) rotate(-12deg);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) rotate(0);
+    }
+  }
+
   /* --- Floating pills (stop / jump) ----------------------------------------- */
 
   /* A zero-height row whose pill is lifted up over the log. */
@@ -858,6 +967,7 @@ const starters = [
     .chat-input {
       font-size: 1rem;
     }
+
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -880,8 +990,14 @@ const starters = [
     .chat-send,
     .chat-pill,
     .chat-input,
+    :global(.chat-log .resume-gate-button),
     :global(.chat-panel .chat-chip) {
       transition: none;
+    }
+
+    :global(.chat-log .resume-download-button[data-state='downloaded']),
+    :global(.chat-log .resume-download-check) {
+      animation: none;
     }
 
     .chat-panel:not(.is-open) {

@@ -90,6 +90,8 @@ Color mode is light only. Do not add dark token branches, persisted theme overri
 | Editorial accent | Fraunces Variable | 450 | Section cues, small asides, and rare expressive emphasis |
 | Metadata | Geist Mono | 500 | Dates, traces, labels, counters, and tiny interface artifacts |
 | Assistant accent | Baloo 2 | 400 | Jordy suggestion chips only; never body copy or headings |
+| Graffiti display | Super Bouncer | 400 | Short, oversized expressive titles or artifact lettering; never body copy or interface labels |
+| Personality display | Chillax | 600 | Visible portfolio page heroes and major section/destination headings: home/About heroes, selected work, project/experience/archive sections, About teaser, and footer CTA |
 
 Fallback stacks:
 
@@ -97,6 +99,48 @@ Fallback stacks:
 - Serif: `"Fraunces Variable", Georgia, serif`
 - Mono: `"Geist Mono", ui-monospace, "SFMono-Regular", monospace`
 - Assistant accent: `"Baloo 2", "Trebuchet MS", "Comic Sans MS", sans-serif`
+- Graffiti display: `"Super Bouncer", "Arial Rounded MT Bold", sans-serif`
+- Personality display: `"Chillax", Switzer, "Switzer Fallback", system-ui, sans-serif`
+
+### Display-font library
+
+These are approved directions, not interchangeable defaults. Switzer remains the
+default reading and interface heading family; Chillax carries primary page heroes
+and selected destination headings. Use at most one novelty face in a local
+composition, keep expressive lettering to a short phrase, and preserve ordinary
+text in Switzer.
+
+| Candidate | Intended role | Project status | Source |
+| --- | --- | --- | --- |
+| Lemon Milk | Geometric, all-caps heading | Saved; commercial donation/license must be recorded before web use | [DaFont](https://www.dafont.com/lemon-milk.font) |
+| Creamy Chicken | Loose graffiti/cartoon accent | Saved; commercial/promotional license required before use | [DaFont](https://www.dafont.com/creamy-chicken.font) |
+| Super Bouncer | Rounded graffiti/cartoon display | Available as `--font-graffiti`; author marks it free for personal and commercial use | [DaFont](https://www.dafont.com/super-bouncer.font) |
+| Boring Time | More legible semi-graffiti display | Saved; commercial/promotional license required before use | [DaFont](https://www.dafont.com/boring-time.font) |
+| Akira Expanded | Wide, forceful heading | Saved; the download is a personal-use demo and needs a commercial/web license | [DaFont](https://www.dafont.com/akira-expanded.font) |
+| Coolvetica | Friendly retro display sans | Saved; a separate webfont license is required for live website text | [DaFont](https://www.dafont.com/coolvetica.font) |
+
+Candidate approval does not override a font license. A font becomes
+implementation-ready only after its web-use rights are verified and the license
+record is added beside the asset in `src/assets/fonts/README.md`.
+
+### Fontshare alternatives
+
+These are the preferred web-ready substitutes for the gated DaFont candidates.
+They preserve the intended role and energy without pretending to be exact copies.
+All five use Fontshare's ITF Free Font License and are free for personal and
+commercial web use. When one is activated, load it through Fontshare's hosted CSS
+API; do not commit or self-host its proprietary font files.
+
+| Original direction | Fontshare alternative | Recommended cut | Why it fits |
+| --- | --- | --- | --- |
+| Lemon Milk | [Clash Display](https://www.fontshare.com/fonts/clash-display/) | Semibold or Bold | Compact geometric display sans with enough personality for short headings |
+| Creamy Chicken | [Sharpie](https://www.fontshare.com/fonts/sharpie/) | Bold or Black | Marker-written, sign-painter energy; more angular and less bubbly than the reference |
+| Boring Time | [Pally](https://www.fontshare.com/fonts/pally/) | Bold | Wobbly, informal sans that stays legible in short display phrases |
+| Akira Expanded | [Panchang](https://www.fontshare.com/fonts/panchang/) | Bold or ExtraBold | Wide, industrial construction and the closest structural match in the catalog |
+| Coolvetica | [Chillax](https://www.fontshare.com/fonts/chillax/) | Semibold | Active as `--font-personality` for primary page heroes and short destination headings; friendly and retro-geometric without displacing Switzer |
+
+Pally is also the cleaner Fontshare fallback for the Super Bouncer role. Keep
+Super Bouncer when the composition wants the fuller bubble-letter personality.
 
 ### Type ramp
 
@@ -265,7 +309,15 @@ type:
   serif: 'Fraunces Variable, Georgia, serif'
   mono: 'Geist Mono, ui-monospace, SFMono-Regular, monospace'
   uiAccent: 'Baloo 2, Trebuchet MS, Comic Sans MS, sans-serif'
+  graffiti: 'Super Bouncer, Arial Rounded MT Bold, sans-serif'
+  personality: 'Chillax, Switzer, Switzer Fallback, system-ui, sans-serif'
   weights: [400, 450, 500, 600]
+  candidates:
+    heading: [Lemon Milk, Akira Expanded, Coolvetica]
+    graffiti: [Creamy Chicken, Super Bouncer, Boring Time]
+    fontshare:
+      heading: [Clash Display, Panchang]
+      graffiti: [Sharpie, Pally]
 spacing:
   base: 4
   scale: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]

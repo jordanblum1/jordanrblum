@@ -244,9 +244,11 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
     grid-row: 1;
     grid-column: 1;
     max-width: 14ch;
+    font-family: var(--font-personality);
     font-size: clamp(2.75rem, 6vw, 4.5rem);
+    font-weight: 600;
     line-height: 0.98;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.04em;
   }
 
   .hero-prose {
@@ -339,6 +341,12 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
     font-size: clamp(2rem, 4vw, 3rem);
     line-height: 1.05;
     letter-spacing: -0.03em;
+  }
+
+  #experience-heading,
+  #archive-heading {
+    font-family: var(--font-personality);
+    font-weight: 600;
   }
 
   .section-intro > p {

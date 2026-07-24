@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Context } from 'aws-lambda';
 import { runAgentTurn, DEFAULT_MODEL } from './lib/agent.js';
 import { clientIp, rateLimitBucket } from './lib/clientIp.js';
@@ -5,7 +7,7 @@ import { hashIp } from './lib/ipHash.js';
 import { checkRateLimit } from './lib/rateLimit.js';
 import { formatSseEvent } from './lib/sse.js';
 import { saveTranscript } from './lib/transcripts.js';
-import type { RevealLogEntry } from './lib/types.js';
+import type { ResumeOfferLogEntry, RevealLogEntry } from './lib/types.js';
 import { checkBodySize, validateRequest } from './lib/validation.js';
 
 // Provided by the Lambda Node.js runtime for response-streaming functions —
@@ -25,25 +27,67 @@ declare const awslambda: {
 interface LambdaFunctionUrlEvent {
   body?: string;
   isBase64Encoded?: boolean;
+  rawPath?: string;
   headers?: Record<string, string | undefined>;
   requestContext?: {
     http?: {
+      method?: string;
       sourceIp?: string;
     };
   };
 }
+
+const JSON_HEADERS = {
+  'Content-Type': 'application/json; charset=utf-8',
+  'Cache-Control': 'no-store',
+  'X-Content-Type-Options': 'nosniff',
+};
+
+const RESUME_FILENAME = 'Jordan_Blum_Product_Engineer.pdf';
 
 function decodeBody(event: LambdaFunctionUrlEvent): string {
   if (!event.body) return '';
   return event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString('utf8') : event.body;
 }
 
-export const handler = awslambda.streamifyResponse(async (event, responseStream) => {
+function respond(
+  responseStream: NodeJS.WritableStream,
+  statusCode: number,
+  body: string | Buffer,
+  headers: Record<string, string> = JSON_HEADERS,
+): void {
+  const stream = awslambda.HttpResponseStream.from(responseStream, { statusCode, headers });
+  stream.write(body);
+  stream.end();
+}
+
+function respondJson(
+  responseStream: NodeJS.WritableStream,
+  statusCode: number,
+  body: Record<string, unknown>,
+): void {
+  respond(responseStream, statusCode, JSON.stringify(body));
+}
+
+function handleResumeDownload(responseStream: NodeJS.WritableStream): void {
+  const pdf = readFileSync(join(__dirname, RESUME_FILENAME));
+  respond(responseStream, 200, pdf, {
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `attachment; filename="${RESUME_FILENAME}"`,
+    'Cache-Control': 'private, no-store',
+    'Content-Length': String(pdf.byteLength),
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'no-referrer',
+  });
+}
+
+async function handleChat(event: LambdaFunctionUrlEvent, responseStream: NodeJS.WritableStream): Promise<void> {
   const httpStream = awslambda.HttpResponseStream.from(responseStream, {
     statusCode: 200,
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 
@@ -87,10 +131,16 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
   }
 
   const revealEvents: RevealLogEntry[] = [];
+  const resumeOfferEvents: ResumeOfferLogEntry[] = [];
   let assistantReply = '';
 
   try {
-    for await (const delta of runAgentTurn({ messages, revealLog: revealEvents })) {
+    for await (const delta of runAgentTurn({
+      messages,
+      revealLog: revealEvents,
+      resumeOfferLog: resumeOfferEvents,
+      onResumeOffer: () => httpStream.write(formatSseEvent({ type: 'resume_offer' })),
+    })) {
       assistantReply += delta;
       httpStream.write(formatSseEvent({ type: 'delta', text: delta }));
     }
@@ -109,10 +159,34 @@ export const handler = awslambda.streamifyResponse(async (event, responseStream)
         startedAt,
         finishedAt: new Date().toISOString(),
         revealEvents,
+        resumeOfferEvents,
       });
     } catch (err) {
       console.error('failed to persist transcript', err);
     }
     httpStream.end();
+  }
+}
+
+export const handler = awslambda.streamifyResponse(async (event, responseStream) => {
+  const method = event.requestContext?.http?.method ?? 'POST';
+  const path = event.rawPath ?? '/api/chat';
+
+  if (method !== 'POST') {
+    respondJson(responseStream, 405, { ok: false, error: 'method_not_allowed' });
+    return;
+  }
+
+  // Chat owns the response stream from its first line of SSE onward. Keep it
+  // outside the JSON-route catch below so an upstream chat failure never
+  // attempts to wrap the same Lambda stream a second time as JSON.
+  if (path === '/api/chat') return await handleChat(event, responseStream);
+
+  try {
+    if (path === '/api/resume/download') return handleResumeDownload(responseStream);
+    respondJson(responseStream, 404, { ok: false, error: 'not_found' });
+  } catch (error) {
+    console.error('request failed', error);
+    respondJson(responseStream, 500, { ok: false, error: 'internal_error' });
   }
 });

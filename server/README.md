@@ -20,10 +20,23 @@ Browser (chat widget)
                     before the response stream closes)
 ```
 
+Resume requests use the same Lambda and `/api/*` behavior:
+
+```
+Jordy calls offer_resume
+  └─ SSE resume_offer event renders the download card
+       └─ POST /api/resume/download → bundled one-page PDF
+```
+
+The PDF is bundled with the Lambda rather than placed in the static site's
+`public/` directory. Visitors who ask Jordy for the resume can download it
+immediately without submitting personal information.
+
 Request contract: `POST` body `{ conversationId: string, messages: [{ role: 'user' | 'assistant', content: string }, ...] }`.
 Response is `text/event-stream`, one JSON object per `data:` line:
 
 - `{"type":"delta","text":"..."}` — an incremental chunk of the assistant's reply
+- `{"type":"resume_offer"}` — render the resume download card after the reply
 - `{"type":"done"}` — the turn is complete
 - `{"type":"error","code":"rate_limited" | "invalid_input" | "internal_error"}`
 
@@ -68,27 +81,28 @@ detail.
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
 | `ANTHROPIC_API_KEY` | yes | — | Anthropic API credential |
-| `CHAT_MODEL` | no | `claude-sonnet-5` | Model used for chat turns |
-| `CHAT_MAX_TOKENS` | no | `800` | `max_tokens` per turn |
+| `CHAT_MODEL` | no | `claude-haiku-4-5-20251001` | Model used for chat turns |
+| `CHAT_MAX_TOKENS` | no | `1200` | `max_tokens` per turn |
 | `CONTACT_EMAIL` | yes (for reveal to work) | — | The only source of the email address the model may share |
 | `TRANSCRIPTS_BUCKET` | yes | — | S3 bucket transcripts are written to |
 | `RATE_TABLE` | yes | — | DynamoDB table used for both per-IP rate limiting and the global reveal cap |
 
-## Switching the model (e.g. to Haiku)
+## Model choice and response examples
 
-No redeploy needed — update the Lambda's environment variable directly:
+Haiku 4.5 is the default. The system prompt gives it an information map, an
+explicit response-shape playbook, and reference answers for quick summaries,
+short lists, technical explanations with team attribution, detailed answers,
+missing facts, off-topic redirects, and tool-driven requests.
 
-```sh
-aws lambda update-function-configuration \
-  --function-name jordanrblum-chat \
-  --environment "Variables={CHAT_MODEL=claude-haiku-4-5-20251001}" \
-  --region us-east-1
-```
+On the first backend deploy after this change, the workflow migrates a Lambda
+still using the old `claude-sonnet-5` default to Haiku. It reads the existing
+environment and changes only `CHAT_MODEL`, preserving credentials and all
+other values. An existing non-legacy custom model is left unchanged.
 
-Use `aws lambda get-function-configuration --function-name jordanrblum-chat --region us-east-1 --query 'Environment.Variables'`
-first if you want to preserve the other variables in the same call — this
-`update-function-configuration` call replaces the whole `Environment.Variables`
-map, it doesn't merge.
+To change models later, run the **Chat backend** workflow manually and provide
+the desired Claude API model ID in `chat_model`. The workflow updates the
+complete environment safely; direct `update-function-configuration` calls
+replace the whole `Environment.Variables` map rather than merging it.
 
 ## Reading transcripts
 
@@ -123,8 +137,9 @@ pnpm build
 ```
 
 Runs `generate:bio`, type-checks with `tsc`, then bundles `src/handler.ts`
-with esbuild into `dist/index.js` (a single CommonJS file, Node 22 target) —
-the artifact the deploy workflow zips and uploads to Lambda.
+with esbuild into `dist/index.js` (a single CommonJS file, Node 22 target),
+then copies the bundled PDF beside it — the two artifacts the deploy workflow
+zips and uploads to Lambda.
 
 ## Infrastructure
 
