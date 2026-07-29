@@ -23,7 +23,6 @@ type WorkShot =
       src: string;
       fallback: string;
       poster: string;
-      duration: string;
       alt: string;
       frame?: 'phone';
     };
@@ -39,7 +38,6 @@ const roamModes = [
         src: '/media/roam-search.webm',
         fallback: '/media/roam-search.mp4',
         poster: '/media/roam-search-poster.webp',
-        duration: '7s',
         alt: "Play a short desktop recording of Roam's authenticated Austin home search and filtering",
       },
       {
@@ -47,7 +45,6 @@ const roamModes = [
         src: '/media/roam-search-mobile.webm',
         fallback: '/media/roam-search-mobile.mp4',
         poster: '/media/roam-search-mobile-poster.webp',
-        duration: '7s',
         alt: "Play a short authenticated mobile recording of Roam's Austin home search applying a maximum mortgage-rate filter",
         frame: 'phone',
       },
@@ -63,7 +60,6 @@ const roamModes = [
         src: '/media/roam-calculator.webm',
         fallback: '/media/roam-calculator.mp4',
         poster: '/media/roam-calculator-poster.webp',
-        duration: '8s',
         alt: "Play a short desktop recording of Roam's authenticated payment calculator and expanded payment details",
       },
       {
@@ -71,7 +67,6 @@ const roamModes = [
         src: '/media/roam-calculator-mobile.webm',
         fallback: '/media/roam-calculator-mobile.mp4',
         poster: '/media/roam-calculator-mobile-poster.webp',
-        duration: '7s',
         alt: "Play a short mobile recording of Roam's payment calculator and expanded payment details",
         frame: 'phone',
       },
@@ -87,7 +82,6 @@ const roamModes = [
         src: '/media/roam-product-tour.webm?v=2',
         fallback: '/media/roam-product-tour.mp4?v=2',
         poster: '/media/roam-product-tour-poster.webp?v=2',
-        duration: '13s',
         alt: "Play a full desktop tour of a Roam listing, its assumable-loan calculator, and editable payment details",
       },
       {
@@ -95,7 +89,6 @@ const roamModes = [
         src: '/media/roam-product-tour-mobile.webm?v=2',
         fallback: '/media/roam-product-tour-mobile.mp4?v=2',
         poster: '/media/roam-product-tour-mobile-poster.webp?v=2',
-        duration: '9s',
         alt: "Play a mobile Roam tour that filters authenticated search results, opens a featured home, and explores its photo gallery",
         frame: 'phone',
       },
@@ -213,14 +206,10 @@ const mediaPanels =
                   <rect class="phone-frame-home" x="145" y="824" width="100" height="5" rx="2.5" />
                 </svg>
               )}
-              <span class="video-cue mono-meta" aria-hidden="true">
-                <svg viewBox="0 0 12 12">
-                  <path d="M3.5 2.25 9 6l-5.5 3.75v-7.5Z" fill="currentColor"></path>
-                </svg>
-                <span class="video-cue-action video-cue-action--pointer">Play</span>
-                <span class="video-cue-action video-cue-action--touch">Tap to play</span>
-                <span>· {shot.duration}</span>
-              </span>
+              <svg class="video-play-icon" viewBox="0 0 64 64" aria-hidden="true">
+                <circle cx="32" cy="32" r="30"></circle>
+                <path d="M27 21.5 45 32 27 42.5v-21Z"></path>
+              </svg>
             </button>
           ) : (
             <div class="media-frame">
@@ -241,6 +230,7 @@ const mediaPanels =
 
 <script>
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const hoverPlayback = window.matchMedia('(hover: hover) and (pointer: fine)');
 
   const resetVideoControl = (control: HTMLElement) => {
     const video = control.querySelector('video');
@@ -249,6 +239,7 @@ const mediaPanels =
     video.currentTime = 0;
     control.classList.remove('is-playing');
     control.setAttribute('aria-pressed', 'false');
+    delete control.dataset.videoPinned;
   };
 
   document.querySelectorAll<HTMLElement>('[data-product-modes]').forEach((switcher) => {
@@ -314,21 +305,39 @@ const mediaPanels =
         control.setAttribute('aria-pressed', 'true');
       } catch {
         control.classList.remove('is-playing');
+        control.setAttribute('aria-pressed', 'false');
+        delete control.dataset.videoPinned;
       }
     };
 
     const reset = () => resetVideoControl(control);
 
-    control.addEventListener('pointerenter', (event) => {
-      if (event.pointerType !== 'touch' && !reducedMotion.matches) void play();
+    control.addEventListener('pointerenter', () => {
+      if (hoverPlayback.matches && !reducedMotion.matches) void play();
     });
-    control.addEventListener('pointerleave', (event) => {
-      if (event.pointerType !== 'touch') reset();
+    control.addEventListener('pointerleave', () => {
+      if (hoverPlayback.matches && control.dataset.videoPinned !== 'true') reset();
     });
     control.addEventListener('blur', reset);
     control.addEventListener('click', () => {
-      if (video.paused) void play();
-      else reset();
+      const isHoverPreview =
+        hoverPlayback.matches &&
+        !reducedMotion.matches &&
+        !video.paused &&
+        control.dataset.videoPinned !== 'true';
+
+      if (isHoverPreview) {
+        control.dataset.videoPinned = 'true';
+        return;
+      }
+
+      if (video.paused) {
+        if (hoverPlayback.matches) control.dataset.videoPinned = 'true';
+        void play();
+        return;
+      }
+
+      reset();
     });
 
     const disclosure = control.closest('details');
@@ -516,48 +525,36 @@ const mediaPanels =
     opacity: 0.82;
   }
 
-  .video-cue {
+  .video-play-icon {
     position: absolute;
-    right: var(--space-3);
-    bottom: var(--space-3);
-    display: inline-flex;
-    gap: 0.35rem;
-    align-items: center;
-    padding: 0.4rem 0.65rem;
-    color: white;
-    font-size: 0.625rem;
-    line-height: 1;
-    background: color-mix(in srgb, var(--ink) 82%, transparent);
-    border-radius: 999px;
-    box-shadow: 0 1px 8px rgb(0 0 0 / 18%);
+    top: 50%;
+    left: 50%;
+    width: clamp(var(--space-12), 8cqw, var(--space-16));
+    height: auto;
+    overflow: visible;
+    pointer-events: none;
+    filter: drop-shadow(var(--shadow-small));
+    transform: translate(-50%, -50%);
     transition:
-      opacity 160ms ease,
-      transform 160ms ease;
+      opacity var(--duration-fast) var(--ease),
+      transform var(--duration-fast) var(--ease);
   }
 
-  .media-frame--phone .video-cue {
-    right: 50%;
-    bottom: var(--space-4);
-    white-space: nowrap;
-    transform: translateX(50%);
+  .video-play-icon circle {
+    fill: var(--ink);
   }
 
-  .video-cue svg {
-    width: 0.65rem;
-    height: 0.65rem;
+  .video-play-icon path {
+    fill: var(--paper-raised);
   }
 
-  .video-cue-action--touch {
-    display: none;
+  .media-frame--phone .video-play-icon {
+    width: var(--space-12);
   }
 
-  .media-frame--video.is-playing .video-cue {
+  .media-frame--video.is-playing .video-play-icon {
     opacity: 0;
-    transform: translateY(0.2rem);
-  }
-
-  .media-frame--phone.is-playing .video-cue {
-    transform: translate(50%, 0.2rem);
+    transform: translate(-50%, -50%) scale(0.92);
   }
 
   .media-frame :global(img) {
@@ -601,7 +598,7 @@ const mediaPanels =
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .video-cue,
+    .video-play-icon,
     .product-mode-tab,
     .product-mode-tab::after {
       transition: none;
@@ -609,16 +606,6 @@ const mediaPanels =
 
     :global(html.js) [data-product-panel][data-product-active='true'] {
       animation: none;
-    }
-  }
-
-  @media (hover: none), (pointer: coarse) {
-    .video-cue-action--pointer {
-      display: none;
-    }
-
-    .video-cue-action--touch {
-      display: inline;
     }
   }
 

@@ -96,8 +96,11 @@ test('about page carries the broader story, experience, and education', async ({
   const desktopTourVideo = tourPanel.locator('[data-product-video] video').first();
   const mobileTourDemo = tourPanel.locator('.media-shot--phone [data-product-video]');
   const mobileTourVideo = tourPanel.locator('.media-shot--phone video');
+  await expect(tourPanel.locator('.video-play-icon')).toHaveCount(2);
+  await expect(tourPanel).not.toContainText(/Tap to play|Play ·|\d+s/);
   await desktopTourDemo.hover();
   await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'true');
+  await expect(desktopTourDemo.locator('.video-play-icon')).toHaveCSS('opacity', '0');
   await expect
     .poll(() => desktopTourVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
     .toBeGreaterThan(0.1);
@@ -117,6 +120,14 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(mobileTourVideo).toHaveCSS('object-fit', 'contain');
   await expect(mobileTourDemo.locator('[data-phone-frame]')).toHaveCount(1);
   await page.mouse.move(8, 8);
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'false');
+
+  await desktopTourDemo.click();
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'true');
+  await page.mouse.move(8, 8);
+  await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'true');
+  await desktopTourDemo.focus();
+  await page.keyboard.press('Enter');
   await expect(desktopTourDemo).toHaveAttribute('aria-pressed', 'false');
 
   const reedSummary = reedDisclosure.locator('summary');
@@ -308,7 +319,7 @@ test('company wordmarks and screenshots stay unchanged under a dark system prefe
 test.describe('Roam videos on touch devices', () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
 
-  test('the phone demo uses tap-to-play and a second tap resets it', async ({ page }) => {
+  test('the phone demo shows only a play icon and uses tap-to-play', async ({ page }) => {
     await page.goto('/about#roam');
 
     const marketplaceTrack = page.locator('#roam details[data-roam-track="roam-marketplace"]');
@@ -317,12 +328,12 @@ test.describe('Roam videos on touch devices', () => {
 
     const mobileDemo = marketplaceTrack.locator('.media-shot--phone [data-product-video]');
     const mobileVideo = mobileDemo.locator('video');
-    await expect(mobileDemo.locator('.video-cue-action--touch')).toHaveText('Tap to play');
-    await expect(mobileDemo.locator('.video-cue-action--touch')).toBeVisible();
-    await expect(mobileDemo.locator('.video-cue-action--pointer')).toBeHidden();
+    await expect(mobileDemo.locator('.video-play-icon')).toBeVisible();
+    await expect(mobileDemo).not.toContainText(/Tap to play|Play ·|\d+s/);
 
     await mobileDemo.tap();
     await expect(mobileDemo).toHaveAttribute('aria-pressed', 'true');
+    await expect(mobileDemo.locator('.video-play-icon')).toHaveCSS('opacity', '0');
     await expect
       .poll(() => mobileVideo.evaluate((video) => (video as HTMLVideoElement).currentTime))
       .toBeGreaterThan(0.1);
