@@ -1,5 +1,6 @@
 import { MarkdownStream, renderMarkdownInto } from './chat-markdown';
 import { social } from '../data/site';
+import jordySticker from '../assets/identity/jordy-sticker.webp';
 
 export const MAX_MESSAGES = 20;
 export const MAX_MESSAGE_CHARS = 2000;
@@ -699,6 +700,11 @@ function initChatWidget(): void {
     const bubble = makeBubble('assistant');
     bubble.classList.add('chat-typing');
     bubble.setAttribute('aria-hidden', 'true');
+    const sticker = document.createElement('img');
+    sticker.className = 'chat-typing-sticker';
+    sticker.src = jordySticker.src;
+    sticker.alt = '';
+    bubble.appendChild(sticker);
     for (let i = 0; i < 3; i += 1) {
       const dot = document.createElement('span');
       dot.className = 'chat-typing-dot';

@@ -1,8 +1,12 @@
 ---
-// Chat chrome uses Baloo 2 Regular for chip/label legibility. The header uses
-// the site's existing BLUM mark instead of loading a second display face.
+// Chat chrome uses Baloo 2 Regular for chip/label legibility. The header
+// carries a slice of the footer's graffiti wall with Jordy's die-cut sticker,
+// plus the BLUM mark as a small brand stamp.
+import { Image } from 'astro:assets';
 import '@fontsource/baloo-2/latin-400.css';
 import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
+import wallArt from '../assets/footers/graffiti-wall.webp';
+import jordySticker from '../assets/identity/jordy-sticker.webp';
 
 const blumMark = blumMarkSource
   .replace(/<\?xml[^>]*>\s*/, '')
@@ -30,17 +34,25 @@ const starters = [
     hidden
   >
     <header class="chat-header">
-      <!-- The BLUM mark is the only visible header identity. The hidden text
-           keeps the dialog heading useful without repeating visible copy. -->
-      <h2 id="chat-panel-title" class="chat-name">
+      <!-- A slice of the footer's graffiti wall banners the panel; Jordy's
+           die-cut sticker peels over its edge into the identity row. The BLUM
+           mark stays as a small stamp on the right. -->
+      <div class="chat-banner" aria-hidden="true">
+        <Image src={wallArt} alt="" widths={[480, 816]} sizes="25.5rem" quality={80} loading="lazy" />
+      </div>
+      <div class="chat-id-row">
+        <Image class="chat-sticker" src={jordySticker} alt="" width={120} quality={82} loading="lazy" />
+        <div class="chat-id">
+          <h2 id="chat-panel-title" class="chat-name">Jordy</h2>
+          <p class="chat-role" aria-hidden="true">jordan’s assistant</p>
+        </div>
         <span class="chat-logo" data-chat-logo aria-hidden="true" set:html={blumMark}></span>
-        <span class="visually-hidden">Jordy</span>
-      </h2>
-      <button type="button" class="chat-close" data-chat-close aria-label="Close chat">
-        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
-          <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-        </svg>
-      </button>
+        <button type="button" class="chat-close" data-chat-close aria-label="Close chat">
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+            <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
     </header>
 
     <div class="chat-body" data-chat-scroll>
@@ -132,18 +144,23 @@ const starters = [
          wanted the chips lighter/cleaner, and the skeletons carry legibility
          without the extra weight.
        Message text stays in the readable site stack. */
+    /* Floating, not corner-hugging: generous viewport-scaled offsets keep the
+       panel clearly detached from the screen edges, and the deeper shadow
+       sells the lift. */
     position: fixed;
-    right: var(--space-6);
-    bottom: var(--space-6);
+    right: clamp(var(--space-8), 4vw, var(--space-16));
+    bottom: clamp(var(--space-8), 5vh, var(--space-16));
     display: flex;
     width: min(25.5rem, calc(100vw - var(--space-8)));
-    max-height: min(37rem, calc(100vh - 6.5rem));
+    max-height: min(37rem, calc(100vh - 8.5rem));
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-xl);
     background: var(--paper-raised);
-    box-shadow: var(--shadow-lifted);
+    box-shadow:
+      var(--shadow-lifted),
+      0 32px 80px rgb(43 37 33 / 0.16);
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
     transform-origin: calc(100% - var(--space-6)) calc(100% - var(--space-6));
@@ -211,10 +228,7 @@ const starters = [
     position: relative;
     z-index: 2;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-5) var(--space-2);
+    flex-direction: column;
   }
 
   .chat-header::after {
@@ -228,9 +242,77 @@ const starters = [
     pointer-events: none;
   }
 
+  /* A slice of the graffiti wall banners the panel, fading down into the
+     paper so messages scroll beneath it cleanly. */
+  .chat-banner {
+    position: relative;
+    height: 4.4rem;
+    overflow: hidden;
+  }
+
+  .chat-banner :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 58%;
+  }
+
+  .chat-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 35%, var(--paper-raised));
+    pointer-events: none;
+  }
+
+  .chat-id-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-5) var(--space-2) var(--space-4);
+  }
+
+  /* Jordy's die-cut sticker peels over the banner's bottom edge. */
+  .chat-id-row :global(.chat-sticker) {
+    width: 3.4rem;
+    height: auto;
+    margin-top: -1.9rem;
+    transform: rotate(-6deg);
+    filter: drop-shadow(0 3px 6px rgb(43 37 33 / 0.28));
+    transition: transform var(--duration-default) var(--ease-bounce);
+  }
+
+  :global(html.pointer-moved) .chat-header:hover :global(.chat-sticker) {
+    transform: rotate(-2deg) scale(1.06);
+  }
+
+  .chat-id {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+  }
+
   .chat-name {
-    width: 5rem;
     margin: 0;
+    color: var(--heading);
+    font-family: var(--font-personality);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .chat-role {
+    margin: 0;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+
+  .chat-logo {
+    width: 3.1rem;
+    margin-left: auto;
     color: var(--accent);
     line-height: 0;
   }
@@ -238,9 +320,12 @@ const starters = [
   .chat-logo,
   .chat-logo :global(svg) {
     display: block;
-    width: 100%;
     height: auto;
     overflow: visible;
+  }
+
+  .chat-logo :global(svg) {
+    width: 100%;
   }
 
   .chat-logo :global(.logo-piece) {
@@ -945,11 +1030,15 @@ const starters = [
       -webkit-overflow-scrolling: touch;
     }
 
-    /* iOS safe areas: keep the header clear of the notch and the composer
-       cluster clear of the home indicator. */
-    .chat-header {
-      padding-top: calc(var(--space-4) + env(safe-area-inset-top));
-      padding-left: calc(var(--space-5) + env(safe-area-inset-left));
+    /* iOS safe areas: the graffiti banner runs full-bleed behind the notch
+       (growing to keep its visible slice), while the identity row and the
+       composer cluster stay inside the safe insets. */
+    .chat-banner {
+      height: calc(4.4rem + env(safe-area-inset-top));
+    }
+
+    .chat-id-row {
+      padding-left: calc(var(--space-4) + env(safe-area-inset-left));
       padding-right: calc(var(--space-5) + env(safe-area-inset-right));
     }
 
@@ -1032,6 +1121,14 @@ const starters = [
     min-height: 1.4rem;
   }
 
+  /* Jordy's mini sticker sits ahead of the dots while a reply generates. */
+  .chat-typing .chat-typing-sticker {
+    width: 1.15rem;
+    height: auto;
+    margin-right: 0.15rem;
+    transform: rotate(-6deg);
+  }
+
   .chat-typing .chat-typing-dot {
     width: 0.44rem;
     height: 0.44rem;
@@ -1040,11 +1137,12 @@ const starters = [
     animation: jrb-chat-typing-bounce 1.2s ease-in-out infinite;
   }
 
-  .chat-typing .chat-typing-dot:nth-child(2) {
+  /* nth-of-type, not nth-child: the sticker img precedes the dot spans. */
+  .chat-typing .chat-typing-dot:nth-of-type(2) {
     animation-delay: 150ms;
   }
 
-  .chat-typing .chat-typing-dot:nth-child(3) {
+  .chat-typing .chat-typing-dot:nth-of-type(3) {
     animation-delay: 300ms;
   }
 
