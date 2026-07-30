@@ -1,0 +1,82 @@
+---
+import { Image } from 'astro:assets';
+import wallLandscape from '../../assets/footers/graffiti-wall.webp';
+import wallPortrait from '../../assets/footers/graffiti-wall-portrait.webp';
+import train from '../../assets/footers/subway-train.webp';
+import skyline from '../../assets/footers/skyline.webp';
+import horizon from '../../assets/footers/painted-horizon.webp';
+
+export type FooterArtVariant = 'wall' | 'train' | 'skyline' | 'horizon';
+
+interface VariantConfig {
+  landscape: ImageMetadata;
+  /** Optional portrait recomposition; variants that have one get the overlay
+      layout on narrow screens too (Footer.astro keys off this). */
+  portrait?: ImageMetadata;
+  /** Focal point when the overlay layout has to crop (it normally doesn't —
+      the stage matches the image's aspect ratio exactly). */
+  objectPosition: string;
+}
+
+export const footerArtVariants: Record<FooterArtVariant, VariantConfig> = {
+  wall: { landscape: wallLandscape, portrait: wallPortrait, objectPosition: 'center 62%' },
+  train: { landscape: train, objectPosition: 'center 68%' },
+  skyline: { landscape: skyline, objectPosition: 'center bottom' },
+  horizon: { landscape: horizon, objectPosition: 'center bottom' },
+};
+
+interface Props {
+  variant: FooterArtVariant;
+}
+
+const { variant } = Astro.props;
+const config = footerArtVariants[variant];
+---
+
+<!-- Layout (stacked vs overlay) is owned by Footer.astro's .footer-stage
+     rules; this component supplies the images plus any variant-specific
+     flourish (the train's hover nudge). -->
+<div
+  class:list={['footer-art', 'footer-art--landscape', `footer-art--${variant}`]}
+  style={`--art-position: ${config.objectPosition}`}
+  aria-hidden="true"
+>
+  <Image src={config.landscape} alt="" widths={[768, 1152, 1584, 2304, 3168, 4096]} sizes="100vw" quality={82} loading="lazy" />
+</div>
+{config.portrait && (
+  <div class="footer-art footer-art--portrait" aria-hidden="true">
+    <Image src={config.portrait} alt="" widths={[480, 768, 1080, 1440, 2048, 2751]} sizes="100vw" quality={82} loading="lazy" />
+  </div>
+)}
+
+<style>
+  .footer-art :global(img) {
+    object-position: var(--art-position, center);
+  }
+
+  /* The train nudges like it's about to pull away when the footer is hovered. */
+  :global(html.pointer-moved .footer-stage:hover) .footer-art--train :global(img) {
+    animation: train-nudge 900ms var(--ease);
+  }
+
+  @keyframes train-nudge {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    40% {
+      transform: translateX(-8px);
+    }
+
+    70% {
+      transform: translateX(3px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.pointer-moved .footer-stage:hover) .footer-art--train :global(img) {
+      animation: none;
+    }
+  }
+</style>
