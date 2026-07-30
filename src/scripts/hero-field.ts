@@ -1,5 +1,4 @@
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const finePointer = window.matchMedia('(pointer: fine)');
+import { finePointer, reducedMotion } from './media';
 
 if (!reducedMotion.matches && finePointer.matches) {
   document.querySelectorAll<HTMLElement>('[data-portrait-panel]').forEach((portrait) => {
@@ -56,6 +55,8 @@ if (!reducedMotion.matches && finePointer.matches) {
       field.style.removeProperty('--mark-x');
       field.style.removeProperty('--mark-y');
       field.style.removeProperty('--mark-rotate');
+      field.style.removeProperty('--wash-x');
+      field.style.removeProperty('--wash-y');
     };
 
     field.addEventListener('pointermove', (event) => {
@@ -72,6 +73,8 @@ if (!reducedMotion.matches && finePointer.matches) {
         field.style.setProperty('--mark-x', `${(x - 0.5) * 28}px`);
         field.style.setProperty('--mark-y', `${(y - 0.5) * 20}px`);
         field.style.setProperty('--mark-rotate', `${(x - 0.5) * 6}deg`);
+        field.style.setProperty('--wash-x', `${(x - 0.5) * -12}px`);
+        field.style.setProperty('--wash-y', `${(y - 0.5) * -9}px`);
       });
     });
 
