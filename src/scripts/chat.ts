@@ -919,7 +919,9 @@ function initChatWidget(): void {
     syncJump();
 
     updateComposerAvailability();
-    if (!input!.disabled && !panel!.hidden) input!.focus();
+    // Same keyboard courtesy as openPanel: never yank the keyboard back up on
+    // the mobile sheet after a reply lands.
+    if (!input!.disabled && !panel!.hidden && !mobileSheet.matches) input!.focus();
   }
 
   // --- Dialog behavior -------------------------------------------------------
@@ -961,7 +963,15 @@ function initChatWidget(): void {
     lastTrigger = trigger;
     setTriggersExpanded(true);
     renderHistory();
-    (input!.disabled ? closeButton! : input!).focus();
+    // On the mobile sheet, focusing the input would pop the software keyboard
+    // the instant the panel opens (and any later header tap dismisses it,
+    // flashing an empty keyboard-inset band). Focus the dialog itself there;
+    // desktop keeps the type-immediately behavior.
+    if (mobileSheet.matches) {
+      panel!.focus();
+    } else {
+      (input!.disabled ? closeButton! : input!).focus();
+    }
     document.addEventListener('keydown', onKeydown);
   }
 

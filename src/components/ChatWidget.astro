@@ -31,6 +31,7 @@ const starters = [
     aria-modal="true"
     aria-label="Chat with Jordy, Jordan’s assistant"
     data-chat-panel
+    tabindex="-1"
     hidden
   >
     <header class="chat-header">
@@ -1028,6 +1029,13 @@ const starters = [
       overscroll-behavior: contain;
       /* Momentum scrolling in the log on iOS. */
       -webkit-overflow-scrolling: touch;
+    }
+
+    /* The desktop panel centers the intro in its short body; on the tall
+       sheet that centering reads as a broken empty band under the header, so
+       the intro tucks up top instead. */
+    .chat-intro {
+      margin-block: var(--space-2) auto;
     }
 
     /* iOS safe areas: the graffiti banner runs full-bleed behind the notch
