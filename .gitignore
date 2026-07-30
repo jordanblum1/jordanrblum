@@ -14,3 +14,9 @@ dist/
 # Playwright artifacts
 test-results/
 playwright-report/
+.playwright-mcp/
+
+# Local agent/session artifacts
+.claude/
+output/
+tmp/
