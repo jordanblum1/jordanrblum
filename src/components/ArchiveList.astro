@@ -1,5 +1,13 @@
 ---
-import type { ArchiveItem } from '../data/site';
+import { Image } from 'astro:assets';
+import type { ArchiveItem, ArchivePeek } from '../data/site';
+import peekAlive from '../assets/projects/peek-alive.webp';
+import peekChicks from '../assets/projects/peek-chicks.webp';
+import peekCitibike from '../assets/projects/peek-citibike.webp';
+import peekWimdy from '../assets/projects/peek-wimdy.webp';
+import peekRoast from '../assets/projects/peek-roast.webp';
+import peekBlum from '../assets/projects/peek-blum.webp';
+import peekPhotos from '../assets/projects/peek-photos.webp';
 
 interface Props {
   items: ArchiveItem[];
@@ -7,9 +15,24 @@ interface Props {
 }
 
 const { items, compact = false } = Astro.props;
+
+// All peek assets are purpose-cropped to 4:3 (tools in the repo history) so the
+// polaroid frame never crops them unpredictably.
+const peekImages: Record<ArchivePeek, ImageMetadata> = {
+  alive: peekAlive,
+  chicks: peekChicks,
+  citibike: peekCitibike,
+  wimdy: peekWimdy,
+  roast: peekRoast,
+  blum: peekBlum,
+  photos: peekPhotos,
+};
+
+const peeksInUse = [...new Set(items.flatMap((item) => (item.peek ? [item.peek] : [])))];
 ---
 
-<div class:list={['archive-wrap', { compact }]}>
+<div class="archive-block" data-archive-peek-root>
+<div class:list={['archive-wrap', { compact }]} data-reveal>
   <table class="archive-table">
     <caption class="visually-hidden">Public side projects by year</caption>
     <colgroup>
@@ -19,11 +42,21 @@ const { items, compact = false } = Astro.props;
     </colgroup>
     <tbody>
       {items.map((item) => (
-        <tr>
+        <tr data-peek={item.peek}>
           <td class="archive-date mono-meta">{item.date}</td>
           <th scope="row" class="archive-title">
             {item.href ? (
               <a href={item.href} target="_blank" rel="noopener">
+                {item.peek && (
+                  <Image
+                    class="archive-thumb"
+                    src={peekImages[item.peek]}
+                    alt=""
+                    width={96}
+                    quality={78}
+                    loading="lazy"
+                  />
+                )}
                 <span>{item.title}</span>
                 <span class="archive-arrow" aria-hidden="true">↗</span>
                 <span class="visually-hidden"> (opens in a new tab)</span>
@@ -36,6 +69,100 @@ const { items, compact = false } = Astro.props;
     </tbody>
   </table>
 </div>
+
+  {/* Lives outside .archive-wrap: the reveal animation leaves a filter on the
+      wrap, which would turn it into a containing block and clip this
+      fixed-position element inside the wrap's overflow. */}
+  {peeksInUse.length > 0 && (
+    <div class="archive-peek" data-archive-peek aria-hidden="true">
+      <span class="archive-peek-card">
+        <span class="archive-peek-frame">
+          {peeksInUse.map((slug) => (
+            <Image
+              class="archive-peek-image"
+              data-peek-image={slug}
+              src={peekImages[slug]}
+              alt=""
+              width={352}
+              quality={80}
+              loading="lazy"
+            />
+          ))}
+        </span>
+      </span>
+    </div>
+  )}
+</div>
+
+<script>
+  // Hover polaroid: a small tilted print follows the cursor across archive
+  // rows that declare a peek image. Mouse-only and skipped entirely under
+  // reduced motion; touch and keyboard users keep the plain rows.
+  import { finePointer, reducedMotion } from '../scripts/media';
+
+  if (finePointer.matches && !reducedMotion.matches) {
+    document.querySelectorAll<HTMLElement>('[data-archive-peek-root]').forEach((root) => {
+      const peek = root.querySelector<HTMLElement>('[data-archive-peek]');
+      if (!peek) return;
+
+      const images = peek.querySelectorAll<HTMLElement>('[data-peek-image]');
+      let frame = 0;
+      let visible = false;
+      let x = 0;
+      let y = 0;
+      let targetX = 0;
+      let targetY = 0;
+      // The card is fixed-size; cache its box on first hover instead of
+      // reading offsetWidth/Height on every pointermove.
+      let peekWidth = 0;
+      let peekHeight = 0;
+
+      const step = () => {
+        x += (targetX - x) * 0.16;
+        y += (targetY - y) * 0.16;
+        peek.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        // Idle once converged — pointermove kicks the loop again on new aims.
+        frame = Math.hypot(targetX - x, targetY - y) > 0.5
+          ? window.requestAnimationFrame(step)
+          : 0;
+      };
+
+      const aim = (event: PointerEvent) => {
+        targetX = Math.min(event.clientX + 22, window.innerWidth - peekWidth - 16);
+        targetY = event.clientY - peekHeight * 0.55;
+        if (!frame && visible) frame = window.requestAnimationFrame(step);
+      };
+
+      root.querySelectorAll<HTMLElement>('tr[data-peek]').forEach((row) => {
+        row.addEventListener('pointerenter', (event) => {
+          images.forEach((image) => {
+            image.classList.toggle('is-active', image.dataset.peekImage === row.dataset.peek);
+          });
+          if (peekWidth === 0) {
+            peekWidth = peek.offsetWidth;
+            peekHeight = peek.offsetHeight;
+          }
+          const appearing = !visible;
+          visible = true;
+          aim(event);
+          if (appearing) {
+            x = targetX;
+            y = targetY;
+          }
+          peek.classList.add('is-visible');
+          if (!frame) frame = window.requestAnimationFrame(step);
+        });
+
+        row.addEventListener('pointermove', aim);
+
+        row.addEventListener('pointerleave', () => {
+          visible = false;
+          peek.classList.remove('is-visible');
+        });
+      });
+    });
+  }
+</script>
 
 <style>
   .archive-wrap {
@@ -83,6 +210,26 @@ const { items, compact = false } = Astro.props;
     align-items: baseline;
   }
 
+  /* Touch screens don't get the cursor polaroid, so each row carries a small
+     inline print instead — hidden wherever hover exists. */
+  .archive-title :global(.archive-thumb) {
+    display: none;
+    width: 2.4rem;
+    height: 1.8rem;
+    align-self: center;
+    margin-right: var(--space-2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xs);
+    object-fit: cover;
+    transform: rotate(-2deg);
+  }
+
+  @media (hover: none) {
+    .archive-title :global(.archive-thumb) {
+      display: block;
+    }
+  }
+
   .compact th,
   .compact td {
     padding-block: var(--space-3);
@@ -99,6 +246,66 @@ const { items, compact = false } = Astro.props;
     font-size: 0.875rem;
     line-height: 1.5;
     text-wrap: pretty;
+  }
+
+  /* The outer element is positioned by script (no transition, so it can track
+     the cursor); the inner card owns the show/hide pop so the two motions
+     don't fight. */
+  /* display: none off fine-pointer screens so touch devices never download
+     the seven peek images a cursor can't summon. */
+  .archive-peek {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90;
+    width: 11.5rem;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .archive-peek {
+      display: block;
+    }
+  }
+
+  .archive-peek-card {
+    display: block;
+    padding: var(--space-2) var(--space-2) var(--space-6);
+    border: 1px solid var(--hairline);
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-lifted);
+    opacity: 0;
+    transform: rotate(3deg) scale(0.85);
+    transition:
+      opacity var(--duration-default) var(--ease),
+      transform 320ms var(--ease-bounce);
+  }
+
+  .archive-peek.is-visible .archive-peek-card {
+    opacity: 1;
+    transform: rotate(3deg) scale(1);
+  }
+
+  .archive-peek-frame {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--paper);
+  }
+
+  .archive-peek :global(.archive-peek-image) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+  }
+
+  .archive-peek :global(.archive-peek-image.is-active) {
+    opacity: 1;
   }
 
   @media (hover: hover) and (pointer: fine) {
