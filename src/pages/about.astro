@@ -36,14 +36,18 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
     </header>
 
     <section class="resume-section wide" id="work" aria-labelledby="experience-heading">
-      <header class="section-intro">
+      <header class="section-intro" data-reveal>
         <h2 id="experience-heading">Experience</h2>
         <p>Eight years across consumer products, AI agents, internal platforms, and release systems.</p>
       </header>
 
       <div class="experience-list">
         {experience.map((item) => (
-          <article class:list={['experience-item', { 'experience-item--split': item.tracks }]} id={item.company.toLowerCase()}>
+          <article
+            class:list={['experience-item', { 'experience-item--split': item.tracks }]}
+            id={item.company.toLowerCase()}
+            data-reveal
+          >
             <div class="experience-heading">
               <a
                 class="company-link"
@@ -110,7 +114,7 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
         ))}
       </div>
 
-      <div class="resume-notes">
+      <div class="resume-notes" data-reveal>
         <div class="resume-note">
           <p class="resume-note-label mono-meta">Things I’ve worked with</p>
           <ul class="toolkit-list" aria-label="Technologies Jordan has worked with">
@@ -148,7 +152,7 @@ import { about, education, experience, projectArchive, toolkit } from '../data/s
     </section>
 
     <section class="archive-section wide" id="projects" aria-labelledby="archive-heading">
-      <header class="section-intro">
+      <header class="section-intro" data-reveal>
         <h2 id="archive-heading">Public project archive</h2>
         <p>Apps, maps, and small experiments I’ve made outside work.</p>
       </header>

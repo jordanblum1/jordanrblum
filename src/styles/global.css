@@ -223,6 +223,33 @@ html.js [data-page-reveal='3'] {
   animation-delay: var(--duration-fast);
 }
 
+/* Scroll-triggered variant of the same develop-in: reveal.ts adds .is-revealed
+   as each element enters the viewport. --reveal-order staggers siblings that
+   arrive together. */
+html.js [data-reveal] {
+  opacity: 0;
+}
+
+html.js [data-reveal].is-revealed {
+  animation: page-develop-in var(--duration-slow) var(--ease) both;
+  animation-delay: calc(var(--reveal-order, 0) * 90ms);
+}
+
+/* Always-on paper tooth: a seamless scan of cotton paper multiplied over the
+   whole page at low strength. The "grain" easter egg below layers its heavier
+   film grain on top of this rather than replacing it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background: url("../assets/textures/paper-grain.webp") repeat;
+  background-size: 280px;
+}
+
 :root[data-grain="on"] body::after {
   content: "";
   position: fixed;
@@ -262,6 +289,11 @@ html.js [data-page-reveal='3'] {
     animation-name: page-fade-in;
     animation-duration: 120ms !important;
     animation-delay: 0ms !important;
+  }
+
+  html.js [data-reveal] {
+    opacity: 1;
+    animation: none !important;
   }
 
 }
