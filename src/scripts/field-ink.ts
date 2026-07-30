@@ -121,11 +121,17 @@ if (!reducedMotion.matches) {
       ];
       resize();
       window.addEventListener('resize', resize);
-      // Keep the cached bounds honest while the page scrolls under the cursor.
+      // Keep the cached bounds honest while the page scrolls under the cursor
+      // — rAF-coalesced so it costs at most one layout read per frame.
+      let scrollFrame = 0;
       window.addEventListener(
         'scroll',
         () => {
-          fieldBounds = field.getBoundingClientRect();
+          if (scrollFrame) return;
+          scrollFrame = window.requestAnimationFrame(() => {
+            scrollFrame = 0;
+            fieldBounds = field.getBoundingClientRect();
+          });
         },
         { passive: true },
       );
