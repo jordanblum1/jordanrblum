@@ -60,6 +60,7 @@ html {
 }
 
 body {
+  position: relative;
   margin: 0;
   min-width: 20rem;
   font-family: var(--font-body);
@@ -70,6 +71,27 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Always-on paper tooth: ink flecks pre-baked onto transparency, laid over the
+   whole document as an ABSOLUTE layer so it scrolls with the page — painted
+   once, unlike a fixed overlay which the browser must re-composite against
+   the moving page every frame (and unlike mix-blend-mode, which was worse
+   still). Grain travelling with the content also reads as truer to paper.
+   The "grain" easter egg keeps its fixed film-grain layer on top. */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.55;
+  background: url("../assets/textures/paper-grain-alpha.webp") repeat;
+  background-size: 280px;
+  /* Promote to its own compositor layer: without this, every animation that
+     repaints beneath the overlay drags the full grain texture into the
+     repaint (measured: 24fps → 121fps scroll on hardware). */
+  will-change: transform;
 }
 
 main {
@@ -223,32 +245,31 @@ html.js [data-page-reveal='3'] {
   animation-delay: var(--duration-fast);
 }
 
-/* Scroll-triggered variant of the same develop-in: reveal.ts adds .is-revealed
-   as each element enters the viewport. --reveal-order staggers siblings that
-   arrive together. */
+/* Scroll-triggered reveal: reveal.ts adds .is-revealed as each element enters
+   the viewport; --reveal-order staggers siblings that arrive together. Unlike
+   the hero's load-time develop-in, this animates transform/opacity only —
+   blur is main-thread raster work, and these fire on large boxes mid-scroll. */
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 html.js [data-reveal] {
   opacity: 0;
 }
 
 html.js [data-reveal].is-revealed {
-  animation: page-develop-in var(--duration-slow) var(--ease) both;
+  animation: reveal-rise var(--duration-slow) var(--ease) both;
   animation-delay: calc(var(--reveal-order, 0) * 90ms);
 }
 
-/* Always-on paper tooth: a seamless scan of cotton paper multiplied over the
-   whole page at low strength. The "grain" easter egg below layers its heavier
-   film grain on top of this rather than replacing it. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  background: url("../assets/textures/paper-grain.webp") repeat;
-  background-size: 280px;
-}
 
 :root[data-grain="on"] body::after {
   content: "";

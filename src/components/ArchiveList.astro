@@ -54,7 +54,7 @@ const peeksInUse = [...new Set(items.flatMap((item) => (item.peek ? [item.peek] 
                     alt=""
                     width={96}
                     quality={78}
-                    loading="lazy"
+                    loading="eager" fetchpriority="low"
                   />
                 )}
                 <span>{item.title}</span>

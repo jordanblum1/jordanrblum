@@ -227,7 +227,7 @@ const mediaPanels =
               <Image
                 src={shot.src}
                 alt={shot.alt}
-                loading="lazy"
+                loading="eager" fetchpriority="low"
                 widths={[360, 480, 640, 960, 1440]}
                 sizes="(max-width: 48rem) calc(100vw - 64px), min(30rem, 38vw)"
               />

@@ -61,7 +61,7 @@ const blumMark = blumMarkSource
         widths={[688, 1376]}
         sizes="(max-width: 52rem) 100vw, 72rem"
         quality={80}
-        loading="lazy"
+        loading="eager" fetchpriority="low"
       />
     </span>
     <canvas class="field-ink" aria-hidden="true"></canvas>
@@ -385,6 +385,9 @@ const blumMark = blumMarkSource
     transform: scale(1.06);
   }
 
+  /* No CSS blend mode here on purpose: it would force a per-frame blend of
+     the whole panel even while the canvas is empty. Stamp-over-stamp multiply
+     happens inside the canvas via globalCompositeOperation instead. */
   .field-ink {
     position: absolute;
     inset: 0;
@@ -392,7 +395,6 @@ const blumMark = blumMarkSource
     width: 100%;
     height: 100%;
     pointer-events: none;
-    mix-blend-mode: multiply;
   }
 
   .field-glow {

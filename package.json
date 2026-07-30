@@ -8,7 +8,10 @@
     "preview": "astro preview",
     "capture:roam": "node scripts/record-roam-demos.mjs",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "perf:lh": "lighthouse http://localhost:4322/ --preset=perf --form-factor=mobile --screenEmulation.mobile --throttling-method=simulate --chrome-flags=--headless=new --view",
+    "perf:lh:desktop": "lighthouse http://localhost:4322/ --preset=desktop --chrome-flags=--headless=new --view",
+    "perf:scroll": "node scripts/perf/scroll-bench.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.9",
