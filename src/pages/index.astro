@@ -17,7 +17,7 @@ import { about, projectArchive, selectedWork } from '../data/site';
     <HeroShowcase />
 
     <section class="work-section wide" id="work" aria-labelledby="work-heading">
-      <header class="section-intro">
+      <header class="section-intro" data-reveal>
         <div>
           <h2 id="work-heading">A few things I’ve built and places I’ve worked.</h2>
         </div>
@@ -26,7 +26,7 @@ import { about, projectArchive, selectedWork } from '../data/site';
     </section>
 
     <section class="more-section wide" aria-labelledby="more-heading">
-      <header class="section-intro compact">
+      <header class="section-intro compact" data-reveal>
         <div>
           <h2 id="more-heading">More projects.</h2>
         </div>
@@ -35,7 +35,7 @@ import { about, projectArchive, selectedWork } from '../data/site';
     </section>
 
     <section class="about-preview wide" aria-labelledby="about-preview-heading">
-      <div class="about-copy">
+      <div class="about-copy" data-reveal>
         <h2 id="about-preview-heading">{about.title}</h2>
         <p>{about.paragraphs[0]}</p>
         <p>{about.paragraphs[2]}</p>
@@ -44,7 +44,7 @@ import { about, projectArchive, selectedWork } from '../data/site';
           <span aria-hidden="true">→</span>
         </a>
       </div>
-      <a class="personal-note" href="https://blumblumblum.com" target="_blank" rel="noopener">
+      <a class="personal-note" href="https://blumblumblum.com" target="_blank" rel="noopener" data-reveal style="--reveal-order: 1">
         <Image
           class="personal-note-image"
           src={blumCollage}

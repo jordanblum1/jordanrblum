@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import { hero } from '../data/site';
 import jordanPortrait from '../assets/identity/jordan-portrait-blue.png';
+import fieldWash from '../assets/textures/field-wash.webp';
 import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
 
 const blumMark = blumMarkSource
@@ -53,6 +54,18 @@ const blumMark = blumMarkSource
   </figure>
 
   <a class="field-panel" href="#work" data-hero-field>
+    <span class="field-wash" aria-hidden="true">
+      <Image
+        src={fieldWash}
+        alt=""
+        widths={[688, 1376]}
+        sizes="(max-width: 52rem) 100vw, 72rem"
+        quality={80}
+        loading="lazy"
+      />
+    </span>
+    <canvas class="field-ink" aria-hidden="true"></canvas>
+    <span class="field-glow" aria-hidden="true"></span>
     <span class="field-art" aria-hidden="true" set:html={blumMark}></span>
     <span class="field-link">
       See the work
@@ -62,6 +75,7 @@ const blumMark = blumMarkSource
 </header>
 
 <script src="../scripts/hero-field.ts"></script>
+<script src="../scripts/field-ink.ts"></script>
 
 <style>
   .hero-showcase {
@@ -346,13 +360,50 @@ const blumMark = blumMarkSource
     place-items: center;
     padding: var(--space-6);
     color: var(--heading);
-    background:
-      radial-gradient(
-        circle at var(--field-x) var(--field-y),
-        color-mix(in oklab, var(--accent) 88%, transparent),
-        transparent 46%
-      ),
-      linear-gradient(145deg, var(--surface-raised), var(--accent-soft));
+    background: linear-gradient(145deg, var(--surface-raised), var(--accent-soft));
+  }
+
+  /* Layer order under the mark (bottom to top): risograph wash scan (z -4),
+     the ink canvas where field-ink.ts stamps watercolor splatters around the
+     cursor (z -3), pointer-following accent glow (z -2), the hue-rotated
+     inverse glow on ::before (z -1). Per docs/brand.md nothing here loops
+     idly — the wash parallaxes with the pointer and pigment appears only in
+     response to the cursor. */
+  .field-wash {
+    position: absolute;
+    inset: -4%;
+    z-index: -4;
+    overflow: hidden;
+    transform: translate(calc(var(--wash-x, 0px) * 0.5), calc(var(--wash-y, 0px) * 0.5));
+    transition: transform var(--duration-slow) var(--ease);
+  }
+
+  .field-wash :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.06);
+  }
+
+  .field-ink {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+  }
+
+  .field-glow {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient(
+      circle at var(--field-x) var(--field-y),
+      color-mix(in oklab, var(--accent) 62%, transparent),
+      transparent 46%
+    );
   }
 
   .field-panel::before,
@@ -371,7 +422,7 @@ const blumMark = blumMarkSource
       transparent 42%
     );
     filter: hue-rotate(210deg) saturate(0.82) brightness(1.16);
-    opacity: 0.78;
+    opacity: 0.55;
     transition: opacity var(--duration-slow) var(--ease);
   }
 
@@ -534,7 +585,7 @@ const blumMark = blumMarkSource
   }
 
   :global(html.pointer-moved) .field-panel:hover::before {
-    opacity: 0.94;
+    opacity: 0.75;
   }
 
   :global(html.pointer-moved) .field-panel:hover {
@@ -634,8 +685,13 @@ const blumMark = blumMarkSource
     .portrait-glint,
     .field-art,
     .field-panel::before,
+    .field-wash,
     .field-link span {
       transition-duration: 0.01ms;
+    }
+
+    .field-ink {
+      display: none;
     }
 
     .portrait-panel.is-portrait-reacting .portrait-ripple,

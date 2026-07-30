@@ -20,7 +20,7 @@ const projectItems = items.filter(
     <h3 class="visually-hidden" id="places-heading">Places I’ve worked</h3>
     <ol class="experience-list">
       {workItems.map((item, index) => (
-        <li>
+        <li data-reveal style={`--reveal-order: ${index}`}>
           <a
             class="experience-link"
             href={item.href}
@@ -48,7 +48,11 @@ const projectItems = items.filter(
     <h3 class="visually-hidden" id="projects-heading">Things I’ve built</h3>
     <ul class="project-grid" role="list">
       {projectItems.map((item, index) => (
-        <li class:list={['project-item', `project-item-${index + 1}`]}>
+        <li
+          class:list={['project-item', `project-item-${index + 1}`]}
+          data-reveal
+          style={`--reveal-order: ${index % 2}`}
+        >
           <article class="project-card">
             <a
               class="project-link"
@@ -112,11 +116,32 @@ const projectItems = items.filter(
   }
 
   .experience-link {
+    position: relative;
     display: grid;
     grid-template-columns: 2rem minmax(12rem, 0.42fr) minmax(20rem, 1fr) auto;
     gap: var(--space-6) var(--space-8);
     align-items: start;
     padding-block: clamp(var(--space-6), 2.5vw, var(--space-8));
+    isolation: isolate;
+  }
+
+  /* Warm wash that sweeps across the row on hover. Bleeds slightly past the
+     text column so the fill reads as a surface, not a highlight. */
+  .experience-link::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(var(--space-4) * -1);
+    z-index: -1;
+    background: linear-gradient(
+      90deg,
+      var(--accent-soft),
+      color-mix(in oklab, var(--accent) 4%, transparent) 72%,
+      transparent
+    );
+    border-radius: var(--radius-sm);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-slow) var(--ease);
   }
 
   .experience-index {
@@ -277,10 +302,39 @@ const projectItems = items.filter(
     border-color: var(--accent);
   }
 
+  /* Touch screens can't hover, so the wash instead sweeps through once as the
+     row reveals on scroll — the mobile echo of the desktop hover. */
+  @media (hover: none) {
+    li.is-revealed .experience-link::before {
+      animation: row-wash-sweep 1100ms var(--ease) 350ms both;
+    }
+  }
+
+  @keyframes row-wash-sweep {
+    0% {
+      opacity: 1;
+      transform: scaleX(0);
+    }
+
+    55% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scaleX(1);
+    }
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .experience-link:hover .experience-identity h4,
     .project-link:hover .project-copy h4 {
       color: var(--accent);
+    }
+
+    .experience-link:hover::before {
+      transform: scaleX(1);
     }
 
     .experience-link:hover .row-arrow {
@@ -367,6 +421,16 @@ const projectItems = items.filter(
     .project-link:hover .visual-shell,
     .project-link:hover .external-mark {
       transform: none;
+    }
+
+    .experience-link::before {
+      transform: scaleX(1);
+      opacity: 0;
+      transition: opacity 120ms;
+    }
+
+    .experience-link:hover::before {
+      opacity: 1;
     }
   }
 </style>

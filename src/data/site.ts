@@ -53,11 +53,22 @@ export type ExperienceItem = ExperienceItemBase & (
     }
 );
 
+export type ArchivePeek =
+  | 'alive'
+  | 'chicks'
+  | 'citibike'
+  | 'wimdy'
+  | 'roast'
+  | 'blum'
+  | 'photos';
+
 export interface ArchiveItem {
   title: string;
   date: string;
   description: string;
   href?: string;
+  /** Key into ArchiveList's peek-image map; rows with one get the hover polaroid. */
+  peek?: ArchivePeek;
 }
 
 export const hero = {
@@ -228,42 +239,49 @@ export const projectArchive: ArchiveItem[] = [
     date: '2026',
     description: 'A daily safety check-in for people who live alone.',
     href: 'https://alivestill.app',
+    peek: 'alive',
   },
   {
     title: 'Chicks of NYC',
     date: '2025—',
     description: 'A map and ranking of chicken wings we actually ate.',
     href: 'https://chicksofnyc.com',
+    peek: 'chicks',
   },
   {
     title: 'Citi Bike Wrapped',
     date: '2026',
     description: 'A personal year in review for your Citi Bike rides. About three weeks after I posted mine on Reddit, Citi Bike released its own in-app recap.',
     href: 'https://citibikewrapped.com',
+    peek: 'citibike',
   },
   {
     title: 'wimdy',
     date: '2024',
     description: 'Checks the weather against what you actually want to do outside.',
     href: 'https://wimdy.io',
+    peek: 'wimdy',
   },
   {
     title: 'Roast My Friend',
     date: '2024',
     description: 'A joke that escaped the group chat.',
     href: 'https://roastmyfriend.vercel.app',
+    peek: 'roast',
   },
   {
     title: 'blumblumblum',
     date: '2022—',
     description: 'My hand-rolled version of Linktree, Beacons, and lnk.bio.',
     href: 'https://blumblumblum.com',
+    peek: 'blum',
   },
   {
     title: 'Photo archive',
     date: '2021 - ongoing',
     description: 'Travel photographs from a period when I carried a much bigger camera.',
     href: 'https://blumblumblum-gallery.vercel.app/',
+    peek: 'photos',
   },
 ];
 

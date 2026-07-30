@@ -321,7 +321,11 @@ test('editorial labels and retired footer clutter stay removed', () => {
   expect(homeSource).not.toContain('class="section-kicker">Archive');
   expect(archiveSource).not.toContain('<thead>');
   expect(homeSource).not.toContain('old internet corner');
-  expect(footerSource).toContain('Want to chat?');
+  // The title is now split per letter for the hover jiggle; the accessible
+  // copy lives in a visually-hidden span alongside "Want to".
+  expect(footerSource).toContain('Want to');
+  expect(footerSource).toContain(`'chat?'.split('')`);
+  expect(footerSource).toContain('<span class="visually-hidden">chat?</span>');
   expect(footerSource).not.toContain('Get in touch');
   expect(footerSource).not.toContain('Astro · Switzer · Fraunces');
   expect(globalSource).toMatch(/h1,\s*h2,\s*h3,\s*h4,\s*p/);

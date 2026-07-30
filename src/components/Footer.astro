@@ -1,6 +1,14 @@
 ---
 import { social } from '../data/site';
 import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
+import FooterArt, { footerArtVariants, type FooterArtVariant } from './footer-art/FooterArt.astro';
+
+// Swap the footer backdrop here: 'wall' | 'train' | 'skyline' | 'horizon'.
+const footerArt: FooterArtVariant = 'wall';
+
+// Variants that ship a portrait recomposition get the overlay layout on
+// narrow screens too (instead of the stacked fallback).
+const hasPortraitArt = Boolean(footerArtVariants[footerArt].portrait);
 
 const [, linkedin, github, blumblumblum] = social;
 const blumMark = blumMarkSource
@@ -10,44 +18,55 @@ const blumMark = blumMarkSource
 ---
 
 <footer>
-  <div class="wide footer-inner">
-    <div class="footer-lead">
-      <p class="footer-title">Want to chat?</p>
-      <div class="footer-cta-group">
-        <button
-          type="button"
-          class="chat-cta"
-          data-footer-chat-cta
-          data-chat-trigger
-          aria-haspopup="dialog"
-          aria-expanded="false"
-          aria-controls="chat-panel"
-        >
-          <span>Chat with my assistant</span>
-          <span aria-hidden="true">→</span>
-        </button>
+  <div class:list={['footer-stage', { 'has-portrait-art': hasPortraitArt }]}>
+    <FooterArt variant={footerArt} />
+    <div class="footer-scrim" aria-hidden="true"></div>
+    <div class="wide footer-inner">
+      <div class="footer-lead" data-footer-lead>
+        <p class="footer-title">
+          Want to
+          {' '}
+          <span class="chat-word" aria-hidden="true">
+            {'chat?'.split('').map((letter) => <span class="chat-letter">{letter}</span>)}
+          </span>
+          <span class="visually-hidden">chat?</span>
+        </p>
+        <div class="footer-cta-group">
+          <button
+            type="button"
+            class="chat-cta"
+            data-footer-chat-cta
+            data-chat-trigger
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="chat-panel"
+          >
+            <span>Chat with my assistant</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
       </div>
-    </div>
 
-    <nav class="social" aria-label="Professional profiles">
-      <a class="linkedin-link" href={linkedin.href} target="_blank" rel="noopener" aria-label="Jordan on LinkedIn" title="LinkedIn">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5.36 8.17H2.22V21h3.14V8.17ZM3.79 2A1.82 1.82 0 1 0 3.8 5.64 1.82 1.82 0 0 0 3.79 2ZM21 13.64c0-3.87-2.07-5.67-4.83-5.67a4.18 4.18 0 0 0-3.77 2.07h-.04V8.17h-3V21h3.13v-6.35c0-1.67.32-3.3 2.4-3.3 2.05 0 2.08 1.92 2.08 3.41V21H21v-7.36Z"></path>
-        </svg>
-      </a>
-      <a class="github-link" href={github.href} target="_blank" rel="noopener" aria-label="Jordan on GitHub" title="GitHub">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.61-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.03A9.5 9.5 0 0 1 12 6.84c.85 0 1.69.11 2.49.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"></path>
-        </svg>
-      </a>
-      <a class="blum-link" href={blumblumblum.href} target="_blank" rel="noopener" aria-label="Visit blumblumblum" title="blumblumblum">
-        <span set:html={blumMark} aria-hidden="true"></span>
-      </a>
-    </nav>
+      <nav class="social" aria-label="Professional profiles">
+        <a class="linkedin-link" href={linkedin.href} target="_blank" rel="noopener" aria-label="Jordan on LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5.36 8.17H2.22V21h3.14V8.17ZM3.79 2A1.82 1.82 0 1 0 3.8 5.64 1.82 1.82 0 0 0 3.79 2ZM21 13.64c0-3.87-2.07-5.67-4.83-5.67a4.18 4.18 0 0 0-3.77 2.07h-.04V8.17h-3V21h3.13v-6.35c0-1.67.32-3.3 2.4-3.3 2.05 0 2.08 1.92 2.08 3.41V21H21v-7.36Z"></path>
+          </svg>
+        </a>
+        <a class="github-link" href={github.href} target="_blank" rel="noopener" aria-label="Jordan on GitHub" title="GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.61-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.03A9.5 9.5 0 0 1 12 6.84c.85 0 1.69.11 2.49.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86V21c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"></path>
+          </svg>
+        </a>
+        <a class="blum-link" href={blumblumblum.href} target="_blank" rel="noopener" aria-label="Visit blumblumblum" title="blumblumblum">
+          <span set:html={blumMark} aria-hidden="true"></span>
+        </a>
+      </nav>
 
-    <div class="colophon">
-      <span>© {new Date().getFullYear()} Jordan Blum</span>
-      <span>New York</span>
+      <div class="colophon">
+        <span>© {new Date().getFullYear()} Jordan Blum</span>
+        <span>New York</span>
+      </div>
     </div>
   </div>
 </footer>
@@ -60,16 +79,179 @@ const blumMark = blumMarkSource
   // sync when the panel closes.
   const cta = document.querySelector<HTMLButtonElement>('[data-footer-chat-cta]');
   cta?.addEventListener('click', () => toggleChat(cta));
+
+  // Magnetic CTA: within a small radius the button leans toward the cursor and
+  // the existing bouncy transform transition supplies the spring back.
+  import { finePointer, reducedMotion } from '../scripts/media';
+
+  const lead = document.querySelector<HTMLElement>('[data-footer-lead]');
+
+  if (cta && lead && finePointer.matches && !reducedMotion.matches) {
+    const radius = 150;
+    const strength = 0.3;
+    let pullX = 0;
+    let pullY = 0;
+
+    lead.addEventListener('pointermove', (event) => {
+      const bounds = cta.getBoundingClientRect();
+      const centerX = bounds.left + bounds.width / 2 - pullX;
+      const centerY = bounds.top + bounds.height / 2 - pullY;
+      const deltaX = event.clientX - centerX;
+      const deltaY = event.clientY - centerY;
+      const distance = Math.hypot(deltaX, deltaY);
+
+      if (distance < radius) {
+        const pull = (radius - distance) / radius;
+        pullX = deltaX * strength * pull;
+        pullY = deltaY * strength * pull;
+        cta.style.transform = `translate(${pullX}px, ${pullY}px)`;
+      } else if (pullX !== 0 || pullY !== 0) {
+        pullX = 0;
+        pullY = 0;
+        cta.style.transform = '';
+      }
+    });
+
+    lead.addEventListener('pointerleave', () => {
+      pullX = 0;
+      pullY = 0;
+      cta.style.transform = '';
+    });
+  }
+
+  // Touch screens can't hover the letter jiggle, so "chat?" waves once as the
+  // footer scrolls into view instead.
+  const title = document.querySelector<HTMLElement>('.footer-title');
+  if (title && !finePointer.matches && !reducedMotion.matches && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        title.classList.add('is-waving');
+      },
+      { threshold: 0.6 },
+    );
+    observer.observe(title);
+  }
 </script>
 
 <style>
   footer {
-    padding-block: var(--space-16) var(--space-8);
+    padding-top: var(--space-16);
+  }
+
+  /* The footer art must always be FULLY visible, never cropped. Two layouts:
+     narrow screens stack the content on paper with the art at its natural
+     aspect below; wide screens overlay the content on a stage whose
+     aspect-ratio exactly matches the artwork (4096x1738), so cover-fitting
+     the image crops nothing at any viewport width. */
+  .footer-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+  }
+
+  /* The art's top edge feathers into the page instead of cutting hard — the
+     mural emerges from the paper behind the footer text. */
+  .footer-stage :global(.footer-art) {
+    order: 2;
+    margin-top: var(--space-8);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 16%);
+  }
+
+  .footer-stage :global(.footer-art img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Portrait art directions only exist for narrow screens. */
+  .footer-stage :global(.footer-art--portrait) {
+    display: none;
+  }
+
+  /* When the active art supplies a portrait recomposition (.has-portrait-art,
+     set from the frontmatter), narrow screens get the same overlay treatment
+     as desktop: the stage takes the portrait's exact aspect ratio (2751x4096
+     — zero crop), content floats on top, and the landscape file never loads. */
+  @media (max-width: 63.99rem) {
+    .footer-stage.has-portrait-art {
+      aspect-ratio: 2751 / 4096;
+    }
+
+    .footer-stage.has-portrait-art :global(.footer-art--portrait) {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      margin-top: 0;
+      overflow: hidden;
+    }
+
+    .footer-stage.has-portrait-art :global(.footer-art--portrait img) {
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .footer-stage.has-portrait-art :global(.footer-art--landscape) {
+      display: none;
+    }
+
+    .footer-stage.has-portrait-art .footer-scrim {
+      display: block;
+    }
+  }
+
+  /* Kept light on purpose: just enough cream behind the title for legibility
+     without washing out the top of the artwork. */
+  .footer-scrim {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--surface) 88%, transparent) 0%,
+      color-mix(in oklab, var(--surface) 55%, transparent) 18%,
+      transparent 36%
+    );
   }
 
   .footer-inner {
-    padding-top: clamp(var(--space-16), 9vw, var(--space-24));
-    border-top: 1px solid var(--hairline);
+    position: relative;
+    z-index: 2;
+    order: 1;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding-block: clamp(var(--space-6), 3vw, var(--space-10)) var(--space-6);
+  }
+
+  @media (min-width: 64rem) {
+    .footer-stage {
+      aspect-ratio: 4096 / 1738;
+    }
+
+    .footer-stage :global(.footer-art--landscape),
+    .footer-stage :global(.footer-art:not(.footer-art--portrait)) {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      margin-top: 0;
+      overflow: hidden;
+    }
+
+    .footer-stage :global(.footer-art img) {
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .footer-scrim {
+      display: block;
+    }
   }
 
   .footer-lead {
@@ -86,6 +268,56 @@ const blumMark = blumMarkSource
     font-weight: 600;
     line-height: 0.94;
     letter-spacing: -0.04em;
+  }
+
+  .chat-word,
+  .chat-letter {
+    display: inline-block;
+  }
+
+  .chat-letter {
+    transition:
+      transform 260ms var(--ease-bounce),
+      color var(--duration-default) var(--ease);
+  }
+
+  :global(html.pointer-moved) .chat-word:hover .chat-letter {
+    color: var(--accent);
+  }
+
+  :global(html.pointer-moved) .chat-word:hover .chat-letter:nth-child(odd) {
+    transform: translateY(-0.055em) rotate(-4deg);
+  }
+
+  :global(html.pointer-moved) .chat-word:hover .chat-letter:nth-child(even) {
+    transform: translateY(0.04em) rotate(3deg);
+  }
+
+  /* One-shot scroll-triggered wave for touch screens (class set by script). */
+  .footer-title.is-waving .chat-letter {
+    animation: chat-letter-wave 640ms var(--ease-bounce) both;
+  }
+
+  .footer-title.is-waving .chat-letter:nth-child(2) { animation-delay: 70ms; }
+  .footer-title.is-waving .chat-letter:nth-child(3) { animation-delay: 140ms; }
+  .footer-title.is-waving .chat-letter:nth-child(4) { animation-delay: 210ms; }
+  .footer-title.is-waving .chat-letter:nth-child(5) { animation-delay: 280ms; }
+
+  @keyframes chat-letter-wave {
+    0%,
+    100% {
+      color: inherit;
+      transform: translateY(0);
+    }
+
+    40% {
+      color: var(--accent);
+      transform: translateY(-0.08em) rotate(-3deg);
+    }
+
+    70% {
+      transform: translateY(0.03em) rotate(1.5deg);
+    }
   }
 
   .footer-cta-group {
@@ -110,11 +342,12 @@ const blumMark = blumMarkSource
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
+    box-shadow: var(--shadow-small);
     transition:
       border-color var(--duration-default) var(--ease),
       background-color var(--duration-default) var(--ease),
       color var(--duration-default) var(--ease),
-      transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform 420ms var(--ease-bounce);
   }
 
   /* No-JS visitors never see a CTA that can't do anything. The footer carries
@@ -127,7 +360,7 @@ const blumMark = blumMarkSource
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
-    margin-block: clamp(var(--space-16), 8vw, var(--space-24));
+    margin-top: var(--space-6);
   }
 
   .social a {
@@ -139,10 +372,11 @@ const blumMark = blumMarkSource
     border-radius: 50%;
     background: var(--paper-raised);
     color: var(--ink-muted);
+    box-shadow: var(--shadow-small);
     transition:
       color var(--duration-default) var(--ease),
       border-color var(--duration-default) var(--ease),
-      transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform 420ms var(--ease-bounce);
   }
 
   .social svg {
@@ -270,16 +504,30 @@ const blumMark = blumMarkSource
     flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--space-3) var(--space-8);
+    margin-top: auto;
     padding-top: var(--space-6);
-    color: var(--ink-muted);
-    border-top: 1px solid var(--hairline);
+    color: var(--ink);
     font-family: var(--font-mono);
     font-size: 0.7rem;
+  }
+
+  /* Colophon text sits directly on the art, so each span gets a frosted chip. */
+  .colophon span {
+    padding: 0.32rem 0.85rem;
+    border: 1px solid color-mix(in oklab, var(--hairline) 65%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--paper-raised) 78%, transparent);
+    backdrop-filter: blur(8px);
   }
 
   :global(html.pointer-moved) .chat-cta:hover {
     transform: translateY(-2px);
     opacity: 0.92;
+  }
+
+  /* Physical press feedback everywhere; the bouncy transition springs it back. */
+  .chat-cta:active {
+    transform: scale(0.96);
   }
 
   :global(html.pointer-moved) .social a:hover {
@@ -318,6 +566,12 @@ const blumMark = blumMarkSource
     :global(html.pointer-moved) .social a:hover,
     :global(html.pointer-moved) .social a:nth-child(even):hover {
       transform: none;
+    }
+
+    .chat-letter,
+    :global(html.pointer-moved) .chat-word:hover .chat-letter {
+      transform: none;
+      transition: color 120ms;
     }
 
     .github-link:is(:hover, :focus-visible)::before,
