@@ -61,6 +61,10 @@ html {
 
 body {
   position: relative;
+  /* flow-root keeps child top margins from collapsing through the body — a
+     collapsed margin shifts the body's box (and the grain overlay pinned to
+     it) down, leaving a bare un-grained strip at the very top of the page. */
+  display: flow-root;
   margin: 0;
   min-width: 20rem;
   font-family: var(--font-body);
