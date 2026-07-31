@@ -1,6 +1,6 @@
 // site.ts imports Astro-shaped data that plain Vitest does not need to execute.
 // Assert the public-content contract directly against the source text instead.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { expect, test } from 'vitest';
 
@@ -18,7 +18,6 @@ const globalSource = readFileSync('src/styles/global.css', 'utf8');
 const tokenSource = readFileSync('src/styles/tokens.css', 'utf8');
 const readmeSource = readFileSync('README.md', 'utf8');
 const brandSource = readFileSync('docs/brand.md', 'utf8');
-const ogSource = readFileSync('public/og-image.svg', 'utf8');
 const llmsSource = readFileSync('public/llms.txt', 'utf8');
 const deploySource = readFileSync('.github/workflows/deploy.yml', 'utf8');
 const layoutSource = readFileSync('src/layouts/Base.astro', 'utf8');
@@ -329,7 +328,10 @@ test('editorial labels and retired footer clutter stay removed', () => {
   expect(footerSource).not.toContain('Get in touch');
   expect(footerSource).not.toContain('Astro · Switzer · Fraunces');
   expect(globalSource).toMatch(/h1,\s*h2,\s*h3,\s*h4,\s*p/);
-  expect(ogSource).not.toContain('JRB / 02');
-  expect(ogSource).not.toContain('Useful is a wide');
-  expect(ogSource).toContain('Consumer products, developer tools,');
+  // The social card is the generated "fresh tag" JPEG, not the old SVG mockup
+  // of a previous site design.
+  expect(layoutSource).toContain('/og-image.jpg');
+  expect(layoutSource).not.toContain('og-image.png');
+  expect(existsSync('public/og-image.jpg')).toBe(true);
+  expect(existsSync('public/og-image.svg')).toBe(false);
 });

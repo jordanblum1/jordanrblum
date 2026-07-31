@@ -16,7 +16,10 @@ interface Props {
 const { title, description } = Astro.props;
 const canonicalPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonical = new URL(canonicalPath, Astro.site ?? Astro.url.origin);
-const socialImage = new URL('/og-image.png', Astro.site ?? Astro.url.origin);
+// .jpg (not .png) is deliberate: the new filename busts every scraper cache
+// (X holds cards ~7 days with no manual purge), and at 1200×630 the JPEG is
+// ~130KB — under WhatsApp's ~300KB preview ceiling where the old PNG wasn't.
+const socialImage = new URL('/og-image.jpg', Astro.site ?? Astro.url.origin);
 const personSchema = {
   '@context': 'https://schema.org',
   '@type': 'Person',
@@ -65,14 +68,15 @@ const personSchema = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImage} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Jordan Blum — product engineer in New York" />
+    <meta property="og:image:alt" content="A spray can tags BLUM in dripping terracotta paint — Jordan Blum, product engineer in New York" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
-    <meta name="twitter:image:alt" content="Jordan Blum — product engineer in New York" />
+    <meta name="twitter:image:alt" content="A spray can tags BLUM in dripping terracotta paint — Jordan Blum, product engineer in New York" />
     <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
     <script is:inline>
       document.documentElement.classList.add('js');
