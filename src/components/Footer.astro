@@ -2,6 +2,7 @@
 import { social } from '../data/site';
 import blumMarkSource from '../assets/identity/blum-mark.svg?raw';
 import FooterArt, { footerArtVariants, type FooterArtVariant } from './footer-art/FooterArt.astro';
+import SprayWall from './SprayWall.astro';
 
 // Swap the footer backdrop here: 'wall' | 'train' | 'skyline' | 'horizon'.
 const footerArt: FooterArtVariant = 'wall';
@@ -21,6 +22,7 @@ const blumMark = blumMarkSource
   <div class:list={['footer-stage', { 'has-portrait-art': hasPortraitArt }]}>
     <FooterArt variant={footerArt} />
     <div class="footer-scrim" aria-hidden="true"></div>
+    <SprayWall />
     <div class="wide footer-inner">
       <div class="footer-lead" data-footer-lead>
         <p class="footer-title">

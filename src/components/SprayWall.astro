@@ -1,0 +1,671 @@
+---
+// Spray-paint easter egg living inside the footer stage: a spray can leans
+// against the colophon corner; tapping it arms paint mode over the mural.
+// The palette is a Montana-style plywood shelf of cans floating bottom-left,
+// with hand-drawn graffiti controls beside it — no panel chrome.
+// Engine + interactions live in scripts/spray-wall.ts.
+import { Image } from 'astro:assets';
+import canTerracotta from '../assets/spray/can-terracotta.webp';
+import canSage from '../assets/spray/can-sage.webp';
+import canSlate from '../assets/spray/can-slate.webp';
+import canInk from '../assets/spray/can-ink.webp';
+import shelf from '../assets/spray/shelf.webp';
+
+const cans = [
+  { id: 'terracotta', color: '#9C4037', src: canTerracotta, label: 'terracotta' },
+  { id: 'sage', color: '#52735B', src: canSage, label: 'sage' },
+  { id: 'slate', color: '#5B6E80', src: canSlate, label: 'slate' },
+  { id: 'ink', color: '#2B2521', src: canInk, label: 'ink' },
+];
+
+---
+
+<div class="spray-wall" data-spray-wall>
+  <!-- Sprayed-edge filters shared by the toolbar's sticker buttons: a rougher
+       one for the paper dabs, a subtler one for the stencil glyphs. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="spray-rough" x="-30%" y="-30%" width="160%" height="160%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="7" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="0.9" />
+      </filter>
+      <filter id="spray-soft" x="-30%" y="-30%" width="160%" height="160%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="11" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="0.45" />
+      </filter>
+    </defs>
+  </svg>
+
+  <canvas class="spray-canvas" data-spray-canvas aria-hidden="true"></canvas>
+
+  <button type="button" class="spray-arm" data-spray-arm aria-label="Spray paint on the wall">
+    <Image src={canTerracotta} alt="" width={96} quality={82} loading="eager" fetchpriority="low" />
+    <span class="spray-arm-hint" aria-hidden="true">tag the wall</span>
+  </button>
+
+  <div class="spray-cursor" data-spray-cursor aria-hidden="true">
+    <img src={canTerracotta.src} alt="" width="60" />
+    <span class="spray-cursor-dot"></span>
+  </div>
+
+  <div class="spray-toolbar" data-spray-toolbar role="group" aria-label="Spray paint tools">
+    <div class="spray-cans">
+      <Image class="spray-shelf" src={shelf} alt="" width={480} quality={82} loading="lazy" />
+      {cans.map((can, index) => (
+        <button
+          type="button"
+          class:list={['spray-can-pick', { 'is-selected': index === 0 }]}
+          data-spray-can
+          data-spray-color={can.color}
+          aria-label={`${can.label} paint`}
+        >
+          <Image src={can.src} alt="" width={72} quality={82} loading="lazy" />
+        </button>
+      ))}
+    </div>
+
+    <div class="spray-nozzles">
+      <button type="button" class="spray-icon is-selected" data-spray-nozzle="skinny" aria-label="Skinny cap" title="skinny cap">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M12 1.6c3-.5 6.3.7 8.1 3 1.9 2.3 2.4 5.8 1.3 8.7-1 2.8-3.6 5-6.5 5.8-3 .9-6.5.2-8.6-1.8C4.1 15.2 3.1 12 3.7 9.1c.5-2.9 2.6-5.6 5.2-6.8 1-.4 2-.6 3.1-.7Z" />
+            <path class="dab drip" d="M9.2 18.8c.2 1.8.2 3.3.1 4.8 0 .8-1.2.9-1.3.1-.2-1.7-.1-3.3.1-4.9Z" />
+            <circle class="speck" cx="22.4" cy="9.8" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M14.4 8.3c1.9-.2 3.6-.2 5.4 0 .3 2.4.3 4.9 0 7.3-1.8.2-3.5.2-5.4 0-.2-2.4-.2-4.9 0-7.3Z" />
+            <path class="mark" pathLength="1" d="M14.3 11c-.9-.2-1.7-.2-2.5-.1l.1 2c.8.1 1.6 0 2.4-.1" />
+            <g class="fan">
+              <circle class="dot" cx="9" cy="12" r="0.8" />
+              <circle class="dot" cx="6.9" cy="11.5" r="0.65" />
+              <circle class="dot" cx="6.9" cy="12.5" r="0.65" />
+              <circle class="dot" cx="4.9" cy="12" r="0.55" />
+            </g>
+          </g>
+        </svg>
+      </button>
+      <button type="button" class="spray-icon" data-spray-nozzle="fat" aria-label="Fat cap" title="fat cap">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M11.6 1.9c2.9-.6 6.2.3 8.1 2.5 2 2.2 2.7 5.6 1.8 8.5-.8 2.9-3.2 5.3-6.1 6.3-2.9 1-6.4.5-8.7-1.4-2.3-1.9-3.5-5-3-8 .4-2.9 2.3-5.7 4.9-7.1 1-.5 2-.7 3-.8Z" />
+            <path class="dab drip" d="M12.4 19.3c.2 1.6.2 3 .1 4.4 0 .8-1.1.9-1.2.1-.1-1.5-.1-3 .1-4.5Z" />
+            <circle class="speck" cx="1.8" cy="11" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M14 7.4c2.2-.3 4.1-.3 6.1 0 .4 3 .4 6.1 0 9.1-2 .3-3.9.3-6.1 0-.3-3-.3-6.1 0-9.1Z" />
+            <path class="mark" pathLength="1" d="M14 10.4c-1-.2-1.9-.2-2.8-.1l.1 3.3c.9.1 1.8 0 2.7-.1" />
+            <g class="fan">
+              <circle class="dot" cx="9.5" cy="9.5" r="0.8" />
+              <circle class="dot" cx="9.3" cy="12" r="0.9" />
+              <circle class="dot" cx="9.5" cy="14.5" r="0.8" />
+              <circle class="dot" cx="6.7" cy="8.2" r="0.7" />
+              <circle class="dot" cx="6.5" cy="12" r="0.8" />
+              <circle class="dot" cx="6.7" cy="15.8" r="0.7" />
+              <circle class="dot" cx="4.3" cy="10.2" r="0.6" />
+              <circle class="dot" cx="4.3" cy="13.8" r="0.6" />
+            </g>
+          </g>
+        </svg>
+      </button>
+      <button type="button" class="spray-icon" data-spray-nozzle="needle" aria-label="Needle cap" title="needle">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M12.3 1.7c3-.3 6.1 1 7.8 3.4 1.7 2.4 2 5.8.9 8.6-1.1 2.8-3.7 4.9-6.6 5.6-3 .7-6.4-.2-8.4-2.3-2.1-2.1-2.9-5.4-2.2-8.3.7-2.9 2.9-5.4 5.6-6.5 1-.3 1.9-.5 2.9-.5Z" />
+            <path class="dab drip" d="M15.2 18.9c.2 1.5.2 2.8.1 4.1 0 .8-1.1.9-1.2.1-.1-1.4-.1-2.8.1-4.2Z" />
+            <circle class="speck" cx="21.9" cy="16.4" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M15 8.6c1.7-.2 3.2-.2 4.8 0 .3 2.2.3 4.5 0 6.7-1.6.2-3.1.2-4.8 0-.2-2.2-.2-4.5 0-6.7Z" />
+            <path class="mark" pathLength="1" d="M15 11.2c-2.3-.3-4.4-.3-6.4-.2l.1 1.9c2 .1 4.1 0 6.3-.2" />
+            <g class="fan">
+              <path class="mark needle-line" pathLength="1" d="M8.4 12H4.6" />
+              <circle class="dot" cx="3.2" cy="12" r="0.5" />
+            </g>
+          </g>
+        </svg>
+      </button>
+    </div>
+
+    <div class="spray-actions">
+      <button type="button" class="spray-icon" data-spray-undo aria-label="Undo last stroke" title="undo">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M12 1.6c3-.5 6.3.7 8.1 3 1.9 2.3 2.4 5.8 1.3 8.7-1 2.8-3.6 5-6.5 5.8-3 .9-6.5.2-8.6-1.8C4.1 15.2 3.1 12 3.7 9.1c.5-2.9 2.6-5.6 5.2-6.8 1-.4 2-.6 3.1-.7Z" />
+            <path class="dab drip" d="M8.6 18.9c.2 2 .2 3.7.1 5.3 0 .8-1.2.9-1.3.1-.2-1.9-.1-3.6.1-5.4Z" />
+            <path class="dab drip" d="M15.9 18.3c.2 1.4.2 2.7.1 4 0 .7-1 .8-1.1.1-.1-1.4-.1-2.7.1-4.1Z" />
+            <circle class="speck" cx="22.6" cy="7.2" r="0.7" />
+            <circle class="speck" cx="1.6" cy="13.4" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M17 15.2c.8-2.7-.3-5.5-2.9-6.8-2.2-1.1-4.9-.7-6.7.9" />
+            <path class="mark" pathLength="1" d="M9.9 5.6 7.2 9.4l4.1 1.2" />
+          </g>
+        </svg>
+      </button>
+      <button type="button" class="spray-icon" data-spray-save aria-label="Download your piece" title="save your piece">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M11.6 1.9c2.9-.6 6.2.3 8.1 2.5 2 2.2 2.7 5.6 1.8 8.5-.8 2.9-3.2 5.3-6.1 6.3-2.9 1-6.4.5-8.7-1.4-2.3-1.9-3.5-5-3-8 .4-2.9 2.3-5.7 4.9-7.1 1-.5 2-.7 3-.8Z" />
+            <path class="dab drip" d="M10.2 19.1c.2 1.8.2 3.4.1 4.9 0 .8-1.2.9-1.3.1-.2-1.8-.1-3.4.1-5Z" />
+            <circle class="speck" cx="22.2" cy="15.8" r="0.6" />
+            <circle class="speck" cx="2.2" cy="6.8" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M12.1 5.2c-.2 2.6-.1 4.5 0 6.8" />
+            <path class="mark" pathLength="1" d="m9 9.6 3.2 3.7 3-3.9" />
+            <path class="mark" pathLength="1" d="M6.9 14.9c-.3 1.3-.2 2.2.1 3.2 3.5.4 6.7.4 10.1 0 .3-1 .4-1.9.1-3.2" />
+          </g>
+        </svg>
+      </button>
+      <button type="button" class="spray-icon" data-spray-mute aria-label="Toggle spray sound" aria-pressed="false" title="sound">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M12.3 1.7c3-.3 6.1 1 7.8 3.4 1.7 2.4 2 5.8.9 8.6-1.1 2.8-3.7 4.9-6.6 5.6-3 .7-6.4-.2-8.4-2.3-2.1-2.1-2.9-5.4-2.2-8.3.7-2.9 2.9-5.4 5.6-6.5 1-.3 1.9-.5 2.9-.5Z" />
+            <path class="dab drip" d="M13.4 19.2c.2 1.6.2 3 .1 4.4 0 .8-1.1.9-1.2.1-.1-1.6-.1-3 .1-4.5Z" />
+            <circle class="speck" cx="21.8" cy="18.2" r="0.6" />
+            <circle class="speck" cx="1.8" cy="9.2" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M7.4 9.9c-.8.1-1.4.1-2 0-.2 1.4-.2 2.6 0 4 .6-.1 1.3-.1 2.1 0l3.3 3c.3-3.2.3-6.6 0-9.9l-3.4 2.9Z" />
+            <g class="snd-wave">
+              <circle class="dot" cx="14.6" cy="12" r="1" />
+              <circle class="dot" cx="16.9" cy="9.3" r="0.85" />
+              <circle class="dot" cx="16.9" cy="14.7" r="0.85" />
+              <circle class="dot" cx="19.2" cy="12" r="0.75" />
+            </g>
+            <path class="mark snd-slash" pathLength="1" d="M14.3 9.5c1.7 1.6 3.2 3.3 4.7 5.1" />
+          </g>
+        </svg>
+      </button>
+      <button type="button" class="spray-icon spray-close" data-spray-close aria-label="Stop spraying" title="put the can down">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <g class="backdrop" filter="url(#spray-rough)">
+            <path class="dab" d="M11.8 1.8c3-.4 6.2.5 8 2.8 1.9 2.3 2.5 5.7 1.5 8.6-.9 2.9-3.4 5.1-6.3 6-3 .8-6.5.3-8.6-1.7-2.2-2-3.3-5.2-2.7-8.1.5-3 2.5-5.7 5.1-7 1-.4 2-.5 3-.6Z" />
+            <path class="dab drip" d="M14.6 18.7c.2 1.9.2 3.5.1 5.1 0 .8-1.2.9-1.3.1-.2-1.8-.1-3.5.1-5.2Z" />
+            <circle class="speck" cx="21.6" cy="6" r="0.7" />
+            <circle class="speck" cx="2.4" cy="17.2" r="0.6" />
+          </g>
+          <g class="glyph" filter="url(#spray-soft)" transform="translate(3.36 3.36) scale(0.72)">
+            <path class="mark" pathLength="1" d="M7.3 7c3.2 3.2 6.2 6.4 9.4 10" />
+            <path class="mark" pathLength="1" d="M16.9 6.7c-3.3 3.1-6.5 6.5-9.4 10.2" />
+          </g>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../scripts/spray-wall.ts"></script>
+
+<style>
+  /* Sits between the mural (z-0/scrim z-1) and the footer content (z-2);
+     inert until armed so every footer link keeps working. */
+  .spray-wall {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .spray-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .spray-wall.is-armed .spray-canvas {
+    pointer-events: auto;
+    touch-action: none;
+    cursor: none;
+  }
+
+  /* While armed, the footer content stands aside (visually and for input) so
+     the whole wall is paintable. */
+  :global(.footer-stage.is-spray-armed) :global(.footer-inner) {
+    opacity: 0.12;
+    pointer-events: none;
+    transition: opacity var(--duration-default) var(--ease);
+  }
+
+  /* Full-vividness wall while painting: the legibility scrim steps aside. */
+  :global(.footer-stage.is-spray-armed) :global(.footer-scrim) {
+    opacity: 0;
+    transition: opacity var(--duration-default) var(--ease);
+  }
+
+  :global(.footer-stage) :global(.footer-inner) {
+    transition: opacity var(--duration-default) var(--ease);
+  }
+
+  /* --- Arm affordance: a little can leaning in the corner ---------------- */
+  .spray-arm {
+    position: absolute;
+    right: clamp(var(--space-3), 2vw, var(--space-8));
+    bottom: calc(var(--space-16) + var(--space-4));
+    z-index: 3;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border: none;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform var(--duration-default) var(--ease-bounce);
+  }
+
+  .spray-arm :global(img) {
+    width: 3rem;
+    height: auto;
+    transform: rotate(8deg);
+    filter: drop-shadow(0 3px 6px rgb(43 37 33 / 0.3));
+    transition: transform var(--duration-default) var(--ease-bounce);
+  }
+
+  .spray-arm-hint {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid color-mix(in oklab, var(--hairline) 65%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--paper-raised) 80%, transparent);
+    backdrop-filter: blur(8px);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity var(--duration-default) var(--ease),
+      transform var(--duration-default) var(--ease-bounce);
+  }
+
+  :global(html.pointer-moved) .spray-arm:hover :global(img),
+  .spray-arm:focus-visible :global(img) {
+    transform: rotate(-4deg) translateY(-4px) scale(1.08);
+  }
+
+  :global(html.pointer-moved) .spray-arm:hover .spray-arm-hint,
+  .spray-arm:focus-visible .spray-arm-hint {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Coarse pointers can't hover — always show the hint chip. */
+  @media (hover: none) {
+    .spray-arm-hint {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .spray-arm.is-shaking :global(img) {
+    animation: spray-can-shake 480ms var(--ease-bounce);
+  }
+
+  @keyframes spray-can-shake {
+    0%, 100% { transform: rotate(8deg); }
+    25% { transform: rotate(-10deg) translateY(-3px); }
+    50% { transform: rotate(12deg); }
+    75% { transform: rotate(-6deg) translateY(-2px); }
+  }
+
+  .spray-wall.is-armed .spray-arm {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* --- Cursor can --------------------------------------------------------- */
+  .spray-cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    display: none;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .spray-wall.is-armed .spray-cursor {
+    display: block;
+  }
+
+  /* Touch: your finger is the can — the pointer-follower only makes sense
+     with a mouse, and otherwise sits stranded in the corner. */
+  @media (hover: none) {
+    .spray-wall.is-armed .spray-cursor {
+      display: none;
+    }
+  }
+
+  .spray-cursor img {
+    width: 3.4rem;
+    height: auto;
+    margin: 6px 0 0 4px;
+    filter: drop-shadow(0 4px 8px rgb(43 37 33 / 0.35));
+  }
+
+  /* Crosshair dot marks the actual spray point (the pointer position). */
+  .spray-cursor-dot {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    width: 6px;
+    height: 6px;
+    border: 1px solid var(--paper-raised);
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--ink) 55%, transparent);
+  }
+
+  .spray-cursor.is-spraying img {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  .spray-cursor.is-rattling img {
+    animation: spray-can-shake 420ms var(--ease-bounce);
+  }
+
+  /* --- Palette: floating shelf + floating controls, no panel chrome ------- */
+  .spray-toolbar {
+    position: absolute;
+    left: clamp(var(--space-3), 3vw, var(--space-8));
+    bottom: var(--space-4);
+    z-index: 5;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    pointer-events: auto;
+    transition: opacity var(--duration-default) var(--ease);
+  }
+
+  .spray-wall.is-armed .spray-toolbar {
+    display: flex;
+  }
+
+  /* The toolbar steps back while a stroke is being laid down. */
+  .spray-toolbar.is-stroking {
+    opacity: 0.15;
+  }
+
+  /* --- The can shelf ------------------------------------------------------ */
+  .spray-cans {
+    position: relative;
+    display: block;
+  }
+
+  .spray-shelf {
+    display: block;
+    width: 15.5rem;
+    height: auto;
+    filter: drop-shadow(0 12px 18px rgb(43 37 33 / 0.32));
+  }
+
+  /* Cans stand one per cubby, full-color; the selected one lifts off. */
+  .spray-can-pick {
+    position: absolute;
+    bottom: 14%;
+    padding: 0.15rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
+  .spray-can-pick :global(img) {
+    width: 1.9rem;
+    height: auto;
+    filter: drop-shadow(0 3px 5px rgb(43 37 33 / 0.35));
+    transition: transform var(--duration-default) var(--ease-bounce);
+  }
+
+  .spray-can-pick:nth-of-type(1) { left: 4.5%; }
+  .spray-can-pick:nth-of-type(2) { left: 29%; }
+  .spray-can-pick:nth-of-type(3) { left: 53.5%; }
+  .spray-can-pick:nth-of-type(4) { left: 78%; }
+
+  .spray-can-pick.is-selected :global(img) {
+    transform: translateY(-10px) rotate(-4deg) scale(1.08);
+  }
+
+  :global(html.pointer-moved) .spray-can-pick:hover :global(img) {
+    transform: translateY(-5px);
+  }
+
+  :global(html.pointer-moved) .spray-can-pick.is-selected:hover :global(img) {
+    transform: translateY(-12px) rotate(-4deg) scale(1.08);
+  }
+
+  /* --- Sprayed sticker buttons (nozzle caps + actions) --------------------
+     Paper dabs sprayed onto the wall with drips hanging off; the glyph is a
+     stencil mark inside. Shared by both rows. */
+  .spray-nozzles,
+  .spray-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .spray-icon {
+    position: relative;
+    width: 2.9rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    filter: drop-shadow(0 3px 4px rgb(43 37 33 / 0.26));
+    transition: translate var(--duration-default) var(--ease-bounce);
+  }
+
+  .spray-icon svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .spray-icon .dab {
+    fill: var(--paper-raised);
+  }
+
+  .spray-icon .speck {
+    fill: var(--paper-raised);
+    opacity: 0.55;
+  }
+
+  .spray-icon .mark {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+  }
+
+  .spray-icon .needle-line {
+    stroke-width: 1.4;
+  }
+
+  .spray-icon .dot {
+    fill: currentColor;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .spray-icon:active {
+    translate: 0 1px;
+    scale: 0.94;
+  }
+
+  /* Selected nozzle cap flips terracotta with a paper stencil. */
+  .spray-icon.is-selected {
+    color: var(--paper-raised);
+  }
+
+  .spray-icon.is-selected .dab,
+  .spray-icon.is-selected .speck {
+    fill: var(--accent);
+  }
+
+  /* Sound toggle: overspray-dot waves when on, a slash when muted. */
+  .spray-icon .snd-wave {
+    display: none;
+  }
+
+  .spray-icon.is-on .snd-wave {
+    display: block;
+  }
+
+  .spray-icon.is-on .snd-slash {
+    display: none;
+  }
+
+  .spray-icon.is-on {
+    color: var(--accent);
+  }
+
+  /* Hover: settle-lift, then the glyph spray-draws itself back on — strictly
+     one stroke at a time, like a real can. Drips stretch; nozzle fans puff
+     out of the cap tip only after the cap is drawn. */
+  :global(html.pointer-moved) .spray-icon:hover {
+    translate: 0 -3px;
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .glyph .mark {
+    animation: spray-draw 260ms ease-in-out backwards;
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .glyph .mark:nth-of-type(2) {
+    animation-delay: 260ms;
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .glyph .mark:nth-of-type(3) {
+    animation-delay: 520ms;
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .glyph .dot {
+    animation: spray-dot-pop 260ms var(--ease-bounce) backwards;
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .glyph .dot:nth-of-type(1) { animation-delay: 560ms; }
+  :global(html.pointer-moved) .spray-icon:hover .glyph .dot:nth-of-type(2) { animation-delay: 640ms; }
+  :global(html.pointer-moved) .spray-icon:hover .glyph .dot:nth-of-type(3) { animation-delay: 720ms; }
+  :global(html.pointer-moved) .spray-icon:hover .glyph .dot:nth-of-type(4) { animation-delay: 800ms; }
+
+  .spray-icon .drip {
+    transform-box: fill-box;
+    transform-origin: center top;
+    transition: scale 380ms var(--ease-bounce);
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .drip {
+    scale: 1 1.45;
+  }
+
+  .spray-icon .fan {
+    transform-box: fill-box;
+    transform-origin: 100% 50%;
+  }
+
+  :global(html.pointer-moved) .spray-icon:hover .fan {
+    animation: spray-fan-out 380ms ease-out 540ms backwards;
+  }
+
+  @keyframes spray-draw {
+    from { stroke-dashoffset: 1; }
+  }
+
+  @keyframes spray-dot-pop {
+    from {
+      scale: 0;
+      opacity: 0;
+    }
+  }
+
+  @keyframes spray-fan-out {
+    from {
+      scale: 0.15 1;
+      opacity: 0;
+    }
+  }
+
+  /* --- Shelf-open entrance: shelf rises, cans drop in, controls follow ---- */
+  .spray-wall.is-armed .spray-cans {
+    animation: spray-shelf-rise 460ms var(--ease-bounce) backwards;
+  }
+
+  .spray-wall.is-armed .spray-can-pick {
+    /* Single `from` frame so each can settles into its own resting transform
+       (including the selected can's lift) without a jump at animation end. */
+    animation: spray-can-drop 420ms var(--ease-bounce) 140ms backwards;
+  }
+
+  .spray-wall.is-armed .spray-can-pick:nth-of-type(2) { animation-delay: 200ms; }
+  .spray-wall.is-armed .spray-can-pick:nth-of-type(3) { animation-delay: 260ms; }
+  .spray-wall.is-armed .spray-can-pick:nth-of-type(4) { animation-delay: 320ms; }
+
+  .spray-wall.is-armed .spray-nozzles {
+    animation: spray-fade-up 380ms var(--ease-bounce) 300ms backwards;
+  }
+
+  .spray-wall.is-armed .spray-actions {
+    animation: spray-fade-up 380ms var(--ease-bounce) 380ms backwards;
+  }
+
+  @keyframes spray-shelf-rise {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+  }
+
+  @keyframes spray-can-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-16px);
+    }
+  }
+
+  @keyframes spray-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .spray-shelf {
+      width: 12.5rem;
+    }
+
+    .spray-can-pick :global(img) {
+      width: 1.55rem;
+    }
+
+    .spray-icon {
+      width: 2.5rem;
+    }
+
+    .spray-arm {
+      bottom: calc(var(--space-20) + var(--space-6));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spray-arm.is-shaking :global(img),
+    .spray-cursor.is-rattling img,
+    .spray-wall.is-armed .spray-cans,
+    .spray-wall.is-armed .spray-can-pick,
+    .spray-wall.is-armed .spray-nozzles,
+    .spray-wall.is-armed .spray-actions,
+    .spray-icon .glyph .mark,
+    .spray-icon .glyph .dot,
+    .spray-icon .fan {
+      animation: none !important;
+    }
+
+    .spray-icon,
+    .spray-icon .drip {
+      transition: none;
+    }
+  }
+</style>
