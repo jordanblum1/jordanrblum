@@ -329,6 +329,14 @@ const cans = [
     display: block;
   }
 
+  /* Touch: your finger is the can — the pointer-follower only makes sense
+     with a mouse, and otherwise sits stranded in the corner. */
+  @media (hover: none) {
+    .spray-wall.is-armed .spray-cursor {
+      display: none;
+    }
+  }
+
   .spray-cursor img {
     width: 3.4rem;
     height: auto;
