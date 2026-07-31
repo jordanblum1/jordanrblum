@@ -198,18 +198,22 @@ const cans = [
 <script src="../scripts/spray-wall.ts"></script>
 
 <style>
-  /* Sits between the mural (z-0/scrim z-1) and the footer content (z-2);
-     inert until armed so every footer link keeps working. */
+  /* No z-index here: the wrapper must NOT create a stacking context, so the
+     canvas can layer below the footer content (paint behind the text) while
+     the arm can and toolbar layer above it and stay tappable — .footer-inner
+     (z-2) spans the whole stage and would otherwise swallow every tap. */
   .spray-wall {
     position: absolute;
     inset: 0;
-    z-index: 1;
     pointer-events: none;
   }
 
+  /* Same layer as the scrim (z-1) but later in the DOM: paints above the
+     mural + scrim, below the content. */
   .spray-canvas {
     position: absolute;
     inset: 0;
+    z-index: 1;
     width: 100%;
     height: 100%;
   }

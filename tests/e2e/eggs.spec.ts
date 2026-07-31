@@ -14,6 +14,34 @@ test('typing grain toggles the film-grain accent without changing the light pale
   await expect(page.locator('html')).not.toHaveAttribute('data-grain', 'on');
 });
 
+// Real clicks (not element.click() in page JS) so these fail if any layer
+// covers the controls — the footer content block once swallowed every tap.
+test('the spray can arms paint mode with a real click and Escape disarms it', async ({ page }) => {
+  await page.goto('/');
+  const arm = page.getByRole('button', { name: 'Spray paint on the wall' });
+  await arm.scrollIntoViewIfNeeded();
+  await arm.click();
+  await expect(page.locator('.spray-wall')).toHaveClass(/is-armed/);
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.spray-wall')).not.toHaveClass(/is-armed/);
+});
+
+test('the spray can and toolbar are tappable on a phone viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const arm = page.getByRole('button', { name: 'Spray paint on the wall' });
+  await arm.scrollIntoViewIfNeeded();
+  await arm.click();
+  await expect(page.locator('.spray-wall')).toHaveClass(/is-armed/);
+
+  await page.getByRole('button', { name: 'Fat cap' }).click();
+  await expect(page.locator('[data-spray-nozzle="fat"]')).toHaveClass(/is-selected/);
+
+  await page.getByRole('button', { name: 'Stop spraying' }).click();
+  await expect(page.locator('.spray-wall')).not.toHaveClass(/is-armed/);
+});
+
 test('direct hash navigation never leaves portfolio content hidden', async ({ page }) => {
   await page.goto('/#work');
   await expect(page.locator('#work').getByRole('heading', { level: 2 })).toBeVisible();
