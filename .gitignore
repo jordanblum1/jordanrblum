@@ -20,3 +20,4 @@ playwright-report/
 .claude/
 output/
 tmp/
+.lighthouseci/

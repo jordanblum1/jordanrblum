@@ -23,7 +23,7 @@ const blumMark = blumMarkSource
           </svg>
           <span>Product engineer at</span>
           <a class="roam-fact" href="https://www.withroam.com" target="_blank" rel="noopener">
-            <img src="/company/roam.svg" alt="Roam" width="52" height="15" />
+            <img src="/company/roam.svg" alt="Roam" width="52" height="15" fetchpriority="high" />
             <span class="visually-hidden"> (opens in a new tab)</span>
           </a>
         </li>
@@ -61,7 +61,7 @@ const blumMark = blumMarkSource
         widths={[688, 1376]}
         sizes="(max-width: 52rem) 100vw, 72rem"
         quality={80}
-        loading="eager" fetchpriority="low"
+        loading="lazy" decoding="async"
       />
     </span>
     <canvas class="field-ink" aria-hidden="true"></canvas>

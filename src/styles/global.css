@@ -22,6 +22,17 @@
   font-display: swap;
 }
 
+/* Self-hosted (ITF Free Font License permits it) — the Fontshare CDN chain
+   (DNS+TLS to api.fontshare.com for CSS, then cdn.fontshare.com for the file)
+   was the slowest link on cold start and delayed the hero's font swap. */
+@font-face {
+  font-family: "Chillax";
+  src: url("../assets/fonts/chillax-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Switzer Fallback";
   src: local("Helvetica Neue"), local("Arial");
