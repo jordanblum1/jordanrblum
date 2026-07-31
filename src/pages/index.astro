@@ -51,11 +51,11 @@ import { about, projectArchive, selectedWork } from '../data/site';
           alt=""
           widths={[320, 480, 640, 960, 1280]}
           sizes="(max-width: 52rem) calc(100vw - 2rem), 58vw"
-          loading="eager" fetchpriority="low"
+          loading="lazy" decoding="async"
         />
         <span class="note-arrow" aria-hidden="true">↗</span>
         <span class="note-plaque">
-          <Image class="note-logo" src={blumTagLogo} alt="" width={300} loading="eager" fetchpriority="low" />
+          <Image class="note-logo" src={blumTagLogo} alt="" width={300} loading="lazy" decoding="async" />
         </span>
         <span class="visually-hidden">Visit blumblumblum (opens in a new tab)</span>
       </a>

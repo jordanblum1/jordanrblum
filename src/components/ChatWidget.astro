@@ -39,10 +39,10 @@ const starters = [
            die-cut sticker peels over its edge into the identity row. The BLUM
            mark stays as a small stamp on the right. -->
       <div class="chat-banner" aria-hidden="true">
-        <Image src={wallArt} alt="" widths={[480, 816]} sizes="25.5rem" quality={80} loading="eager" fetchpriority="low" />
+        <Image src={wallArt} alt="" widths={[480, 816]} sizes="25.5rem" quality={80} loading="lazy" decoding="async" />
       </div>
       <div class="chat-id-row">
-        <Image class="chat-sticker" src={jordySticker} alt="" width={120} quality={82} loading="eager" fetchpriority="low" />
+        <Image class="chat-sticker" src={jordySticker} alt="" width={120} quality={82} loading="lazy" decoding="async" />
         <div class="chat-id">
           <h2 id="chat-panel-title" class="chat-name">Jordy</h2>
           <p class="chat-role" aria-hidden="true">jordan’s assistant</p>

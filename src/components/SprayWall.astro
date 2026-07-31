@@ -39,7 +39,7 @@ const cans = [
   <canvas class="spray-canvas" data-spray-canvas aria-hidden="true"></canvas>
 
   <button type="button" class="spray-arm" data-spray-arm aria-label="Spray paint on the wall">
-    <Image src={canTerracotta} alt="" width={96} quality={82} loading="eager" fetchpriority="low" />
+    <Image src={canTerracotta} alt="" width={96} quality={82} loading="lazy" decoding="async" />
     <span class="spray-arm-hint" aria-hidden="true">tag the wall</span>
   </button>
 

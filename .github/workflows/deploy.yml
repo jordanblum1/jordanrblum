@@ -27,6 +27,12 @@ jobs:
 
       - run: pnpm test:unit
 
+      # Performance budget: fails the build if a change cooks the benchmark
+      # (thresholds in .lighthouserc.json, calibrated with ~25% headroom over
+      # the 2026-07 audit numbers: mobile perf 0.95, LCP 2.9s, 457KB total).
+      - name: Lighthouse CI perf budget
+        run: pnpm dlx @lhci/cli@0.15.x autorun
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
@@ -67,8 +73,18 @@ jobs:
 
       - name: Sync to S3
         run: |
+          # Hashed build assets never change under the same name — cache for a
+          # year. Everything else (HTML, root files like og-image.jpg) must
+          # revalidate so deploys show up immediately. Without Cache-Control,
+          # S3 serves nothing and browsers fall back to heuristic caching +
+          # revalidation on every repeat view.
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }} \
-            --delete
+            --exclude "*" --include "_astro/*" \
+            --cache-control "public, max-age=31536000, immutable"
+          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }} \
+            --delete \
+            --exclude "_astro/*" \
+            --cache-control "public, max-age=0, must-revalidate"
 
       # Astro emits nested pages as route/index.html. An S3 REST origin does not
       # resolve /route or /route/ to that object, so publish both clean URL forms.
@@ -87,13 +103,15 @@ jobs:
               --bucket "$S3_BUCKET" \
               --key "$route" \
               --body "$file" \
-              --content-type "text/html; charset=utf-8"
+              --content-type "text/html; charset=utf-8" \
+              --cache-control "public, max-age=0, must-revalidate"
 
             aws s3api put-object \
               --bucket "$S3_BUCKET" \
               --key "$route/" \
               --body "$file" \
-              --content-type "text/html; charset=utf-8"
+              --content-type "text/html; charset=utf-8" \
+              --cache-control "public, max-age=0, must-revalidate"
           done < <(find dist -mindepth 2 -name index.html -print0)
 
       - name: Invalidate CloudFront cache
