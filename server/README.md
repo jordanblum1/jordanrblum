@@ -1,7 +1,7 @@
 # Chat backend
 
 The AWS Lambda backend for the "Jordan's assistant" chat widget on
-[blumjordan.com](https://blumjordan.com). A Node 22 Lambda using
+[jordanblum.com](https://jordanblum.com). A Node 22 Lambda using
 [response streaming](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html)
 to serve Server-Sent Events to the browser.
 

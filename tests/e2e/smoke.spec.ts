@@ -152,8 +152,8 @@ test('document metadata, structured data, and keyboard skip link are present', a
 
   await expect(page).toHaveTitle('Jordan Blum — Product Engineer in New York');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /consumer products, developer platforms, AI tools/);
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://blumjordan.com/');
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://blumjordan.com/og-image.jpg');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jordanblum.com/');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://jordanblum.com/og-image.jpg');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.png');
   await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/apple-touch-icon.png');
 
