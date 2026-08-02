@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://blumjordan.com',
+  site: 'https://jordanblum.com',
   vite: { plugins: [tailwindcss()] },
   // Inline the single bundled stylesheet directly into the page <head> instead of
   // a render-blocking <link>. Lighthouse's render-blocking-requests audit flagged

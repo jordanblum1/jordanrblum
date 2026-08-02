@@ -1,4 +1,4 @@
-# blumjordan.com
+# jordanblum.com
 
 Jordan Blum's personal site, built with Astro 7, Tailwind 4, and Motion.
 
@@ -28,7 +28,7 @@ The chat widget (`src/components/ChatWidget.astro` + `src/scripts/chat.ts`), ope
 The widget POSTs to a relative `/api/chat` by default, which only works in production because CloudFront proxies that path to the Lambda Function URL (AWS_IAM + OAC — not reachable directly). For local development against a real backend, set `PUBLIC_CHAT_ENDPOINT` to the deployed endpoint in a `.env` file (Astro loads `PUBLIC_*` env vars into the client bundle automatically):
 
 ```
-PUBLIC_CHAT_ENDPOINT=https://blumjordan.com/api/chat
+PUBLIC_CHAT_ENDPOINT=https://jordanblum.com/api/chat
 ```
 
 Provisioning and backend deploys run entirely through `.github/workflows/chat-backend.yml` and require two repo secrets beyond the existing AWS ones: `ANTHROPIC_API_KEY` and `CONTACT_EMAIL`.

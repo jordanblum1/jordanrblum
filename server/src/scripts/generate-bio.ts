@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../../..');
 
 // Curated, hand-reviewed PUBLIC-ONLY supplement. Every fact below comes from
-// content Jordan has already published (blumjordan.com/llms.txt, live public
+// content Jordan has already published (jordanblum.com/llms.txt, live public
 // sites, public GitHub repos). Nothing here may come from private repos or
 // notes, and it must never contain an email address or new contact channels.
 // Hardcoded here (not fetched) so it survives regeneration and stays reviewed.

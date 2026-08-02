@@ -84,8 +84,8 @@ test('list items support inline markdown', () => {
 });
 
 test('renders http(s) links with safe attributes', () => {
-  const a = render('see [my site](https://blumjordan.com) here').querySelector('a');
-  expect(a?.getAttribute('href')).toBe('https://blumjordan.com');
+  const a = render('see [my site](https://jordanblum.com) here').querySelector('a');
+  expect(a?.getAttribute('href')).toBe('https://jordanblum.com');
   expect(a?.getAttribute('target')).toBe('_blank');
   expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
   expect(a?.textContent).toBe('my site');

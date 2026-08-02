@@ -26,7 +26,12 @@ env:
   CLOUDFRONT_DISTRIBUTION_ID: E2S9S3SPS1S2DW
   DEFAULT_CHAT_MODEL: claude-haiku-4-5-20251001
   LEGACY_CHAT_MODEL: claude-sonnet-5
-  ALLOWED_ORIGINS: '["https://blumjordan.com","https://jordanrblum.com","http://localhost:4321"]'
+  # jordanblum.com is canonical. blumjordan.com stays listed because the /api/*
+  # behavior is deliberately NOT redirected — a browser holding a cached page
+  # from the old domain still POSTs to blumjordan.com/api/chat with that Origin.
+  # The other retired domains (jordanrblum.com, blumj.com) 301 at the edge and
+  # therefore never serve the widget, so they are not valid origins.
+  ALLOWED_ORIGINS: '["https://jordanblum.com","https://www.jordanblum.com","https://blumjordan.com","http://localhost:4321"]'
 
 jobs:
   # Idempotent, re-runnable provisioning: Lambda function + Function URL,

@@ -170,7 +170,7 @@ test('llms.txt publishes a detailed resume with explicit team attribution', () =
   expect(llmsSource).toContain('should not be represented as the sole builder of Roam');
   expect(llmsSource).toContain('more than 300 engineers');
   expect(llmsSource).toContain('Reduced release timelines by 50%');
-  expect(llmsSource).toContain('https://blumjordan.com/about');
+  expect(llmsSource).toContain('https://jordanblum.com/about');
 });
 
 test('about keeps experience prominent and removes the awkward taxonomy', () => {
