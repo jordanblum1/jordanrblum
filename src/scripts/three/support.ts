@@ -18,8 +18,27 @@ export function webglSupported(): boolean {
 
 export const shouldRunThree = (): boolean => !prefersReducedMotion() && webglSupported();
 
-/** Runs `boot` once the element is near the viewport and the main thread is idle. */
+/** Resolves on the first real user input — pointer, touch, scroll, or key. */
+const firstInput = new Promise<void>((resolve) => {
+  const events = ['pointermove', 'pointerdown', 'touchstart', 'scroll', 'keydown'] as const;
+  const done = () => {
+    for (const event of events) removeEventListener(event, done);
+    resolve();
+  };
+  for (const event of events) addEventListener(event, done, { passive: true });
+});
+
+/**
+ * Runs `boot` after the first user input, once the element is near the
+ * viewport and the main thread is idle. Input-gating keeps the three.js
+ * chunk out of the initial load entirely (LCP and the CI byte budget never
+ * see it) and matches the brand rule that scenes respond to the visitor.
+ */
 export function whenNearViewportIdle(el: Element, boot: () => void): void {
+  void firstInput.then(() => observeThenIdle(el, boot));
+}
+
+function observeThenIdle(el: Element, boot: () => void): void {
   const idle = () => {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(boot, { timeout: 2000 });

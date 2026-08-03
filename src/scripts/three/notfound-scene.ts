@@ -144,6 +144,8 @@ export function initNotFoundToy(stage: HTMLElement): void {
     bounds.floor = -viewHeight / 2 + 0.75;
     bounds.ceiling = viewHeight / 2 + 1;
     floor.position.y = bounds.floor - 0.01;
+    // Resizing clears the buffer; repaint since the loop sleeps at rest.
+    renderer.render(scene, camera);
   };
   fit();
   new ResizeObserver(fit).observe(stage);
@@ -288,6 +290,19 @@ export function initNotFoundToy(stage: HTMLElement): void {
     for (const body of bodies) {
       if (!body.active && elapsed > body.dropDelay) body.active = true;
     }
+
+    // Sleep once everything is at rest and upright — no idle rendering.
+    const awake =
+      grabbed !== null ||
+      bodies.some(
+        (body) =>
+          !body.active ||
+          body.velocity.lengthSq() > 0.0004 ||
+          body.angularVelocity.lengthSq() > 0.0004 ||
+          body.mesh.quaternion.angleTo(identity) > 0.01,
+      );
+    if (!awake) return;
+
     accumulator = Math.min(accumulator + dt, 0.12);
     while (accumulator >= 1 / 120) {
       step(1 / 120);

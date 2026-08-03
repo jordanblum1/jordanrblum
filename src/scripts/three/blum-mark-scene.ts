@@ -130,6 +130,8 @@ export function initBlumMark(panel: HTMLElement): void {
     const viewWidth = viewHeight * camera.aspect;
     const targetWidth = Math.min(viewWidth * 0.72, viewHeight * 0.5 * (markWidth / markHeight));
     group.scale.setScalar(targetWidth / markWidth);
+    // Resizing clears the buffer; repaint since the loop may be resting.
+    renderer.render(scene, camera);
   };
   fit();
   new ResizeObserver(fit).observe(panel);
@@ -149,35 +151,53 @@ export function initBlumMark(panel: HTMLElement): void {
     yawTarget = nx * 0.6;
     pitchTarget = ny * 0.38;
   });
+  let pointerInside = false;
   panel.addEventListener('pointerenter', () => {
+    pointerInside = true;
     spinTarget += Math.PI * 2;
   });
   const settle = () => {
+    pointerInside = false;
     yawTarget = 0;
     pitchTarget = 0;
   };
   panel.addEventListener('pointerleave', settle);
   panel.addEventListener('pointercancel', settle);
 
-  let born = 0;
-  const stop = startLoop(panel, (dt, elapsed) => {
-    if (!born) born = elapsed;
+  const springSettled = (state: SpringValue, target: number) =>
+    Math.abs(state.value - target) < 0.002 && Math.abs(state.velocity) < 0.002;
+
+  // Per docs/brand.md the mark never loops decoratively: motionTime advances
+  // only during the one-shot entrance and direct pointer interaction, and
+  // rendering stops entirely once everything settles.
+  const ENTRANCE = 0.07 * (PIECE_OFFSETS.length - 1) + 0.7;
+  let motionTime = 0;
+  const stop = startLoop(panel, (dt) => {
+    const active =
+      pointerInside ||
+      motionTime < ENTRANCE ||
+      !springSettled(yaw, yawTarget) ||
+      !springSettled(pitch, pitchTarget) ||
+      !springSettled(spin, spinTarget);
+    if (!active) return;
+    motionTime += dt;
+
     springTo(yaw, yawTarget, dt, 42, 9);
     springTo(pitch, pitchTarget, dt, 42, 9);
     springTo(spin, spinTarget, dt, 26, 7);
 
-    group.rotation.y = Math.sin(elapsed * 0.32) * 0.12 + yaw.value + spin.value;
-    group.rotation.x = Math.sin(elapsed * 0.45) * 0.06 + pitch.value;
-    group.rotation.z = Math.sin(elapsed * 0.27) * 0.03 - 0.035;
+    group.rotation.y = Math.sin(motionTime * 0.32) * 0.12 + yaw.value + spin.value;
+    group.rotation.x = Math.sin(motionTime * 0.45) * 0.06 + pitch.value;
+    group.rotation.z = Math.sin(motionTime * 0.27) * 0.03 - 0.035;
 
     pieces.forEach(({ piece, phase }, index) => {
-      const enter = Math.min(1, Math.max(0, (elapsed - born - index * 0.07) / 0.7));
+      const enter = Math.min(1, Math.max(0, (motionTime - index * 0.07) / 0.7));
       const eased = easeOutBack(enter);
       const offset = PIECE_OFFSETS[index] ?? PIECE_OFFSETS[0];
       piece.position.x = offset.x * (1 - eased);
-      piece.position.y = offset.y * (1 - eased) + Math.sin(elapsed * 0.9 + phase) * 0.045;
+      piece.position.y = offset.y * (1 - eased) + Math.sin(motionTime * 0.9 + phase) * 0.045;
       piece.rotation.z = offset.rotate * (1 - eased);
-      piece.position.z = Math.sin(elapsed * 0.7 + phase * 2.1) * 0.05;
+      piece.position.z = Math.sin(motionTime * 0.7 + phase * 2.1) * 0.05;
     });
 
     renderer.render(scene, camera);

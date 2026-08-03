@@ -36,7 +36,8 @@ const VERTEX = /* glsl */ `
       p.xy += uStrength * 0.035 * dir * exp(-d * 7.0);
     } else if (uVariant == 1) {
       // cloth: whole plane sways after the cursor with a traveling wave
-      z = (0.012 + uStrength * 0.05)
+      // (amplitude fully cursor-driven — no idle loop, per docs/brand.md)
+      z = uStrength * 0.06
         * sin(uv.x * 7.0 + uTime * 1.4)
         * sin(uv.y * 5.0 + uTime * 1.1);
       z += uLean.x * (uv.x - 0.5) * 0.6 + uLean.y * (uv.y - 0.5) * 0.6;
@@ -120,9 +121,14 @@ export async function initSquishPortrait(panel: HTMLElement): Promise<void> {
   );
   scene.add(mesh);
 
+  let fittedPx = 0;
   const fit = () => {
     const sizePx = canvas.clientWidth || canvas.offsetWidth;
-    if (sizePx) renderer.setSize(sizePx, sizePx, false);
+    if (!sizePx || sizePx === fittedPx) return;
+    fittedPx = sizePx;
+    renderer.setSize(sizePx, sizePx, false);
+    // setSize clears the buffer; repaint since the loop may be resting.
+    renderer.render(scene, camera);
   };
 
   const pointer: { x: SpringValue; y: SpringValue } = {
@@ -157,21 +163,43 @@ export async function initSquishPortrait(panel: HTMLElement): Promise<void> {
   panel.addEventListener('pointerleave', release);
   panel.addEventListener('pointercancel', release);
 
-  const stop = startLoop(panel, (dt, elapsed) => {
+  const springSettled = (state: SpringValue, target: number) =>
+    Math.abs(state.value - target) < 0.002 && Math.abs(state.velocity) < 0.002;
+
+  // Motion is a direct cursor response only (docs/brand.md): time advances
+  // and frames render solely while the wobble is alive, then the loop rests.
+  let motionTime = 0;
+  const stop = startLoop(panel, (dt) => {
     fit();
+    const leanTargetX = (pointerTarget.x - 0.5) * (strengthTarget > 0 ? 0.4 : 0);
+    const leanTargetY = (pointerTarget.y - 0.5) * (strengthTarget > 0 ? 0.4 : 0);
+    const active =
+      strengthTarget > 0 ||
+      uniforms.uStrength.value > 0.001 ||
+      !springSettled(pointer.x, pointerTarget.x) ||
+      !springSettled(pointer.y, pointerTarget.y) ||
+      !springSettled(lean.x, leanTargetX) ||
+      !springSettled(lean.y, leanTargetY);
+    if (!active) return;
+    motionTime += dt;
+
     springTo(pointer.x, pointerTarget.x, dt, 90, 14);
     springTo(pointer.y, pointerTarget.y, dt, 90, 14);
-    springTo(lean.x, (pointerTarget.x - 0.5) * (strengthTarget > 0 ? 0.4 : 0), dt, 30, 8);
-    springTo(lean.y, (pointerTarget.y - 0.5) * (strengthTarget > 0 ? 0.4 : 0), dt, 30, 8);
+    springTo(lean.x, leanTargetX, dt, 30, 8);
+    springTo(lean.y, leanTargetY, dt, 30, 8);
     strengthTarget = Math.max(0, strengthTarget - dt * 1.1);
 
     uniforms.uPointer.value.set(pointer.x.value, pointer.y.value);
     uniforms.uLean.value.set(lean.x.value, lean.y.value);
     uniforms.uStrength.value += (strengthTarget - uniforms.uStrength.value) * Math.min(1, dt * 7);
-    uniforms.uTime.value = elapsed;
+    uniforms.uTime.value = motionTime;
 
     renderer.render(scene, camera);
   });
+
+  // First paint before the canvas fades in over the hidden <img>.
+  fit();
+  renderer.render(scene, camera);
 
   canvas.addEventListener('webglcontextlost', () => {
     stop();
