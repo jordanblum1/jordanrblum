@@ -8,7 +8,7 @@ import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import markSvg from '../../assets/identity/blum-mark.svg?raw';
 import { springTo, startLoop, tokenColor, variantFrom, type SpringValue } from './support';
 
-const VARIANTS = ['clay', 'paper', 'sketch'] as const;
+const VARIANTS = ['clay', 'paper', 'sketch', 'riso', 'inkline'] as const;
 
 // Entrance offsets per stroke, echoing the flat SVG's blum-assemble keyframes.
 const PIECE_OFFSETS = [
@@ -77,10 +77,22 @@ export function initBlumMark(panel: HTMLElement): void {
   }
 
   const buildMaterials = (): THREE.Material | THREE.Material[] => {
-    if (variant === 'clay') {
+    if (variant === 'clay' || variant === 'inkline') {
       return new THREE.MeshStandardMaterial({
         color: accent,
         roughness: 0.55,
+        side: THREE.DoubleSide,
+      });
+    }
+    if (variant === 'riso') {
+      // Risograph-print feel: three hard toon steps, echoing the wash art.
+      const steps = new THREE.DataTexture(new Uint8Array([110, 190, 255]), 3, 1, THREE.RedFormat);
+      steps.minFilter = THREE.NearestFilter;
+      steps.magFilter = THREE.NearestFilter;
+      steps.needsUpdate = true;
+      return new THREE.MeshToonMaterial({
+        color: accent,
+        gradientMap: steps,
         side: THREE.DoubleSide,
       });
     }
@@ -111,6 +123,23 @@ export function initBlumMark(panel: HTMLElement): void {
         new THREE.LineBasicMaterial({ color: ink, transparent: true, opacity: 0.55 }),
       );
       piece.add(lines);
+    }
+    if (variant === 'inkline') {
+      // Drawn ink outline via inverted hull: an ink shell scaled up about the
+      // stroke's own center peeks past the silhouette. The mark's geometry is
+      // mirrored (flipped winding), so FrontSide here culls like BackSide
+      // would on regular winding.
+      geometry.computeBoundingBox();
+      const center = geometry.boundingBox?.getCenter(new THREE.Vector3()) ?? new THREE.Vector3();
+      const outline = new THREE.Mesh(
+        geometry,
+        new THREE.MeshBasicMaterial({ color: ink, side: THREE.FrontSide }),
+      );
+      const shell = 1.045;
+      outline.scale.setScalar(shell);
+      outline.position.copy(center).multiplyScalar(1 - shell);
+      outline.renderOrder = -1;
+      piece.add(outline);
     }
     group.add(piece);
     return { piece, phase: index * 1.7 };
