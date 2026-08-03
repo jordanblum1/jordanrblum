@@ -41,7 +41,9 @@ export function whenNearViewportIdle(el: Element, boot: () => void): void {
 function observeThenIdle(el: Element, boot: () => void): void {
   const idle = () => {
     if ('requestIdleCallback' in window) {
-      requestIdleCallback(boot, { timeout: 2000 });
+      // Input-gated already, so LCP is done; a short timeout just caps how
+      // long a busy main thread can delay the scene.
+      requestIdleCallback(boot, { timeout: 800 });
     } else {
       setTimeout(boot, 350);
     }
