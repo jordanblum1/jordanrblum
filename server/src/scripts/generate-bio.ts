@@ -12,11 +12,13 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../../..');
 
-// Curated, hand-reviewed PUBLIC-ONLY supplement. Every fact below comes from
+// Curated, hand-reviewed supplement. Every fact below either comes from
 // content Jordan has already published (jordanblum.com/llms.txt, live public
-// sites, public GitHub repos). Nothing here may come from private repos or
-// notes, and it must never contain an email address or new contact channels.
-// Hardcoded here (not fetched) so it survives regeneration and stays reviewed.
+// sites, public GitHub repos) or from a direct interview where Jordan
+// explicitly approved it for the assistant to share (the "Personal" section).
+// Nothing here may come from private repos or notes, and it must never
+// contain an email address or new contact channels. Hardcoded here (not
+// fetched) so it survives regeneration and stays reviewed.
 const PUBLIC_SUPPLEMENT = `## Curated public supplement (reviewed additions)
 
 ### Roam quick facts
@@ -46,7 +48,49 @@ Jordan likes to hand-roll his personal sites without frameworks, and he designs 
 
 ### This website's secret
 
-The site hides one small easter egg. Jordy may playfully hint that it exists, but must never reveal what it is or how to trigger it.`;
+The site hides one small easter egg. Jordy may playfully hint that it exists, but must never reveal what it is or how to trigger it.
+
+## Personal (interview-sourced, approved by Jordan for the assistant)
+
+Everything in this section came from a direct interview with Jordan, who approved it for the assistant to share. Personal questions about these topics are on-topic and should be answered warmly.
+
+### Cooking and food
+
+- Jordan is a solid cook. His current signature is salmon with a sweet sesame-soy marinade (soy, sesame, and honey). He also makes a really good steak — a go-to nice dinner is a filet with asparagus or zucchini and a baked potato.
+- He doesn't bake much, but crème brûlée is his favorite dessert.
+- Favorite cuisines to cook and to eat out: steak, sushi, and Thai.
+- Favorite NYC food spots: chicken wings at Blondies on the Upper West Side; pizza from L'industrie or Scarr's; bagels from Apollo Bagels; and 2nd Ave Deli for a classic deli.
+- He's a coffee person and a matcha person. He makes his own matcha and is on a quest to find the best matcha in New York. Favorite coffee shops so far: The Elk and Oslo Coffee.
+
+### New York life
+
+- He lives in downtown Manhattan (he keeps the exact neighborhood private).
+- He rides Citi Bikes for short one-to-three-mile hops and has his own bike for real rides: out to Jersey, Coney Island, Rockaway Beach, and loops of Central Park and Prospect Park. The cycling is serious — he gets out for a long ride at least once a month.
+- An ideal weekend: a concert or a nice restaurant, plus a good workout, run, or bike ride in the summer; a football Sunday or a movie night in the winter.
+- He's originally from the Chicago suburbs, went to college in the Bay Area (Santa Clara), and lived in San Francisco before moving to New York for the concerts, the comedy, the public transportation, and the energy of the city. He's been there ever since.
+
+### Music, sports, and screens
+
+- Music constants: Jungle, The Dip, and old-school hip hop. He loves live music and goes to a lot of concerts.
+- Sports: a Chicago fan through and through — Bears, Cubs, Blackhawks, and Bulls — and he's adopted the New York Rangers since moving to the city.
+- Favorite TV: Veep, Game of Thrones, Succession, and Hacks — a big HBO fan.
+- Favorite movies: Project X, Superbad, Wedding Crashers, Good Will Hunting, and The Shawshank Redemption.
+- Games: a casual gamer — Call of Duty, Madden, League of Legends and Teamfight Tactics, some Valorant — plus board games like Ticket to Ride and Catan.
+
+### Photography and travel
+
+- He shoots landscapes and cool moments, mostly on his phone these days, though he has a DSLR. His travel photography lives in his public photo archive.
+- His favorite place he's traveled is Cape Town, South Africa, where he spent six months as a college student — he calls it the best six months of his life.
+
+### Personality and how he works
+
+- Friends would describe him as funny, nice, chatty, and chipper — always making jokes, always with a smile.
+- Why product engineering: he likes building the thing and figuring out the why behind the what. He's a tinkerer with how people tick and how products tick, so he can shape products that make someone's life better, cooler, or more fun.
+- How he describes the CS-plus-studio-art combo: he builds cool things and likes the way they look — an eye for what should look good, and the engineering skill to build it well.
+
+### Topics the assistant deflects
+
+Jordan keeps dating, politics, salary, and his exact address private. If a visitor asks about those, the assistant should say something like: "I know a lot about Jordan, but not that much — you'd have to ask him yourself," and can offer to help the visitor get in touch.`;
 
 function redact(text: string): string {
   return text

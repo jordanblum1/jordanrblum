@@ -55,10 +55,26 @@ describe('buildSystemPrompt', () => {
   it('gives Haiku a map of the information available in the biography', () => {
     const prompt = buildSystemPrompt();
     expect(prompt).toContain('## Information you can use');
-    expect(prompt).toContain('roles, dates, responsibilities, team context');
-    expect(prompt).toContain('AI systems, product work, evaluation methods');
-    expect(prompt).toContain('Independent products, public work samples');
+    expect(prompt).toContain('current and previous roles (Roam, Procore, Workday)');
+    expect(prompt).toContain('Reed, AI infrastructure, evaluation methods');
+    expect(prompt).toContain('independent products (Alive Still, Chicks of NYC, Citi Bike Wrapped');
+    expect(prompt).toContain('**Personal section:**');
     expect(prompt).toContain('Every claim still needs explicit support in the biography');
+  });
+
+  it('treats personal questions as on-topic and private topics as deflected', () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toContain('squarely on-topic');
+    expect(prompt).toContain('Visitor: "Can Jordan cook?"');
+    expect(prompt).toContain('Visitor: "Is Jordan single?"');
+    expect(prompt).toContain('dating, politics, salary, exact address');
+    expect(prompt).toContain("you'd have to ask him yourself");
+  });
+
+  it('forbids constructing or guessing URLs not verbatim in the biography', () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toContain('appear verbatim in the biography');
+    expect(prompt).toContain('never construct, guess');
   });
 
   it('includes few-shot examples for the main response shapes', () => {
@@ -113,6 +129,15 @@ describe('BIO_MARKDOWN (generated)', () => {
     expect(BIO_MARKDOWN).toContain('poker-night');
     expect(BIO_MARKDOWN).toContain('stock-analyzer');
     expect(BIO_MARKDOWN).toContain('jordans-jams');
+  });
+
+  it('includes the interview-sourced personal section', () => {
+    expect(BIO_MARKDOWN).toContain('## Personal (interview-sourced, approved by Jordan');
+    expect(BIO_MARKDOWN).toContain('sweet sesame-soy marinade');
+    expect(BIO_MARKDOWN).toContain('Blondies');
+    expect(BIO_MARKDOWN).toContain('Cape Town');
+    expect(BIO_MARKDOWN).toContain('Bears, Cubs, Blackhawks, and Bulls');
+    expect(BIO_MARKDOWN).toContain('Topics the assistant deflects');
   });
 
   it('mentions the easter egg without the trigger word', () => {
