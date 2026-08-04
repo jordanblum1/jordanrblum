@@ -1,4 +1,16 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+// The three.js moments boot on the first user input (see scripts/three/
+// support.ts). In the scroll-physics tests below, the first input would be
+// the wheel gesture itself — and on CI's software renderer the WebGL boot
+// stalls the main thread mid-gesture, starving the rAF-driven wind physics.
+// Trigger first input up front and wait for both scenes to mount so the
+// gesture runs on a quiet main thread.
+async function settleThreeScenes(page: Page): Promise<void> {
+  await page.mouse.move(640, 12);
+  await expect(page.locator('[data-hero-field] canvas')).toHaveCount(1, { timeout: 20_000 });
+  await expect(page.locator('[data-portrait-panel] canvas')).toHaveCount(1, { timeout: 20_000 });
+}
 
 test('homepage shell renders the new navigation, generalist hero, and footer', async ({ page }) => {
   await page.goto('/');
@@ -72,6 +84,7 @@ test('home and About heroes develop in without double-animating the work field',
 test('centered nav keeps winding past one full turn and preserves direction through release', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 760 });
   await page.goto('/');
+  await settleThreeScenes(page);
 
   const nav = page.locator('[data-nav-pill]');
   const box = await nav.boundingBox();
@@ -112,6 +125,7 @@ test('centered nav keeps winding past one full turn and preserves direction thro
 test('reversing upward cancels release without a snap and takes counter-clockwise control', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 760 });
   await page.goto('/');
+  await settleThreeScenes(page);
 
   const nav = page.locator('[data-nav-pill]');
   const mark = nav.locator('[data-nav-mark]');
