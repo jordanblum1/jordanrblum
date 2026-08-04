@@ -302,20 +302,23 @@ test('markdown in the reply renders as real elements, never raw HTML', async ({ 
 
 test('a typing indicator shows while the reply generates and the full reply reveals at once', async ({ page }) => {
   // Playwright's route.fulfill can only deliver a complete body, so a real
-  // local SSE server streams one delta immediately and holds the stream open —
-  // long enough to observe the buffering state: the indicator is up and
-  // nothing has painted yet, even though a delta already arrived.
+  // local SSE server streams one delta immediately and holds the stream open
+  // until the test explicitly releases it after verifying the buffering
+  // state: the indicator is up and nothing has painted yet, even though a
+  // delta already arrived. An explicit release (not a timer) keeps slow CI
+  // runners from finishing the stream before the assertions get to run.
   const responses = new Set<import('node:http').ServerResponse>();
+  let releaseStream = () => {};
   const server: Server = createServer((request, response) => {
     responses.add(response);
     response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
     response.write('data: {"type":"delta","text":"Jordan is a **full-stack** engineer"}\n\n');
-    const finish = setTimeout(() => {
+    releaseStream = () => {
+      if (!responses.has(response)) return;
       response.write('data: {"type":"delta","text":" at Roam."}\n\ndata: {"type":"done"}\n\n');
       response.end();
-    }, 700);
+    };
     request.on('close', () => {
-      clearTimeout(finish);
       responses.delete(response);
     });
   });
@@ -342,8 +345,9 @@ test('a typing indicator shows while the reply generates and the full reply reve
     await expect(painted).toHaveCount(0);
     await expect(page.locator('[data-chat-stop]')).toHaveCount(0);
 
-    // On completion the indicator is gone and the whole reply is revealed,
-    // markdown rendered.
+    // Buffering state verified — let the stream finish. On completion the
+    // indicator is gone and the whole reply is revealed, markdown rendered.
+    releaseStream();
     await expect(painted).toHaveCount(1);
     await expect(typing).toHaveCount(0);
     await expect(painted.first().locator('strong')).toHaveText('full-stack');
