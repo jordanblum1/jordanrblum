@@ -8,7 +8,7 @@ test.describe('no JavaScript', () => {
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('[data-hero-field]')).toBeVisible();
-    await expect(page.locator('#work .experience-list > li')).toHaveCount(3);
+    await expect(page.locator('#work .experience-list > li')).toHaveCount(4);
     await expect(page.locator('#work .project-item')).toHaveCount(3);
     await expect(page.locator('#work .project-item').first()).toBeVisible();
     await expect(page.locator('.more-section .archive-table tbody tr')).toHaveCount(7);
@@ -35,7 +35,7 @@ test.describe('no JavaScript', () => {
     await page.goto('/about');
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.locator('.experience-item')).toHaveCount(3);
+    await expect(page.locator('.experience-item')).toHaveCount(4);
     await expect(page.locator('.experience-item').first()).toBeVisible();
     const mediaRegion = page.locator('#roam [data-roam-samples]');
     const disclosures = mediaRegion.locator('details[data-roam-track]');

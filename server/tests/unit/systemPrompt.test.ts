@@ -55,7 +55,7 @@ describe('buildSystemPrompt', () => {
   it('gives Haiku a map of the information available in the biography', () => {
     const prompt = buildSystemPrompt();
     expect(prompt).toContain('## Information you can use');
-    expect(prompt).toContain('current and previous roles (Roam, Procore, Workday)');
+    expect(prompt).toContain('current and previous roles (Savvy Wealth, Roam, Procore, Workday)');
     expect(prompt).toContain('Reed, AI infrastructure, evaluation methods');
     expect(prompt).toContain('independent products (Alive Still, Chicks of NYC, Citi Bike Wrapped');
     expect(prompt).toContain('**Personal section:**');

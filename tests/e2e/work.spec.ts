@@ -5,17 +5,18 @@ test('employment and independent projects use clearly different treatments', asy
 
   await expect(page.locator('#places-heading')).toHaveClass(/visually-hidden/);
   await expect(page.locator('#projects-heading')).toHaveClass(/visually-hidden/);
-  await expect(page.locator('#work .experience-list > li')).toHaveCount(3);
+  await expect(page.locator('#work .experience-list > li')).toHaveCount(4);
   await expect(page.locator('#work .project-item')).toHaveCount(3);
   await expect(page.locator('#work .work-visual[aria-hidden="true"]')).toHaveCount(3);
   await expect(page.locator('#work .work-meta, #work .study-label, #work .asset-note')).toHaveCount(0);
 
-  for (const title of ['Roam', 'Procore', 'Workday', 'Alive Still', 'Chicks of NYC', 'Citi Bike Wrapped']) {
+  for (const title of ['Savvy', 'Roam', 'Procore', 'Workday', 'Alive Still', 'Chicks of NYC', 'Citi Bike Wrapped']) {
     await expect(page.locator('#work').getByRole('heading', { level: 4, name: new RegExp(title) })).toBeVisible();
   }
 
   for (const experience of [
-    { href: '/about#roam', focus: 'Product engineering', date: '2025—now' },
+    { href: '/about#savvy', focus: 'AI engineering', date: '2026—now' },
+    { href: '/about#roam', focus: 'Product engineering', date: '2025—2026' },
     { href: '/about#procore', focus: 'Developer platform', date: '2021—2025' },
     { href: '/about#workday', focus: 'Release tools', date: '2018—2021' },
   ]) {
@@ -24,6 +25,7 @@ test('employment and independent projects use clearly different treatments', asy
     await expect(row).toContainText(experience.date);
   }
 
+  await expect(page.locator('#work a[href="/about#savvy"]')).toHaveCount(1);
   await expect(page.locator('#work a[href="/about#roam"]')).toHaveCount(1);
   await expect(page.locator('#work a[href="/about#procore"]')).toHaveCount(1);
   await expect(page.locator('#work a[href="/about#workday"]')).toHaveCount(1);

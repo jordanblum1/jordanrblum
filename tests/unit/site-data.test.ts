@@ -80,18 +80,19 @@ test('S3 deployment publishes Astro pages at clean extensionless routes', () => 
   expect(layoutSource).toContain("Astro.url.pathname.replace(/\\/+$/, '')");
 });
 
-test('selected work balances three professional chapters with three independent products', () => {
-  expect((selectedWorkBlock.match(/title:/g) ?? [])).toHaveLength(6);
-  expect((selectedWorkBlock.match(/href:/g) ?? [])).toHaveLength(6);
+test('selected work balances four professional chapters with three independent products', () => {
+  expect((selectedWorkBlock.match(/title:/g) ?? [])).toHaveLength(7);
+  expect((selectedWorkBlock.match(/href:/g) ?? [])).toHaveLength(7);
   expect((selectedWorkBlock.match(/size: 'feature'/g) ?? [])).toHaveLength(3);
-  expect((selectedWorkBlock.match(/size: 'compact'/g) ?? [])).toHaveLength(3);
-  expect((selectedWorkBlock.match(/group: 'work'/g) ?? [])).toHaveLength(3);
+  expect((selectedWorkBlock.match(/size: 'compact'/g) ?? [])).toHaveLength(4);
+  expect((selectedWorkBlock.match(/group: 'work'/g) ?? [])).toHaveLength(4);
   expect((selectedWorkBlock.match(/group: 'project'/g) ?? [])).toHaveLength(3);
-  expect((selectedWorkBlock.match(/company:/g) ?? [])).toHaveLength(3);
-  expect((selectedWorkBlock.match(/focus:/g) ?? [])).toHaveLength(3);
-  expect((selectedWorkBlock.match(/date:/g) ?? [])).toHaveLength(3);
+  expect((selectedWorkBlock.match(/company:/g) ?? [])).toHaveLength(4);
+  expect((selectedWorkBlock.match(/focus:/g) ?? [])).toHaveLength(4);
+  expect((selectedWorkBlock.match(/date:/g) ?? [])).toHaveLength(4);
 
   for (const title of [
+    'AI engineering at Savvy',
     'Product engineering at Roam',
     'Alive Still',
     'Developer platform at Procore',
@@ -103,8 +104,12 @@ test('selected work balances three professional chapters with three independent 
   }
 });
 
-test('the resume covers all three roles without making Roam the whole story', () => {
-  expect((experienceBlock.match(/company:/g) ?? [])).toHaveLength(3);
+test('the resume covers all four roles without making any one of them the whole story', () => {
+  expect((experienceBlock.match(/company:/g) ?? [])).toHaveLength(4);
+  expect(experienceBlock).toContain("company: 'Savvy'");
+  expect(experienceBlock).toContain("href: 'https://www.savvywealth.com'");
+  expect(experienceBlock).toContain("role: 'Member of Technical Staff'");
+  expect(experienceBlock).toContain('Savvy Intelligence');
   expect(experienceBlock).toContain("company: 'Roam'");
   expect(experienceBlock).toContain("company: 'Procore'");
   expect(experienceBlock).toContain("company: 'Workday'");
@@ -120,8 +125,11 @@ test('the resume covers all three roles without making Roam the whole story', ()
   expect(experienceBlock).toContain("title: 'Reed, the AI realtor'");
   expect(experienceBlock).toContain("label: '03 · Agent systems'");
   expect(experienceBlock).toContain("title: 'Agent harness'");
-  expect(experienceBlock).toContain('one of two lead engineers building Reed');
-  expect(experienceBlock).toContain('internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents');
+  expect(experienceBlock).toContain('one of two lead engineers who built Reed');
+  expect(experienceBlock).toContain('internal agent harness our team used to plan, dispatch, and supervise parallel coding agents');
+  // Roam is a past role now — its copy must not drift back to the present tense.
+  expect(experienceBlock).toContain("date: 'May 2025—Aug 2026'");
+  expect(experienceBlock).not.toContain("date: 'May 2025—now'");
   expect((experienceBlock.match(/mediaGroup:/g) ?? [])).toHaveLength(3);
   expect(experienceBlock).toContain('Associate DevOps / Release Engineer → Senior Associate Developer');
 });
@@ -173,6 +181,18 @@ test('llms.txt publishes a detailed resume with explicit team attribution', () =
   expect(llmsSource).toContain('https://jordanblum.com/about');
 });
 
+test('llms.txt presents Savvy as current and Roam as past, without inventing Savvy results', () => {
+  expect(llmsSource).toContain('### Savvy Wealth — Member of Technical Staff');
+  expect(llmsSource).toContain('August 2026–present');
+  expect(llmsSource).toContain('### Roam — Product Engineer');
+  expect(llmsSource).toContain('May 2025–August 2026');
+  expect(llmsSource).not.toContain('May 2025–present');
+  // Jordan started in August 2026. The file must keep telling models not to
+  // manufacture accomplishments for a role that has not produced them yet.
+  expect(llmsSource).toContain('do not invent launches, accomplishments, or numbers for this role');
+  expect(llmsSource).toContain('Do not describe Jordan as still working at Roam');
+});
+
 test('about keeps experience prominent and removes the awkward taxonomy', () => {
   expect(src).toContain('I like making things. I like making them look good, too.');
   expect(aboutSource).toContain('<h2 id="experience-heading">Experience</h2>');
@@ -192,7 +212,10 @@ test('about keeps experience prominent and removes the awkward taxonomy', () => 
 
 test('homepage quick facts and interaction copy stay concise', () => {
   expect(heroSource).toContain('class="profile-facts"');
-  expect(heroSource).toContain('Product engineer at');
+  expect(heroSource).toContain('Member of technical staff at');
+  expect(heroSource).toContain('/company/savvy.svg');
+  expect(existsSync('public/company/savvy.svg')).toBe(true);
+  expect(heroSource).not.toContain('roam-fact');
   expect(heroSource).not.toContain('Consumer products · AI agents');
   expect(heroSource).not.toContain('move your cursor');
   expect(src).not.toContain('Currently at Roam.');
