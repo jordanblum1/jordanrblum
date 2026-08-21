@@ -26,7 +26,10 @@ test('about page carries the broader story, experience, and education', async ({
   expect(Math.abs(archiveTitleBox!.x - archiveListBox!.x)).toBeLessThanOrEqual(1);
 
   const roles = page.locator('.experience-item');
-  await expect(roles).toHaveCount(3);
+  await expect(roles).toHaveCount(4);
+  await expect(page.locator('#savvy')).toContainText('Member of Technical Staff');
+  await expect(page.locator('#savvy')).toContainText('Savvy Intelligence');
+  await expect(page.locator('#savvy .experience-track')).toHaveCount(0);
   await expect(page.locator('#roam')).toContainText('the third engineer on a four-person team');
   await expect(page.locator('#roam')).toContainText('Fifth Wall co-founder Brendan Wallace');
   await expect(page.locator('#roam .experience-track')).toHaveCount(3);
@@ -35,8 +38,8 @@ test('about page carries the broader story, experience, and education', async ({
   await expect(page.locator('#roam')).toContainText('01 · Product engineering');
   await expect(page.locator('#roam')).toContainText('02 · AI product');
   await expect(page.locator('#roam')).toContainText('03 · Agent systems');
-  await expect(page.locator('#roam')).toContainText('one of two lead engineers building Reed');
-  await expect(page.locator('#roam')).toContainText('internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents');
+  await expect(page.locator('#roam')).toContainText('one of two lead engineers who built Reed');
+  await expect(page.locator('#roam')).toContainText('internal agent harness our team used to plan, dispatch, and supervise parallel coding agents');
   const mediaRegion = page.locator('#roam [data-roam-samples]');
   const disclosures = mediaRegion.locator('details[data-roam-track]');
   await expect(disclosures).toHaveCount(3);
@@ -179,6 +182,7 @@ test('about page carries the broader story, experience, and education', async ({
   expect(educationLinkBox!.height).toBeGreaterThanOrEqual(44);
 
   for (const [company, href] of [
+    ['savvy', 'https://www.savvywealth.com'],
     ['roam', 'https://www.withroam.com'],
     ['procore', 'https://www.procore.com'],
     ['workday', 'https://www.workday.com'],

@@ -29,7 +29,7 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
   await expect(page.locator('.profile-facts > li')).toHaveCount(2);
   await expect(page.locator('.profile-facts')).toContainText('New York');
   await expect(page.locator('.profile-facts')).not.toContainText('Consumer products · AI agents');
-  await expect(page.locator('.profile-facts a[href="https://www.withroam.com"] img')).toHaveAttribute('alt', 'Roam');
+  await expect(page.locator('.profile-facts a[href="https://www.savvywealth.com"] img')).toHaveAttribute('alt', 'Savvy');
   await expect(page.locator('.status')).toHaveCount(0);
   await expect(page.getByRole('contentinfo')).toContainText('Want to chat?');
   await expect(page.getByRole('contentinfo')).toContainText('New York');
@@ -205,7 +205,7 @@ test('the site stays light when the operating system prefers dark mode', async (
   await expect(home.locator('.mark-red')).toHaveCSS('opacity', '1');
   await expect(home.locator('.mark-blue')).toHaveCSS('opacity', '0');
   await expect(home.locator('.mark-white')).toHaveCount(0);
-  await expect(page.locator('.roam-fact img')).toHaveCSS('filter', 'none');
+  await expect(page.locator('.company-fact img')).toHaveCSS('filter', 'none');
   await expect(page.locator('.personal-note .note-logo')).toHaveCSS('filter', 'none');
 
   const themeColors = page.locator('meta[name="theme-color"]');

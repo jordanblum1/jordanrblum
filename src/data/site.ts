@@ -1,4 +1,4 @@
-export type WorkVisual = 'roam' | 'alive' | 'procore' | 'chicks' | 'citibike' | 'workday';
+export type WorkVisual = 'savvy' | 'roam' | 'alive' | 'procore' | 'chicks' | 'citibike' | 'workday';
 
 interface SelectedWorkItemBase {
   title: string;
@@ -23,7 +23,7 @@ export type SelectedWorkItem =
 interface ExperienceItemBase {
   company: string;
   href: string;
-  logo: 'roam' | 'procore' | 'workday';
+  logo: 'savvy' | 'roam' | 'procore' | 'workday';
   role: string;
   date: string;
   context: string;
@@ -78,14 +78,25 @@ export const hero = {
 
 export const selectedWork: SelectedWorkItem[] = [
   {
+    title: 'AI engineering at Savvy',
+    company: 'Savvy',
+    focus: 'AI engineering',
+    date: '2026—now',
+    blurb: 'The AI workspace financial advisors work in, and the agent orchestration underneath it.',
+    href: '/about#savvy',
+    group: 'work',
+    size: 'feature',
+    visual: 'savvy',
+  },
+  {
     title: 'Product engineering at Roam',
     company: 'Roam',
     focus: 'Product engineering',
-    date: '2025—now',
-    blurb: 'Work across a home-buying marketplace and its AI agent: research, chat and search interfaces, backend tools, analytics, and evals.',
+    date: '2025—2026',
+    blurb: 'Worked across a home-buying marketplace and its AI agent: research, chat and search interfaces, backend tools, analytics, and evals.',
     href: '/about#roam',
     group: 'work',
-    size: 'feature',
+    size: 'compact',
     visual: 'roam',
   },
   {
@@ -141,19 +152,33 @@ export const selectedWork: SelectedWorkItem[] = [
 
 export const experience: ExperienceItem[] = [
   {
+    company: 'Savvy',
+    href: 'https://www.savvywealth.com',
+    logo: 'savvy',
+    role: 'Member of Technical Staff',
+    date: 'Aug 2026—now',
+    context: 'Joined a year after Savvy’s $72M Series B, with the platform past $8B in assets under management across more than 100 advisors. Backed by Industry Ventures, Thrive Capital, and Canvas Ventures.',
+    summary: 'I work on Savvy Intelligence, the AI workspace advisors use day to day, and the agent orchestration underneath it.',
+    highlights: [
+      'Building advisor-facing AI surfaces in TypeScript, React, and Next.js against a Rails backend.',
+      'Working on the agent orchestration, tool integrations, and evals those surfaces sit on top of.',
+      'Wealth management is regulated, so the interesting problem is making AI output an advisor can check and stand behind.',
+    ],
+  },
+  {
     company: 'Roam',
     href: 'https://www.withroam.com',
     logo: 'roam',
     role: 'Product Engineer',
-    date: 'May 2025—now',
+    date: 'May 2025—Aug 2026',
     context: 'Joined just after Roam’s $11.5M Series A as the third engineer on a four-person team. Backed by Khosla Ventures and Founders Fund; early investors included Fifth Wall co-founder Brendan Wallace.',
-    bridge: 'I work across the marketplace, Reed, and the agent tooling behind both.',
+    bridge: 'I worked across the marketplace, Reed, and the agent tooling behind both.',
     tracks: [
       {
         label: '01 · Product engineering',
         title: 'Roam marketplace',
         glance: 'Search, offers, onboarding, and the tools behind them.',
-        summary: 'I build the core product buyers use to find homes, understand their financing, and move through an offer.',
+        summary: 'I built the core product buyers used to find homes, understand their financing, and move through an offer.',
         highlights: [
           'Shipped search, offer, onboarding, and growth flows, plus the internal tools that support them.',
           'Worked end to end across product decisions, interface design, backend systems, analytics, rollout, and iteration.',
@@ -164,7 +189,7 @@ export const experience: ExperienceItem[] = [
         label: '02 · AI product',
         title: 'Reed, the AI realtor',
         glance: 'Buyer conversations, home research, pricing, and evals.',
-        summary: 'I’m one of two lead engineers building Reed as both a customer product and an AI system: the conversation, the research and pricing tools behind it, and the checks that show when it fails.',
+        summary: 'I was one of two lead engineers who built Reed as both a customer product and an AI system: the conversation, the research and pricing tools behind it, and the checks that showed when it failed.',
         highlights: [
           'Built streaming chat and tool-call interfaces, multi-tool home research and pricing flows, and vision-model photo analysis.',
           'Built evals and conversation analytics to catch regressions, find drop-off, and guide product changes.',
@@ -175,7 +200,7 @@ export const experience: ExperienceItem[] = [
         label: '03 · Agent systems',
         title: 'Agent harness',
         glance: 'Parallel coding agents with review, recovery, and approval gates.',
-        summary: 'I built the internal agent harness our team uses to plan, dispatch, and supervise parallel coding agents.',
+        summary: 'I built the internal agent harness our team used to plan, dispatch, and supervise parallel coding agents.',
         highlights: [
           'Added cross-model review, crash recovery, and human approval gates so parallel work stays observable and recoverable.',
         ],
@@ -224,6 +249,8 @@ export const education = {
 export const toolkit = [
   'React',
   'TypeScript',
+  'Next.js',
+  'Ruby on Rails',
   'Elixir / Phoenix',
   'Python',
   'Swift',

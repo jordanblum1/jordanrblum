@@ -21,9 +21,9 @@ const blumMark = blumMarkSource
             <rect x="3" y="5.5" width="14" height="10.5" rx="2.5" stroke="currentColor" stroke-width="1.5" />
             <path d="M7 5.5V4.75C7 3.78 7.78 3 8.75 3h2.5C12.22 3 13 3.78 13 4.75v.75M3.5 9.25h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
           </svg>
-          <span>Product engineer at</span>
-          <a class="roam-fact" href="https://www.withroam.com" target="_blank" rel="noopener">
-            <img src="/company/roam.svg" alt="Roam" width="52" height="15" fetchpriority="high" />
+          <span>Member of technical staff at</span>
+          <a class="company-fact" href="https://www.savvywealth.com" target="_blank" rel="noopener">
+            <img src="/company/savvy.svg" alt="Savvy" width="47" height="16" fetchpriority="high" />
             <span class="visually-hidden"> (opens in a new tab)</span>
           </a>
         </li>
@@ -144,6 +144,7 @@ const blumMark = blumMarkSource
 
   .profile-facts li {
     display: flex;
+    flex-wrap: wrap;
     min-height: 1.15rem;
     gap: 0.42rem;
     align-items: center;
@@ -156,16 +157,20 @@ const blumMark = blumMarkSource
     color: color-mix(in oklab, var(--ink-muted) 82%, transparent);
   }
 
-  .roam-fact {
+  /* The Savvy wordmark is nearly square (93x32) where Roam's was a wide strip,
+     so an equal box height would paint its cap height far larger than the label
+     beside it. Sized so the cap lands just above the label's, matching the
+     restraint of the Roam treatment this replaced. */
+  .company-fact {
     display: inline-flex;
-    height: 0.9rem;
+    height: 0.82rem;
     align-items: center;
     border-radius: var(--radius-pill);
   }
 
-  .roam-fact img {
+  .company-fact img {
     display: block;
-    width: 2.85rem;
+    width: 2.38rem;
     height: auto;
     max-height: 0.82rem;
     object-fit: contain;

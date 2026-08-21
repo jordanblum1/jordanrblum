@@ -204,7 +204,7 @@ export function detectTopic(text: string): ChipTopic {
   if (/(email|contact|reach|in touch|touch\b|hire|hiring|linkedin)/.test(t)) return 'contact';
   if (/(stack|typescript|javascript|react|astro|aws|lambda|node|tech\b|tooling|framework|language)/.test(t)) return 'stack';
   if (/(project|chicks|alive still|alivestill|citibike|blumblumblum|side\b|poker|stock|jams|built|building)/.test(t)) return 'projects';
-  if (/(roam|work\b|works\b|job|career|engineer|company|startup|procore|workday)/.test(t)) return 'work';
+  if (/(savvy|roam|work\b|works\b|job|career|engineer|company|startup|procore|workday)/.test(t)) return 'work';
   return 'default';
 }
 
