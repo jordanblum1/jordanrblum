@@ -1,0 +1,68 @@
+---
+import '../styles/global.css';
+import '../styles/app-docs.css';
+import switzer400Url from '../assets/fonts/switzer-400.woff2?url';
+import chillax600Url from '../assets/fonts/chillax-600.woff2?url';
+import { supportEmail, type AppDocumentation } from '../data/apps';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  intro: string;
+  app?: AppDocumentation;
+  active?: 'overview' | 'support' | 'privacy';
+}
+
+const { title, description, heading, intro, app, active } = Astro.props;
+const path = Astro.url.pathname.replace(/\/+$/, '');
+const canonical = new URL(path, Astro.site ?? Astro.url.origin);
+const sections = app ? [
+  { label: 'Overview', href: `/apps/${app.slug}`, key: 'overview' },
+  { label: 'Support', href: `/apps/${app.slug}/support`, key: 'support' },
+  { label: 'Privacy', href: `/apps/${app.slug}/privacy`, key: 'privacy' },
+] : [];
+---
+
+<!doctype html>
+<html lang="en" class="app-docs-page">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title} — Jordan Blum</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href={switzer400Url} />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href={chillax600Url} />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#F7F3ED" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jordan Blum" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+  </head>
+  <body class="app-docs">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="docs-header wide">
+      <a class="docs-home" href="/">Jordan Blum</a>
+      <nav aria-label="Site"><a href="/apps" aria-current={app ? undefined : 'page'}>App docs</a><a href={`mailto:${supportEmail}`}>Email me</a></nav>
+    </header>
+    <main id="main-content" class="docs-main wide" tabindex="-1">
+      <div class="docs-intro">
+        <p class="docs-kicker">{app ? <><a href="/apps">App docs</a><span aria-hidden="true"> / </span>{app.name}</> : 'Support & privacy'}</p>
+        <h1>{heading}</h1>
+        <p class="docs-lede">{intro}</p>
+      </div>
+      <div class:list={['docs-body', { 'docs-body--app': app }]}>
+        {app && <nav class="docs-sections" aria-label={`${app.name} documentation`}>
+          {sections.map((section) => <a href={section.href} aria-current={active === section.key ? 'page' : undefined}>{section.label}</a>)}
+        </nav>}
+        <div class="docs-content"><slot /></div>
+      </div>
+    </main>
+    <footer class="docs-footer wide"><span>© {new Date().getFullYear()} Jordan Blum</span><a href="/apps">All app docs</a><a href={`mailto:${supportEmail}`}>{supportEmail}</a></footer>
+  </body>
+</html>

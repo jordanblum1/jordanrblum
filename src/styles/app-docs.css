@@ -1,0 +1,268 @@
+html.app-docs-page {
+  scroll-behavior: auto;
+}
+
+.app-docs a:not(.skip-link) {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab,var(--accent) 45%,transparent);
+  text-underline-offset: .28em;
+  text-decoration-thickness: 1px;
+}
+
+.app-docs a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.app-docs .docs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-6);
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.app-docs .docs-header .docs-home {
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1.125rem;
+}
+
+.app-docs .docs-header nav {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.app-docs .docs-header a,.app-docs .docs-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.app-docs .docs-main {
+  overflow: visible;
+  padding-block: var(--space-16) var(--space-24);
+}
+
+.app-docs .docs-intro {
+  max-width: var(--measure);
+  margin-bottom: var(--space-12);
+}
+
+.app-docs .docs-kicker {
+  color: var(--ink-muted);
+  font-size: .875rem;
+  margin-bottom: var(--space-4);
+}
+
+.app-docs h1 {
+  font-family: var(--font-personality);
+  font-weight: 600;
+  font-size: clamp(2.5rem,5vw,4rem);
+  line-height: 1.06;
+  letter-spacing: -.04em;
+  margin-bottom: var(--space-6);
+  text-wrap: balance;
+}
+
+.app-docs .docs-lede {
+  font-size: 1.125rem;
+  color: var(--ink-muted);
+  max-width: 38rem;
+}
+
+.app-docs .docs-body--app {
+  display: grid;
+  grid-template-columns: 11rem minmax(0,var(--measure));
+  gap: var(--space-12);
+  align-items: start;
+}
+
+.app-docs .docs-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.app-docs .docs-sections a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 500;
+}
+
+.app-docs a[aria-current="page"] {
+  color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+.app-docs .docs-content {
+  min-width: 0;
+  max-width: var(--measure);
+}
+
+.app-docs .docs-content h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin-bottom: var(--space-4);
+}
+
+.app-docs .docs-content h3 {
+  font-size: 1.125rem;
+  line-height: 1.35;
+  margin-bottom: var(--space-3);
+}
+
+.app-docs .docs-content p {
+  margin-bottom: var(--space-4);
+}
+
+.app-docs .docs-content section {
+  border-top: 1px solid var(--hairline);
+  padding-top: var(--space-6);
+  margin-top: var(--space-8);
+  scroll-margin-top: var(--space-6);
+}
+
+.app-docs .docs-content section:first-child {
+  margin-top: 0;
+}
+
+.app-docs .docs-content ol,.app-docs .docs-content ul {
+  padding-left: var(--space-6);
+  margin-block: 0 var(--space-6);
+  list-style: revert;
+}
+
+.app-docs .docs-content li {
+  padding-left: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.app-docs .docs-content strong {
+  font-weight: 600;
+}
+
+.app-docs .docs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-block: var(--space-4) var(--space-6);
+}
+
+.app-docs .docs-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 500;
+}
+
+.app-docs .docs-directory {
+  list-style: none!important;
+  padding: 0!important;
+  margin: 0!important;
+}
+
+.app-docs .docs-directory li {
+  border-top: 1px solid var(--hairline);
+  padding: var(--space-6) 0;
+  margin: 0;
+}
+
+.app-docs .docs-directory h2 a {
+  color: var(--ink);
+}
+
+.app-docs .docs-caption {
+  font-size: .875rem;
+  color: var(--ink-muted);
+}
+
+.app-docs .docs-contact {
+  overflow-wrap: anywhere;
+}
+
+.app-docs details {
+  border-bottom: 1px solid var(--hairline);
+  padding-block: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.app-docs summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: var(--space-2);
+  font-weight: 500;
+}
+
+.app-docs details p {
+  padding-top: var(--space-3);
+}
+
+.app-docs .docs-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  border-top: 1px solid var(--hairline);
+  padding-block: var(--space-6);
+  font-size: .875rem;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.app-docs .docs-footer span {
+  margin-right: auto;
+}
+
+@media(max-width:44rem) {
+  .app-docs .wide {
+    width: calc(100% - 2rem);
+  }
+  .app-docs .docs-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    padding-block: var(--space-4);
+  }
+  .app-docs .docs-header nav {
+    gap: var(--space-4);
+  }
+  .app-docs .docs-main {
+    padding-block: var(--space-10) var(--space-16);
+  }
+  .app-docs .docs-intro {
+    margin-bottom: var(--space-8);
+  }
+  .app-docs .docs-body--app {
+    grid-template-columns: minmax(0,1fr);
+    gap: var(--space-6);
+  }
+  .app-docs .docs-sections {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    padding-top: 0;
+  }
+  .app-docs .docs-footer span {
+    flex-basis: 100%;
+  }
+}
+
+@media print {
+  .app-docs::before,.app-docs .docs-header nav,.app-docs .docs-sections,.app-docs .skip-link {
+    display: none;
+  }
+  .app-docs .docs-body--app {
+    display: block;
+  }
+  .app-docs .docs-main {
+    padding-block: var(--space-6);
+  }
+  .app-docs details {
+    break-inside: avoid;
+  }
+}

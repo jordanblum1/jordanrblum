@@ -32,3 +32,9 @@ PUBLIC_CHAT_ENDPOINT=https://jordanblum.com/api/chat
 ```
 
 Provisioning and backend deploys run entirely through `.github/workflows/chat-backend.yml` and require two repo secrets beyond the existing AWS ones: `ANTHROPIC_API_KEY` and `CONTACT_EMAIL`.
+
+## Shared app support and privacy
+
+`/apps` is the shared documentation hub for Jordan's apps. Stamp Shift has `/apps/stamp-shift`, `/support` and `/privacy` pages. The contact address derives from the existing public Email entry in `src/data/site.ts`. These reading pages use the existing typography/tokens through `AppDocs.astro` and intentionally load no client scripts, portfolio chat or transcript service.
+
+For another app, add its registry entry in `src/data/apps.ts` and its own overview/support/privacy pages under `src/pages/apps/{slug}/`. Write its privacy policy from its actual data handling; Stamp Shift's local-only policy does not apply automatically. The existing S3 workflow publishes nested clean routes. `tests/e2e/app-docs.spec.ts` verifies desktop/mobile, no-JS navigation, contact links and restore help. `DESIGN.md` mirrors the existing brand contract without replacing the vault source.

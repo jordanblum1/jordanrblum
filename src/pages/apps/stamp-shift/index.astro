@@ -1,0 +1,9 @@
+---
+import AppDocs from '../../../layouts/AppDocs.astro';
+import { stampShift, supportEmail } from '../../../data/apps';
+---
+<AppDocs app={stampShift} active="overview" title="Stamp Shift" description="How Stamp Shift works, what Extra Routes includes, and where to find support and privacy information." heading="Stamp Shift." intro="Three queues. One perfect order. Match the sun, leaf and moon stamps to the delivery manifest.">
+  <section><h2>A small sorting puzzle</h2><p>Dispatch a stamp from the front of a queue when it matches the next stamp in the manifest. On routes with a pocket, hold one blocking stamp for later. On routes with reversal, turn one queue around once.</p><p>Start with 30 free routes, including three short, replayable lessons. Undo, restart and three-stage hints are always free. There are no timers, lives, ads or in-app accounts.</p><div class="docs-actions"><a href="/apps/stamp-shift/support">Get help with Stamp Shift</a><a href="/apps/stamp-shift/privacy">Read the privacy policy</a></div></section>
+  <section><h2>Extra Routes</h2><p>One permanent in-app purchase unlocks 70 additional routes. There is no subscription. Apple's current localized price appears in the app before purchase.</p><p>To restore, select a route marked Paid in Choose a route, then choose Restore purchases in The post shop using the Apple Account that bought the pack.</p></section>
+  <section><h2>Made by Jordan Blum</h2><p>Progress and settings stay on your device. Apple handles purchases. You choose whether to share puzzle information when asking for help.</p><p class="docs-contact">Support: <a href={`mailto:${supportEmail}?subject=Stamp%20Shift%20support`}>{supportEmail}</a>.</p></section>
+</AppDocs>
