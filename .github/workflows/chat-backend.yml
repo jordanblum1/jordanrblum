@@ -65,7 +65,7 @@ jobs:
         working-directory: server
         run: |
           pnpm build
-          command -v zip >/dev/null || sudo apt-get update && sudo apt-get install -y zip
+          command -v zip >/dev/null || { sudo apt-get update && sudo apt-get install -y zip; }
           (cd dist && zip -r ../lambda.zip index.js Jordan_Blum_Product_Engineer.pdf)
 
       - name: Configure AWS credentials
@@ -373,7 +373,7 @@ jobs:
         working-directory: server
         run: |
           pnpm build
-          command -v zip >/dev/null || sudo apt-get update && sudo apt-get install -y zip
+          command -v zip >/dev/null || { sudo apt-get update && sudo apt-get install -y zip; }
           (cd dist && zip -r ../lambda.zip index.js Jordan_Blum_Product_Engineer.pdf)
 
       - name: Configure AWS credentials
