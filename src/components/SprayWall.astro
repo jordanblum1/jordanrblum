@@ -20,7 +20,7 @@ const cans = [
 
 ---
 
-<div class="spray-wall" data-spray-wall>
+<div class="spray-wall" data-spray-wall data-tag="off">
   <!-- Sprayed-edge filters shared by the toolbar's sticker buttons: a rougher
        one for the paper dabs, a subtler one for the stencil glyphs. -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -36,7 +36,20 @@ const cans = [
     </defs>
   </svg>
 
+  <!-- Tag game stencil. The word is real DOM text: drawn into this canvas by
+       the HTML-in-Canvas API where Chrome has it, canvas fallback content
+       (still read by assistive tech) everywhere else. -->
+  <canvas class="spray-stencil" data-spray-stencil>
+    <p class="spray-stencil-word" data-spray-stencil-word drawable>BLUM</p>
+  </canvas>
+
   <canvas class="spray-canvas" data-spray-canvas aria-hidden="true"></canvas>
+
+  <div class="spray-tag">
+    <span class="spray-tag-clock" data-spray-tag-clock aria-hidden="true"></span>
+    <p class="spray-tag-status" data-spray-tag-status role="status"></p>
+    <button type="button" class="spray-tag-retry" data-spray-tag-retry hidden>Go again</button>
+  </div>
 
   <button type="button" class="spray-arm" data-spray-arm aria-label="Spray paint on the wall">
     <Image src={canTerracotta} alt="" width={96} quality={82} loading="lazy" decoding="async" />
@@ -227,7 +240,7 @@ const cans = [
   /* While armed, the footer content stands aside (visually and for input) so
      the whole wall is paintable. */
   :global(.footer-stage.is-spray-armed) :global(.footer-inner) {
-    opacity: 0.12;
+    opacity: 0;
     pointer-events: none;
     transition: opacity var(--duration-default) var(--ease);
   }
@@ -240,6 +253,116 @@ const cans = [
 
   :global(.footer-stage) :global(.footer-inner) {
     transition: opacity var(--duration-default) var(--ease);
+  }
+
+  /* --- Tag game: faint stencil + a sticker status line ------------------- */
+  .spray-stencil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition:
+      opacity var(--duration-slow) var(--ease),
+      translate var(--duration-slow) var(--ease-bounce);
+  }
+
+  .spray-wall:is([data-tag="ready"], [data-tag="live"], [data-tag="buffed"]) .spray-stencil {
+    opacity: 1;
+  }
+
+  /* Passing "goes up": the stencil lifts off the wall as the paint stays. */
+  .spray-wall[data-tag="up"] .spray-stencil {
+    translate: 0 -1.5rem;
+  }
+
+  /* Styles both the drawn DOM text and the fillText fallback. Pale paper
+     fill with an ink edge reads on every part of the mural. */
+  .spray-stencil-word {
+    --stencil-size: clamp(5rem, 22vw, 11rem);
+    margin: 0;
+    width: 100%;
+    font-family: var(--font-graffiti);
+    font-size: var(--stencil-size);
+    line-height: 1;
+    text-align: center;
+    color: rgb(252 250 246 / 0.45);
+    -webkit-text-stroke: 2px rgb(43 37 33 / 0.6);
+  }
+
+  .spray-tag {
+    position: absolute;
+    top: calc(18% + clamp(5rem, 22vw, 11rem) * 1.05);
+    left: 50%;
+    z-index: 5;
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+    width: max-content;
+    max-width: calc(100% - var(--space-8));
+    translate: -50% 0;
+    pointer-events: none;
+  }
+
+  .spray-wall.is-armed:not([data-tag="off"]) .spray-tag {
+    display: flex;
+  }
+
+  .spray-tag-status,
+  .spray-tag-clock,
+  .spray-tag-retry {
+    margin: 0;
+    padding: 0.35rem 0.8rem;
+    border: none;
+    border-radius: 1.1rem 0.8rem 1.3rem 0.7rem;
+    background: var(--paper-raised);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    filter: drop-shadow(0 3px 4px rgb(43 37 33 / 0.26));
+  }
+
+  .spray-tag-status:empty,
+  .spray-tag-clock:empty {
+    display: none;
+  }
+
+  .spray-tag-clock,
+  .spray-tag-retry {
+    font-family: var(--font-graffiti);
+    font-size: 1.1rem;
+  }
+
+  .spray-tag-clock {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .spray-tag-retry {
+    white-space: nowrap;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .spray-tag-retry[hidden] {
+    display: none;
+  }
+
+  .spray-wall[data-tag="up"] .spray-tag-status {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    animation: spray-tag-pop 480ms var(--ease-bounce);
+  }
+
+  @keyframes spray-tag-pop {
+    from {
+      opacity: 0;
+      scale: 0.6;
+      rotate: -6deg;
+    }
   }
 
   /* --- Arm affordance: a little can leaning in the corner ---------------- */
@@ -663,8 +786,17 @@ const cans = [
     .spray-wall.is-armed .spray-actions,
     .spray-icon .glyph .mark,
     .spray-icon .glyph .dot,
-    .spray-icon .fan {
+    .spray-icon .fan,
+    .spray-tag-status {
       animation: none !important;
+    }
+
+    .spray-stencil {
+      transition: opacity 120ms linear;
+    }
+
+    .spray-wall[data-tag="up"] .spray-stencil {
+      translate: none;
     }
 
     .spray-icon,

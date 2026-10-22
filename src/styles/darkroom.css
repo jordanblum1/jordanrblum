@@ -1,0 +1,234 @@
+/* The "develop" egg (scripts/darkroom.ts). Base rules are the resting state:
+   lights on, print still. Animations only describe how it gets there, so
+   reduced motion can drop them and keep a plain fade. */
+.darkroom {
+  --line-y: clamp(3.5rem, 14vh, 7rem);
+  --develop: 2.8s;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  padding: var(--line-y) var(--space-4) var(--space-8);
+  overflow-y: auto;
+  transition: opacity var(--duration-default) var(--ease);
+}
+
+.darkroom.is-leaving {
+  opacity: 0;
+}
+
+/* Safelight, then the lights come back on as a soft dim. */
+.darkroom::before {
+  --safelight-dark: color-mix(in oklab, color-mix(in oklab, var(--safelight) 70%, var(--ink)) 90%, transparent);
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: color-mix(in oklab, var(--ink) 40%, transparent);
+  animation: darkroom-safelight var(--develop) var(--ease) both;
+}
+
+/* The drying line. */
+.darkroom::after {
+  content: "";
+  position: fixed;
+  inset-inline: 0;
+  top: calc(var(--line-y) + var(--space-2));
+  height: 1px;
+  background: color-mix(in oklab, var(--ink) 55%, transparent);
+}
+
+.darkroom-print {
+  position: relative;
+  z-index: 1;
+  width: min(34rem, 100%);
+  margin: 0;
+  padding: var(--space-5) var(--space-5) var(--space-3);
+  background: var(--print-border);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-lifted);
+  transform-origin: 50% 0;
+  animation: darkroom-hang 2.6s ease-in-out both;
+}
+
+.darkroom-print:focus {
+  outline: none;
+}
+
+/* The print sits under the same safelight until the lights come on. */
+.darkroom-print::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--safelight);
+  mix-blend-mode: multiply;
+  opacity: 0;
+  pointer-events: none;
+  animation: darkroom-tint var(--develop) var(--ease) both;
+}
+
+.darkroom-pin {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--space-4) * -1);
+  left: 50%;
+  width: 0.875rem;
+  height: 2.75rem;
+  translate: -50% 0;
+  border-radius: var(--radius-xs);
+  background: linear-gradient(90deg, transparent 46%, color-mix(in oklab, var(--ink) 30%, transparent) 46% 54%, transparent 54%),
+    color-mix(in oklab, var(--ink-muted) 55%, var(--paper));
+  box-shadow: var(--shadow-small);
+}
+
+.darkroom-plate {
+  display: block;
+  width: 100%;
+}
+
+.darkroom-image {
+  padding: var(--space-6);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.darkroom-image h2 {
+  margin: 0;
+  font-family: var(--font-personality);
+  font-size: clamp(1.5rem, 4vw, 2.125rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+
+.darkroom-image p {
+  margin: var(--space-4) 0 0;
+  color: var(--ink-muted);
+  line-height: 1.55;
+}
+
+/* Without HTML-in-Canvas, the same words develop in CSS. */
+:not(canvas) > .darkroom-image > * {
+  animation: darkroom-develop 1.6s var(--ease) both;
+}
+
+:not(canvas) > .darkroom-image > p {
+  animation-delay: 0.35s;
+}
+
+.darkroom-print figcaption {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink-muted);
+}
+
+@keyframes darkroom-safelight {
+  0% { opacity: 0; background: var(--safelight-dark); }
+  8%, 76% { opacity: 1; background: var(--safelight-dark); }
+}
+
+@keyframes darkroom-tint {
+  0%, 76% { opacity: 0.8; }
+}
+
+@keyframes darkroom-hang {
+  0% { transform: translateY(calc(-100% - var(--line-y))) rotate(7deg); }
+  24% { transform: rotate(-4deg); }
+  42% { transform: rotate(2.4deg); }
+  60% { transform: rotate(-1.2deg); }
+  78% { transform: rotate(0.5deg); }
+}
+
+@keyframes darkroom-develop {
+  from { opacity: 0; filter: blur(3px); }
+}
+
+@keyframes darkroom-fade {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .darkroom {
+    animation: darkroom-fade 120ms !important;
+  }
+
+  .darkroom * {
+    animation-delay: 0s !important;
+  }
+}
+
+/* Portrait whack (scripts/portrait-whack.ts): a hint while armed, then the
+   caught fun fact as a small print stuck on the portrait. */
+@property --dodge-x { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --dodge-y { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --squish { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+.portrait-panel :is(.portrait, .portrait-canvas, .portrait-ripple, .portrait-glint) {
+  translate: var(--dodge-x) var(--dodge-y);
+  scale: calc(1 + var(--squish) * 0.14) calc(1 - var(--squish) * 0.14);
+}
+
+.portrait-panel.is-whack {
+  cursor: crosshair;
+}
+
+.whack-hint,
+.whack-fact {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  translate: -50% 0;
+  animation: whack-pop var(--duration-slow) var(--ease-bounce) both;
+}
+
+.whack-hint {
+  bottom: var(--space-5);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-small);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.whack-fact {
+  bottom: var(--space-6);
+  width: min(19rem, calc(100% - var(--space-8)));
+  padding: var(--space-3) var(--space-3) var(--space-5);
+  rotate: -2deg;
+  background: var(--print-border);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-lifted);
+}
+
+.whack-print {
+  padding: var(--space-4);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.whack-print p {
+  margin: 0;
+}
+
+.whack-print .whack-label {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+@keyframes whack-pop {
+  from { opacity: 0; scale: 0.92; }
+}

@@ -36,6 +36,12 @@ const NOZZLES: Record<string, Nozzle> = {
 const SPRAY_TICK_MS = 24;
 const DRIP_THRESHOLD = 46;
 const STORAGE_KEY = 'jrb-spray-wall-v1';
+const BEST_KEY = 'jrb-spray-best';
+const ROUND_SECONDS = 10;
+const PASS_SCORE = 60;
+const CLEAN_SCORE = 90; // ends the round early, no need to wait out the clock
+const SCORE_SCALE = 0.25; // score masks are a quarter of CSS resolution
+const CREWS = ['TERRACOTTA KINGS', 'SLATE SAINTS', 'SAGE GHOSTS', 'OXBLOOD CREW', 'INK ROYALTY', 'GRAIN GANG', 'PAPER TIGERS'];
 const CELL = 24; // accumulation grid cell in CSS px
 
 interface Drip {
@@ -123,6 +129,22 @@ if (root && stage) {
   const canButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-spray-can]')];
   const nozzleButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-spray-nozzle]')];
   const audio = new SprayAudio();
+  const footerInner = stage.querySelector<HTMLElement>('.footer-inner');
+  // Tag game: a faint BLUM stencil. Where Chrome's HTML-in-Canvas API exists
+  // the real DOM word (site font, still in the accessibility tree) is drawn
+  // into the stencil canvas; elsewhere fillText draws it from the same
+  // computed style. Either way scoring reads the stencil canvas's own pixels.
+  const stencil = root.querySelector<HTMLCanvasElement>('[data-spray-stencil]')!;
+  const stencilCtx = stencil.getContext('2d', { willReadFrequently: true })!;
+  const word = stencil.querySelector<HTMLElement>('[data-spray-stencil-word]')!;
+  const tagStatus = root.querySelector<HTMLElement>('[data-spray-tag-status]')!;
+  const tagClock = root.querySelector<HTMLElement>('[data-spray-tag-clock]')!;
+  const tagRetry = root.querySelector<HTMLButtonElement>('[data-spray-tag-retry]')!;
+  const drawsElements = 'drawElementImage' in CanvasRenderingContext2D.prototype;
+  if (drawsElements) {
+    stencil.setAttribute('layoutsubtree', ''); // Chrome < 155
+    stencil.setAttribute('content', 'drawable'); // Chrome 155+
+  }
 
   let armed = false;
   let spraying = false;
@@ -141,6 +163,11 @@ if (root && stage) {
   let buildup = new Map<number, number>();
   let undoSnapshot: HTMLCanvasElement | null = null;
   let restored = false;
+  let moved = false;
+  let tag: 'off' | 'ready' | 'live' | 'up' | 'buffed' = 'off';
+  let round: CanvasRenderingContext2D | null = null;
+  let roundTimer = 0;
+  let secondsLeft = ROUND_SECONDS;
 
   const bounds = () => stage.getBoundingClientRect();
 
@@ -158,6 +185,121 @@ if (root && stage) {
     canvas.width = Math.round(box.width * dpr);
     canvas.height = Math.round(box.height * dpr);
     if (keep) ctx.drawImage(keep, 0, 0, canvas.width, canvas.height);
+    stencil.width = canvas.width;
+    stencil.height = canvas.height;
+    if (tag !== 'off') paintStencil();
+  };
+
+  // --- Tag game -----------------------------------------------------------
+  type DrawElement = (el: Element, x: number, y: number) => DOMMatrix | undefined;
+
+  const drawStencil = () => {
+    const top = stencil.height * 0.18;
+    stencilCtx.setTransform(1, 0, 0, 1, 0, 0);
+    stencilCtx.clearRect(0, 0, stencil.width, stencil.height);
+    if (drawsElements) {
+      // Canvas-grid coordinates; the element renders at device resolution.
+      // Before Chrome 155 this returns the DOMMatrix that keeps the DOM box
+      // (focus rings, find-in-page) over the drawn pixels; from 155 it is void
+      // and the browser syncs it.
+      const matrix = (stencilCtx as unknown as { drawElementImage: DrawElement }).drawElementImage(word, 0, top);
+      word.style.transform = matrix ? matrix.toString() : '';
+    } else {
+      const style = getComputedStyle(word);
+      stencilCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      stencilCtx.font = `${style.fontSize} ${style.fontFamily}`;
+      stencilCtx.textAlign = 'center';
+      stencilCtx.textBaseline = 'top';
+      stencilCtx.fillStyle = style.color;
+      stencilCtx.strokeStyle = style.webkitTextStrokeColor;
+      stencilCtx.lineWidth = parseFloat(style.webkitTextStrokeWidth) || 0;
+      stencilCtx.fillText(word.textContent ?? '', stencil.width / dpr / 2, top / dpr);
+      if (stencilCtx.lineWidth) stencilCtx.strokeText(word.textContent ?? '', stencil.width / dpr / 2, top / dpr);
+    }
+    stencil.dataset.mode = drawsElements ? 'element' : 'text';
+  };
+  stencil.addEventListener('paint', drawStencil);
+
+  const paintStencil = () => {
+    void document.fonts.load(`1em ${getComputedStyle(word).fontFamily}`).finally(() =>
+      drawsElements ? (stencil as unknown as { requestPaint?: () => void }).requestPaint?.() : drawStencil(),
+    );
+  };
+
+  const setTag = (next: typeof tag, message = '') => {
+    tag = next;
+    root.dataset.tag = next;
+    tagStatus.textContent = message;
+    tagClock.textContent = next === 'ready' || next === 'live' ? String(secondsLeft) : '';
+    tagRetry.hidden = next !== 'up' && next !== 'buffed';
+  };
+
+  const bestScore = () => {
+    try {
+      return Number(localStorage.getItem(BEST_KEY)) || 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const readyTag = () => {
+    window.clearInterval(roundTimer);
+    secondsLeft = ROUND_SECONDS;
+    const best = bestScore();
+    setTag('ready', `Trace BLUM: ${ROUND_SECONDS}s once you start${best ? `. Best ${best}%` : ''}`);
+  };
+
+  // Coverage of the stencil by this round's paint, minus half the overspray
+  // (paint outside the stencil), both measured against the stencil's area.
+  const score = () => {
+    if (!round) return 0;
+    const { width, height } = round.canvas;
+    const mask = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+    mask.canvas.width = width;
+    mask.canvas.height = height;
+    mask.drawImage(stencil, 0, 0, width, height);
+    const ink = mask.getImageData(0, 0, width, height).data;
+    const paint = round.getImageData(0, 0, width, height).data;
+    let area = 0;
+    let hit = 0;
+    let over = 0;
+    for (let i = 3; i < ink.length; i += 4) {
+      if (ink[i] > 40) {
+        area += 1;
+        if (paint[i]) hit += 1;
+      } else if (paint[i]) over += 1;
+    }
+    return area ? Math.round(100 * clamp((hit - over / 2) / area, 0, 1)) : 0;
+  };
+
+  const finishTag = (result = score()) => {
+    window.clearInterval(roundTimer);
+    round = null;
+    if (result >= PASS_SCORE) {
+      try {
+        localStorage.setItem(BEST_KEY, String(Math.max(result, bestScore())));
+      } catch {
+        /* private mode — the score just won't stick */
+      }
+      const crew = CREWS[Math.floor(Math.random() * CREWS.length)];
+      setTag('up', `Went up! ${result}% for ${crew}`);
+      if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+    } else {
+      setTag('buffed', `Buffed at ${result}%. Need ${PASS_SCORE}.`);
+    }
+  };
+
+  const startRound = () => {
+    const box = bounds();
+    round = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+    round.canvas.width = Math.ceil(box.width * SCORE_SCALE);
+    round.canvas.height = Math.ceil(box.height * SCORE_SCALE);
+    setTag('live');
+    roundTimer = window.setInterval(() => {
+      secondsLeft -= 1;
+      tagClock.textContent = String(secondsLeft);
+      if (secondsLeft <= 0) finishTag();
+    }, 1000);
   };
 
   const persist = () => {
@@ -233,6 +375,11 @@ if (root && stage) {
       ctx.fill();
     }
     ctx.restore();
+    if (round) {
+      round.beginPath();
+      round.arc(x * SCORE_SCALE, y * SCORE_SCALE, r * 0.8 * SCORE_SCALE, 0, Math.PI * 2);
+      round.fill();
+    }
 
     // Paint accumulation → drips. Lingering (stationary stamps) builds fastest.
     const key = Math.round(x / CELL) * 10000 + Math.round(y / CELL);
@@ -303,15 +450,18 @@ if (root && stage) {
     dripFrame = drips.length > 0 ? requestAnimationFrame(stepDrips) : 0;
   };
 
-  const moveCursor = (clientX: number, clientY: number) => {
+  const setPointer = (clientX: number, clientY: number) => {
     const box = bounds();
     pointerX = clientX - box.left;
     pointerY = clientY - box.top;
+  };
+  const placeCursor = () => {
     cursorCan.style.transform = `translate(${pointerX}px, ${pointerY}px) rotate(${spraying ? -18 : -8}deg)`;
   };
 
   const startSpray = () => {
     if (spraying) return;
+    if (tag === 'ready') startRound();
     spraying = true;
     lastX = pointerX;
     lastY = pointerY;
@@ -323,7 +473,12 @@ if (root && stage) {
     undoSnapshot.width = canvas.width;
     undoSnapshot.height = canvas.height;
     undoSnapshot.getContext('2d')!.drawImage(canvas, 0, 0);
-    sprayTimer = window.setInterval(() => sprayTickAt(pointerX, pointerY), SPRAY_TICK_MS);
+    // Movement paints from pointermove; the timer only keeps a held-still can
+    // depositing paint.
+    sprayTimer = window.setInterval(() => {
+      if (!moved) sprayTickAt(pointerX, pointerY);
+      moved = false;
+    }, SPRAY_TICK_MS);
     sprayTickAt(pointerX, pointerY);
   };
 
@@ -336,6 +491,13 @@ if (root && stage) {
     window.clearInterval(sprayTimer);
     buildup = new Map();
     persist();
+    if (tag === 'off') {
+      readyTag();
+      paintStencil();
+    } else if (tag === 'live') {
+      const result = score();
+      if (result >= CLEAN_SCORE) finishTag(result);
+    }
   };
 
   const arm = () => {
@@ -346,14 +508,21 @@ if (root && stage) {
     restore();
     root.classList.add('is-armed');
     stage.classList.add('is-spray-armed');
+    footerInner?.setAttribute('inert', '');
     if (!reducedMotion.matches) armButton.classList.add('is-shaking');
+    // The arm can fades out, so hand focus to a tool that's actually visible.
+    canButtons.find((b) => b.classList.contains('is-selected'))?.focus({ preventScroll: true });
   };
 
   const disarm = () => {
     armed = false;
     stopSpray();
+    window.clearInterval(roundTimer);
+    round = null;
+    setTag('off');
     root.classList.remove('is-armed');
     stage.classList.remove('is-spray-armed');
+    footerInner?.removeAttribute('inert');
     armButton.classList.remove('is-shaking');
     armButton.focus();
   };
@@ -373,12 +542,22 @@ if (root && stage) {
     } catch {
       /* capture is a nicety; keep spraying without it */
     }
-    moveCursor(event.clientX, event.clientY);
+    setPointer(event.clientX, event.clientY);
+    placeCursor();
     startSpray();
   });
   canvas.addEventListener('pointermove', (event) => {
     if (!armed) return;
-    moveCursor(event.clientX, event.clientY);
+    // Every coalesced sample, painted now: no timer lag, no polyline corners.
+    const samples = spraying ? event.getCoalescedEvents?.() ?? [] : [];
+    for (const sample of samples.length ? samples : [event]) {
+      setPointer(sample.clientX, sample.clientY);
+      if (spraying) {
+        sprayTickAt(pointerX, pointerY);
+        moved = true;
+      }
+    }
+    placeCursor();
   });
   canvas.addEventListener('pointerup', stopSpray);
   canvas.addEventListener('pointercancel', stopSpray);
@@ -449,6 +628,7 @@ if (root && stage) {
   syncMute();
 
   root.querySelector('[data-spray-close]')?.addEventListener('click', disarm);
+  tagRetry.addEventListener('click', readyTag);
 
   window.addEventListener('resize', () => {
     if (armed) resize();

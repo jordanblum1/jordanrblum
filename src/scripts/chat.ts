@@ -1,5 +1,5 @@
 import { MarkdownStream, renderMarkdownInto } from './chat-markdown';
-import { social } from '../data/site';
+import { projectArchive, social } from '../data/site';
 import jordySticker from '../assets/identity/jordy-sticker.webp';
 
 export const MAX_MESSAGES = 20;
@@ -196,6 +196,35 @@ export function parseSSEBuffer(buffer: string): { events: ChatEvent[]; rest: str
 // A small curated map keyed on light-touch topic detection over the last
 // exchange (user question + assistant reply). Deliberately client-side and
 // simple — the chips are suggestions, not navigation.
+
+// "play a game" starts a client-only quiz: no backend call, nothing persisted.
+export const isQuizRequest = (text: string): boolean => /\bplay\s+(?:a\s+|the\s+)?(?:game|quiz)\b/i.test(text);
+
+export interface QuizQuestion {
+  prompt: string;
+  answer: string;
+  choices: string[];
+}
+
+const shuffle = <T>(items: T[], random: () => number): T[] =>
+  items.map((item) => [random(), item] as const).sort((a, b) => a[0] - b[0]).map(([, item]) => item);
+
+// Rounds skip blurbs that give their own title away ("...your Citi Bike rides").
+const fairQuizItems = projectArchive.filter(
+  (item) => !item.title.toLowerCase().split(' ').some((word) => word.length > 3 && item.description.toLowerCase().includes(word)),
+);
+
+/** Three "which project is this?" rounds built from the project archive. */
+export function buildQuiz(random: () => number = Math.random): QuizQuestion[] {
+  return shuffle(fairQuizItems, random).slice(0, 3).map((item) => {
+    const decoys = shuffle(projectArchive.filter((other) => other !== item), random).slice(0, 2);
+    return {
+      prompt: item.description,
+      answer: item.title,
+      choices: shuffle([item, ...decoys], random).map((choice) => choice.title),
+    };
+  });
+}
 
 export type ChipTopic = 'work' | 'projects' | 'stack' | 'contact' | 'default';
 
@@ -822,12 +851,56 @@ function initChatWidget(): void {
     scrollToLatest();
   }
 
+  function quizSay(text: string): void {
+    const bubble = makeBubble('assistant');
+    bubble.textContent = text;
+    announce(text);
+  }
+
+  // Each round's answers are chips; typing anything else clears them, which
+  // is all it takes to drop back into normal chat.
+  function askQuizRound(questions: QuizQuestion[], round = 0, score = 0): void {
+    const { prompt, answer, choices } = questions[round];
+    quizSay(`${round + 1} of 3. Which one is this? “${prompt}”`);
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-followups';
+    for (const choice of choices) {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chat-chip';
+      chip.textContent = choice;
+      chip.addEventListener('click', () => {
+        clearFollowUps();
+        makeBubble('user').textContent = choice;
+        const right = choice === answer;
+        quizSay(right ? `Yep, that’s ${answer}.` : `Nope, that one’s ${answer}.`);
+        if (round + 1 < questions.length) askQuizRound(questions, round + 1, score + Number(right));
+        else quizSay(`You got ${score + Number(right)} of 3. Ask me anything to get back to normal chat.`);
+        scrollToLatest(true);
+      });
+      wrap.appendChild(chip);
+    }
+    log!.appendChild(wrap);
+  }
+
   async function sendMessage(raw: string): Promise<void> {
     const content = truncateMessage(raw.trim(), MAX_MESSAGE_CHARS);
     if (!content || isStreaming() || !hasRoomForTurn(state!.messages, MAX_MESSAGES)) return;
 
     intro!.hidden = true;
     clearFollowUps();
+
+    if (isQuizRequest(content)) {
+      makeBubble('user').textContent = content;
+      input!.value = '';
+      autosizeInput();
+      syncCharCount();
+      syncSendAvailability();
+      quizSay('Okay, a quick one: guess which project Jordan built. Three rounds.');
+      askQuizRound(buildQuiz());
+      scrollToLatest(true);
+      return;
+    }
 
     state = { ...state!, messages: appendMessage(state!.messages, { role: 'user', content }, MAX_MESSAGES) };
     persist();
