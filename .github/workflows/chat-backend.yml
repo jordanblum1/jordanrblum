@@ -43,7 +43,7 @@ jobs:
   # Actions tab (workflow_dispatch) after review.
   provision:
     if: github.event_name == 'workflow_dispatch' && !inputs.diagnose
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -51,6 +51,9 @@ jobs:
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
+
+      - name: Prepare pnpm cache directory
+        run: mkdir -p "$(pnpm store path --silent)"
 
       - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
@@ -348,7 +351,7 @@ jobs:
   # S3, CloudFront) is expected to already exist via the provision job above.
   deploy:
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
@@ -356,6 +359,9 @@ jobs:
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
+
+      - name: Prepare pnpm cache directory
+        run: mkdir -p "$(pnpm store path --silent)"
 
       - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
@@ -425,7 +431,7 @@ jobs:
   # deliberately excludes Environment (it contains the API key).
   diagnose:
     if: github.event_name == 'workflow_dispatch' && inputs.diagnose
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
     permissions:
       contents: read
     steps:
