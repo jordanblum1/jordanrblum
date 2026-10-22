@@ -18,6 +18,9 @@ jobs:
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
 
+      - name: Prepare pnpm cache directory
+        run: mkdir -p "$(pnpm store path --silent)"
+
       - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
 
@@ -56,6 +59,9 @@ jobs:
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
+
+      - name: Prepare pnpm cache directory
+        run: mkdir -p "$(pnpm store path --silent)"
 
       - uses: actions/setup-node@v7
         with: { node-version: 22, cache: pnpm }
