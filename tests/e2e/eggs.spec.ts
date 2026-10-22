@@ -51,3 +51,44 @@ test('direct hash navigation never leaves portfolio content hidden', async ({ pa
   await expect(page.locator('#roam')).toBeVisible();
   await expect(page.locator('#roam')).toContainText('Product Engineer');
 });
+
+test('typing develop hangs a darkroom print of real page text; Escape and click-away put it away', async ({ page }) => {
+  await page.goto('/');
+  const statement = (await page.locator('#hero-title').textContent())!.trim();
+
+  await page.keyboard.type('develop');
+  const print = page.getByRole('dialog', { name: 'Darkroom print' });
+  await expect(print).toBeVisible();
+  // Real DOM text, not a picture of it: findable, selectable, and in the a11y tree.
+  await expect(print.getByText(statement)).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(print).toHaveCount(0);
+
+  await page.keyboard.type('develop');
+  await expect(print).toBeVisible();
+  await page.mouse.click(8, 8);
+  await expect(print).toHaveCount(0);
+});
+
+// Chromium ships HTML-in-Canvas behind a flag until the origin trial ends,
+// so this test launches its own flagged browser to cover the canvas path.
+test('with HTML-in-Canvas, the print develops on a WebGL canvas that still holds the real text', async ({ playwright, baseURL }) => {
+  const browser = await playwright.chromium.launch({ args: ['--enable-blink-features=CanvasDrawElement'] });
+  const page = await browser.newPage({ baseURL });
+  await page.goto('/');
+  test.skip(!(await page.evaluate(() => 'onpaint' in HTMLCanvasElement.prototype)), 'this Chromium has no HTML-in-Canvas');
+  const statement = (await page.locator('#hero-title').textContent())!.trim();
+
+  await page.keyboard.type('develop');
+  const plate = page.getByRole('dialog', { name: 'Darkroom print' }).locator('canvas');
+  await expect(plate.getByText(statement)).toBeAttached();
+
+  // Once developed, the canvas pixels carry the text: not blank paper.
+  const { default: sharp } = await import('sharp');
+  await expect.poll(async () => {
+    const { channels } = await sharp(await plate.screenshot()).stats();
+    return channels[0].stdev;
+  }, { timeout: 6000 }).toBeGreaterThan(20);
+  await browser.close();
+});

@@ -15,6 +15,8 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+// Chrome's HTML-in-Canvas origin trial token for the "develop" egg; unset means no tag.
+const htmlInCanvasToken = import.meta.env.PUBLIC_HTML_IN_CANVAS_OT_TOKEN;
 const canonicalPath = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, '');
 const canonical = new URL(canonicalPath, Astro.site ?? Astro.url.origin);
 // .jpg (not .png) is deliberate: the new filename busts every scraper cache
@@ -50,6 +52,7 @@ const personSchema = {
     <link rel="preload" as="font" type="font/woff2" crossorigin href={switzer600Url} />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={chillax600Url} />
     <meta name="color-scheme" content="light" />
+    {htmlInCanvasToken && <meta http-equiv="origin-trial" content={htmlInCanvasToken} />}
     <meta name="theme-color" content="#F7F3ED" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Jordan Blum" />

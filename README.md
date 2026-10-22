@@ -19,7 +19,9 @@ The visual tokens in `src/styles/tokens.css` are generated from the canonical Ob
 - `pnpm test:unit` — content and utility invariants
 - `pnpm test:e2e` — desktop, mobile, no-JS, reduced-motion, and interaction coverage
 
-The site deploys to S3, with optional CloudFront invalidation, on pushes to `master`, gated by a CI job that runs the unit, e2e, and `server/` test suites. Try typing `grain` on the finished site.
+The site deploys to S3, with optional CloudFront invalidation, on pushes to `master`, gated by a CI job that runs the unit, e2e, and `server/` test suites. Try typing `grain` or `develop` on the finished site.
+
+`develop` hangs a darkroom print of the page's own words. In Chrome with HTML-in-Canvas, the real DOM develops through a WebGL shader and stays selectable; other browsers get the same print with a CSS develop. To turn the API on for visitors, register for the [HTML-in-Canvas origin trial](https://developer.chrome.com/origintrials/#/view_trial/3478467762190286849) and set `PUBLIC_HTML_IN_CANVAS_OT_TOKEN` at build time; `Base.astro` adds the `origin-trial` meta tag only when it's set.
 
 ## Assistant chat
 
