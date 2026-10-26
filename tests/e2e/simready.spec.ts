@@ -1,13 +1,22 @@
 import { expect, test } from '@playwright/test';
+import { hero, about } from '../../src/data/site';
 
-test('the unlisted lab exposes exactly three linked, keyboard-accessible studies', async ({page}) => {
+const titles = ['Workbench Recommended', 'Hero Accent', 'About Signature'];
+const ids = ['workbench', 'hero-accent', 'about-signature'];
+
+test('homepage previews have manual keyboard tabs, deep links and browser history', async ({page}) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
   await page.route('https://huggingface.co/**', route => route.abort());
   await page.goto('/labs/simready');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
+  await expect(page.getByRole('navigation', {name:'Primary'})).toBeVisible();
+  await expect(page.getByRole('link', {name:'Jordan Blum — home'})).toBeVisible();
   const tabs = page.getByRole('tab');
-  await expect(tabs).toHaveText(['01Dispatch', '02Working Set', '03Counter Study']);
+  await expect(tabs).toHaveText(titles);
   await expect(tabs).toHaveCount(3);
   await expect(page.getByRole('tabpanel')).toHaveCount(1);
+  await expect(page.getByRole('heading', {name:hero.statement})).toBeVisible();
   await tabs.nth(0).focus();
   await page.keyboard.press('ArrowLeft');
   await expect(tabs.nth(2)).toBeFocused();
@@ -16,61 +25,82 @@ test('the unlisted lab exposes exactly three linked, keyboard-accessible studies
   await expect(tabs.nth(0)).toBeFocused();
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/#working-set$/);
-  await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'tab-working-set');
+  await expect(page).toHaveURL(/#hero-accent$/);
+  const heroPanel = page.getByRole('tabpanel');
+  await expect(heroPanel).toHaveAttribute('aria-labelledby', 'tab-hero-accent');
+  await expect(heroPanel.getByRole('img', {name:'Illustrated portrait of Jordan Blum'})).toBeVisible();
+  await expect(heroPanel.getByText(hero.support, {exact:true})).toBeVisible();
   await page.keyboard.press('End');
   await page.keyboard.press('Space');
-  await expect(page).toHaveURL(/#counter-study$/);
-  await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+  await expect(page).toHaveURL(/#about-signature$/);
+  await expect(page.getByRole('heading', {name:about.title})).toBeVisible();
+  await expect(page.getByText(about.paragraphs[0], {exact:true})).toBeVisible();
+  await expect(page.getByText(about.paragraphs[2], {exact:true})).toBeVisible();
   await page.goBack();
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await page.reload();
   await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByText('Visual preview, not physics simulation.', {exact:false})).toBeVisible();
   await expect(page.getByRole('link', {name:'CC-BY-4.0'})).toBeVisible();
-});
-
-test('only the active pinned package is requested and a failed load retains an interactive fallback', async ({page}) => {
-  test.setTimeout(70_000);
-  const requests: string[] = [];
-  const errors: string[] = [];
-  page.on('pageerror', error => errors.push(error.message));
-  await page.route('https://huggingface.co/**', route => { requests.push(route.request().url()); return route.abort(); });
-  await page.goto('/labs/simready#working-set');
-  await expect(page.locator('#working-set [data-status]')).toContainText('Showing the authored illustration.', {timeout:60_000});
-  const slider = page.getByRole('slider', {name:'Pull apart'});
-  await slider.fill('80');
-  await expect(page.locator('#working-set output')).toHaveText('80%');
-  await expect(page.locator('#working-set svg')).toBeVisible();
-  await expect(page.locator('canvas')).toHaveCount(0);
-  expect(requests.length).toBeGreaterThan(0);
-  for (const url of requests) {
-    expect(url).toContain('524747d9b5e1f21b5b18b56041788c01d745f1a1');
-    expect(url).toContain('chair_office_amf_black_a01');
-  }
-  await page.getByRole('tab', {name:'03 Counter Study'}).click();
-  await expect(page.locator('#counter-study [data-status]')).toContainText('Showing the authored illustration.', {timeout:60_000});
-  await page.getByLabel('Light', {exact:true}).selectOption('late');
-  await expect(page.locator('#counter-study [data-stage]')).toHaveAttribute('data-light','late');
-  await page.locator('#counter-study [data-stage]').focus();
-  await page.keyboard.press('ArrowRight');
-  await expect(page.locator('#counter-study [data-stage]')).toHaveCSS('--cup-x','10px');
-  await page.getByRole('button', {name:'Reset composition'}).click();
-  await expect(page.locator('#counter-study [data-stage]')).toHaveCSS('--cup-x','0px');
   expect(errors).toEqual([]);
 });
 
-test('390px layout and reduced motion keep all three studies usable', async ({page}) => {
-  await page.setViewportSize({width:390,height:844});
-  await page.emulateMedia({reducedMotion:'reduce'});
-  await page.route('https://huggingface.co/**', route => route.abort());
-  await page.goto('/labs/simready');
-  for (const name of ['01 Dispatch', '02 Working Set', '03 Counter Study']) {
-    await page.getByRole('tab', {name}).click();
-    await expect(page.getByRole('tabpanel')).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+test('only the active pinned spray can loads; failure leaves the authored can in every placement', async ({page}) => {
+  test.setTimeout(90_000);
+  const requests: string[] = [];
+  const forbidden: string[] = [];
+  page.on('request', request => { if (/analytics|google-analytics|\/api\/chat|transcript/i.test(request.url())) forbidden.push(request.url()); });
+  await page.route('https://huggingface.co/**', route => { requests.push(route.request().url()); return route.abort(); });
+  await page.goto('/labs/simready#hero-accent');
+  for (const id of ['hero-accent', 'workbench', 'about-signature']) {
+    await page.locator(`#tab-${id}`).click();
+    await expect(page.locator(`#${id} [data-status]`)).toContainText('Showing the authored illustration.', {timeout:60_000});
+    await expect(page.getByRole('img', {name:'Spray can illustration'})).toBeVisible();
+    await expect(page.locator('canvas')).toHaveCount(0);
+    await expect(page.locator('[data-viewer]')).toHaveCount(3);
   }
-  await page.getByRole('tab', {name:'01 Dispatch'}).click();
-  await expect(page.locator('#dispatch [data-stage]')).toHaveAttribute('data-moving','false');
-  await expect(page.getByRole('button', {name:'Resume movement'})).toBeDisabled();
-  await page.getByLabel('Route', {exact:true}).selectOption('b');
-  await expect(page.locator('#dispatch [data-stage]')).toHaveAttribute('data-route','b');
+  expect(requests.length).toBeGreaterThanOrEqual(3);
+  for (const url of requests) {
+    expect(url).toContain('524747d9b5e1f21b5b18b56041788c01d745f1a1');
+    expect(url).toContain('paint_container_spraycan_a01');
+  }
+  expect(forbidden).toEqual([]);
+  await expect(page.getByRole('combobox')).toHaveCount(0);
+  await expect(page.getByRole('slider')).toHaveCount(0);
+});
+
+test('desktop and 390px reduced-motion layouts preserve the portrait and usable controls', async ({page}) => {
+  await page.route('https://huggingface.co/**', route => route.abort());
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/labs/simready');
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({width,height:1000});
+    for (const id of ids) {
+      await page.locator(`#tab-${id}`).click();
+      await expect(page.getByRole('tabpanel')).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const tab = await page.locator(`#tab-${id}`).boundingBox();
+      expect(tab!.height).toBeGreaterThanOrEqual(44);
+      const stage = page.locator(`#${id} [data-stage]`);
+      await expect(stage).toBeVisible();
+      if (id === 'hero-accent') {
+        const face = await page.getByRole('img', {name:'Illustrated portrait of Jordan Blum'}).boundingBox();
+        const can = await stage.boundingBox();
+        expect(can!.width).toBeLessThan(face!.width);
+        expect(can!.y).toBeGreaterThan(face!.y + face!.height * .65);
+      }
+      await page.screenshot({path:`test-results/simready-${id}-${width}.png`,fullPage:true});
+    }
+  }
+});
+
+test('without JavaScript the recommended homepage placement and source disclosure remain', async ({browser}) => {
+  const context = await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
+  const page = await context.newPage();
+  await page.goto('/labs/simready');
+  await expect(page.getByRole('heading', {name:hero.statement})).toBeVisible();
+  await expect(page.getByRole('img', {name:'Spray can illustration'})).toBeVisible();
+  await expect(page.getByRole('link', {name:'Source spray can'})).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(0);
+  await context.close();
 });

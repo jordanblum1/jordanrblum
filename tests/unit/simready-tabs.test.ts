@@ -28,35 +28,35 @@ test('arrow/Home/End only move focus; Enter/Space activate and persist the selec
   tabs[0].dispatchEvent(new KeyboardEvent('keydown', {key:'ArrowRight', bubbles:true}));
   tabs[1].dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', bubbles:true}));
   await flush();
-  expect(location.hash).toBe('#working-set');
+  expect(location.hash).toBe('#hero-accent');
   expect(tabs[1].getAttribute('aria-selected')).toBe('true');
-  expect(root.querySelector<HTMLElement>('#working-set')!.hidden).toBe(false);
+  expect(root.querySelector<HTMLElement>('#hero-accent')!.hidden).toBe(false);
   expect(dispose).toHaveBeenCalledOnce();
   tabs[1].dispatchEvent(new KeyboardEvent('keydown', {key:'End', bubbles:true}));
   expect(document.activeElement).toBe(tabs[2]);
   tabs[2].dispatchEvent(new KeyboardEvent('keydown', {key:' ', bubbles:true}));
   await flush();
-  expect(location.hash).toBe('#counter-study');
+  expect(location.hash).toBe('#about-signature');
   expect(root.querySelectorAll('[aria-selected=true]')).toHaveLength(1);
   expect(root.querySelectorAll('[role=tab][tabindex="0"]')).toHaveLength(1);
 });
 
-test('deep links load one asset; hash navigation disposes and aborts the previous study', async () => {
-  history.replaceState(null, '', '/labs/simready#counter-study');
+test('deep links load one asset; hash navigation disposes and aborts the previous preview', async () => {
+  history.replaceState(null, '', '/labs/simready#about-signature');
   const root = fixture();
   const dispose = vi.fn();
   const createStage = vi.fn<typeof StageFactory>(() => dispose);
   cleanups.push(mountLab(root, async () => ({ createStage })));
   await flush();
-  expect(createStage.mock.calls[0][1].id).toBe('counter-study');
+  expect(createStage.mock.calls[0][1].id).toBe('about-signature');
   const firstSignal = createStage.mock.calls[0][2];
-  history.pushState(null, '', '#dispatch');
+  history.pushState(null, '', '#workbench');
   window.dispatchEvent(new HashChangeEvent('hashchange'));
   await flush();
   expect(firstSignal.aborted).toBe(true);
   expect(dispose).toHaveBeenCalledOnce();
   expect(createStage).toHaveBeenCalledTimes(2);
-  expect(createStage.mock.calls[1][1].id).toBe('dispatch');
+  expect(createStage.mock.calls[1][1].id).toBe('workbench');
 });
 
 test('rapid switching cannot start a stale scene after a delayed module import', async () => {
@@ -65,18 +65,18 @@ test('rapid switching cannot start a stale scene after a delayed module import',
   let resolve!: (module: {createStage: typeof createStage}) => void;
   const pending = new Promise<{createStage: typeof createStage}>(done => { resolve = done; });
   cleanups.push(mountLab(root, () => pending));
-  root.querySelector<HTMLButtonElement>('#tab-working-set')!.click();
-  root.querySelector<HTMLButtonElement>('#tab-counter-study')!.click();
+  root.querySelector<HTMLButtonElement>('#tab-hero-accent')!.click();
+  root.querySelector<HTMLButtonElement>('#tab-about-signature')!.click();
   resolve({createStage});
   await flush();
   expect(createStage).toHaveBeenCalledOnce();
-  expect(createStage.mock.calls[0][1].id).toBe('counter-study');
+  expect(createStage.mock.calls[0][1].id).toBe('about-signature');
 });
 
 test('module failure leaves a visible explicit fallback state', async () => {
   const root = fixture();
   cleanups.push(mountLab(root, async () => { throw new Error('chunk failed'); }));
   await flush();
-  expect(root.querySelector('#dispatch [data-status]')!.textContent).toContain('illustration');
-  expect(root.querySelector<HTMLProgressElement>('#dispatch progress')!.hidden).toBe(true);
+  expect(root.querySelector('#workbench [data-status]')!.textContent).toContain('illustration');
+  expect(root.querySelector<HTMLProgressElement>('#workbench progress')!.hidden).toBe(true);
 });

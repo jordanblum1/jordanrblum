@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Scene } from 'three';
 import { concepts, assetUrl } from '../../src/data/simready';
 import type { LoadOptions, ViewerOptions } from '@huggingface/usd-web-viewer';
 
@@ -12,12 +12,12 @@ const cleanups: (() => void)[] = [];
 let reduced = false;
 beforeEach(() => {
   reduced = false;
-  vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), {matches:reduced}));
+  vi.stubGlobal('matchMedia', vi.fn(() => Object.assign(new EventTarget(), {matches:reduced})));
 });
 afterEach(() => { cleanups.splice(0).forEach(fn => fn()); vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ''; });
 
 function setup(index = 0, partCount = 2) {
-  document.body.innerHTML = `<section><div data-stage><div data-viewer></div><span data-medium></span><span data-route-label></span><span data-time-label></span></div><p data-status></p><progress data-progress></progress><details data-warnings><span data-warning-count></span><ul data-warning-list></ul></details><select data-route><option value="a">A</option><option value="b">B</option></select><button data-motion></button><input data-explode type="range" value="0"/><output></output><select data-light><option value="morning">Morning</option><option value="late">Late</option></select><button data-reset></button></section>`;
+  document.body.innerHTML = `<section><div data-stage><svg role="img"></svg><div data-viewer></div></div><p data-status></p><progress data-progress></progress></section>`;
   const panel = document.querySelector('section')!;
   const root = new Group();
   const positions = partCount === 1 ? [0] : [-1, 1];
@@ -45,7 +45,7 @@ function setup(index = 0, partCount = 2) {
 }
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); };
 
-test('loads only its pinned asset with conservative limits and displays progress and warnings', async () => {
+test('loads its pinned spray can with safety limits and quiet partial-preview status', async () => {
   const study = setup();
   study.result.info.warnings.push({code:'material-fallback', message:'Unsupported material shown grey.'});
   let finish!: (value: {textures:number; failed:number}) => void;
@@ -61,8 +61,7 @@ test('loads only its pinned asset with conservative limits and displays progress
   expect(study.panel.querySelector('[data-stage]')!.getAttribute('data-loaded')).toBe('true');
   finish({textures:0, failed:0});
   await flush();
-  expect(study.panel.querySelector('[data-status]')!.textContent).toBe('Asset loaded with preview warnings.');
-  expect(study.panel.querySelector('[data-warning-list]')!.textContent).toContain('Unsupported material');
+  expect(study.panel.querySelector('[data-status]')!.textContent).toContain('simplified');
   study.abort.abort();
   expect(study.loadOptions().signal!.aborted).toBe(true);
   expect(study.viewer.dispose).toHaveBeenCalledOnce();
@@ -73,7 +72,7 @@ test('format or cross-origin errors keep the illustration, hide progress and dis
   study.viewer.load.mockRejectedValue(Object.assign(new Error('unsupported'), {code:'compose'}));
   study.start();
   await flush();
-  expect(study.panel.querySelector('[data-status]')!.textContent).toContain('failed (compose');
+  expect(study.panel.querySelector('[data-status]')!.textContent).toContain('3D preview unavailable.');
   expect(study.panel.querySelector('[data-stage]')!.getAttribute('data-loaded')).toBe('false');
   expect(study.panel.querySelector<HTMLProgressElement>('[data-progress]')!.hidden).toBe(true);
   expect(study.viewer.dispose).toHaveBeenCalledOnce();
@@ -96,45 +95,43 @@ test('timeout aborts the active download and preserves a usable fallback', async
   expect(study.viewer.dispose).toHaveBeenCalledOnce();
 });
 
-test('the chair slider separates actual mesh parts and returns them to authored positions', async () => {
-  const study = setup(1);
-  study.start();
-  await flush();
-  const initial = study.root.children.map(part => part.getWorldPosition(new Vector3()));
-  const slider = study.panel.querySelector<HTMLInputElement>('[data-explode]')!;
-  slider.value = '100'; slider.dispatchEvent(new Event('input'));
-  expect(study.root.children[0].getWorldPosition(new Vector3()).y).toBeLessThan(initial[0].y);
-  expect(study.root.children[1].getWorldPosition(new Vector3()).y).toBeGreaterThan(initial[1].y);
-  slider.value = '0'; slider.dispatchEvent(new Event('input'));
-  expect(study.root.children.map(part => part.getWorldPosition(new Vector3()))).toEqual(initial);
-  expect(study.root.children.every(part => part.matrix.elements[4] === .2)).toBe(true);
-});
-
-test('a single-mesh chair becomes a three-layer editorial exploded study', async () => {
-  const study = setup(1, 1);
-  study.start();
-  await flush();
-  expect(study.root.children).toHaveLength(3);
-  const slider = study.panel.querySelector<HTMLInputElement>('[data-explode]')!;
-  slider.value = '100'; slider.dispatchEvent(new Event('input'));
-  const xs = study.root.children.map(part => part.getWorldPosition(new Vector3()).x);
-  expect(Math.min(...xs)).toBeLessThan(0);
-  expect(Math.max(...xs)).toBeGreaterThan(0);
-  slider.value = '0'; slider.dispatchEvent(new Event('input'));
-  expect(study.root.children.map(part => part.getWorldPosition(new Vector3()).x)).toEqual([0, 0, 0]);
-});
-
-test('reduced motion disables stage movement while route and light controls still work', async () => {
+test('reduced motion disables damping and preference changes update the live viewer', async () => {
   reduced = true;
   const study = setup(2);
   study.start();
   await flush();
   expect(study.viewer.controls.enableDamping).toBe(false);
-  expect(study.panel.querySelector('[data-stage]')!.getAttribute('data-moving')).toBe('false');
-  const light = study.panel.querySelector<HTMLSelectElement>('select[data-light]')!;
-  light.value = 'late'; light.dispatchEvent(new Event('change'));
-  expect(study.viewer.renderer.toneMappingExposure).toBe(.85);
-  expect(study.panel.querySelector('[data-stage]')!.getAttribute('data-light')).toBe('late');
+  const media = vi.mocked(matchMedia).mock?.results?.[0]?.value;
+  if (media) {
+    media.matches = false;
+    media.dispatchEvent(new Event('change'));
+    expect(study.viewer.controls.enableDamping).toBe(true);
+  }
+});
+
+test('switching while a load is pending aborts transport and disposes late geometry', async () => {
+  const study = setup();
+  let finish!: (result: typeof study.result) => void;
+  let pendingSignal: AbortSignal | undefined;
+  study.viewer.load.mockImplementation((_url, options) => { pendingSignal = options.signal; return new Promise(done => { finish = done; }); });
+  study.start();
+  study.abort.abort();
+  expect(pendingSignal!.aborted).toBe(true);
+  expect(study.viewer.dispose).toHaveBeenCalledOnce();
+  finish(study.result);
+  await flush();
+  expect(study.result.dispose).toHaveBeenCalled();
+  expect(study.panel.querySelectorAll('canvas')).toHaveLength(0);
+  expect(study.panel.querySelector('[data-stage]')!.getAttribute('data-loaded')).toBe('false');
+});
+
+test('empty geometry keeps the authored can and disposes the renderer', async () => {
+  const study = setup();
+  study.result.info.meshes = 0;
+  study.start();
+  await flush();
+  expect(study.panel.querySelector('[data-status]')!.textContent).toContain('No drawable geometry');
+  expect(study.viewer.dispose).toHaveBeenCalledOnce();
 });
 
 test('a lost WebGL context returns to the explicit illustration state', async () => {

@@ -1,9 +1,13 @@
 ---
+import { Image } from 'astro:assets';
 import '@fontsource/geist-mono';
 import '../../styles/global.css';
 import '../../styles/simready.css';
-import Illustration from '../../components/simready/Illustration.astro';
+import jrbRed from '../../assets/identity/jrb-logo-red.png';
+import HomepagePreview from '../../components/simready/HomepagePreview.astro';
 import { concepts, assetUrl, source } from '../../data/simready';
+import { social } from '../../data/site';
+const email = social.find(link => link.label === 'Email')!;
 ---
 <!doctype html>
 <html lang="en">
@@ -11,40 +15,35 @@ import { concepts, assetUrl, source } from '../../data/simready';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content="Three interactive OpenUSD object studies in an unlisted concept lab." />
+    <meta name="description" content="Three homepage integration previews for Jordan Blum’s personal site." />
     <meta name="color-scheme" content="light" />
-    <title>SimReady Concept Lab — Jordan Blum</title>
+    <title>Homepage previews — Jordan Blum</title>
     <link rel="icon" href="/favicon.png" />
   </head>
   <body class="simready-page">
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <header class="lab-header"><a href="/">Jordan Blum</a><span>Unlisted / Explore</span></header>
-    <main id="main-content" tabindex="-1" data-simready-lab>
-      <div class="lab-title"><h1>SimReady Concept Lab</h1></div>
-      <div role="tablist" aria-label="Object studies" aria-orientation="horizontal">
-        {concepts.map((concept, i) => <button type="button" role="tab" aria-label={`${concept.number} ${concept.title}`} id={`tab-${concept.id}`} aria-controls={concept.id} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}><span>{concept.number}</span>{concept.title}</button>)}
+    <nav class="preview-nav" aria-label="Primary">
+      <a class="preview-wordmark" href="/" aria-label="Jordan Blum — home"><Image src={jrbRed} alt="" width={56} height={56} loading="eager" /></a>
+      <a href="/#work">Work</a>
+      <a href="/about">About</a>
+      <a href={email.href}>Email</a>
+    </nav>
+    <main id="main-content" class="wide" tabindex="-1" data-simready-lab>
+      <div class="preview-switcher">
+        <span class="preview-label" id="preview-label">Homepage preview</span>
+        <div role="tablist" aria-labelledby="preview-label" aria-orientation="horizontal">
+          {concepts.map((concept, i) => <button type="button" role="tab" id={`tab-${concept.id}`} aria-controls={concept.id} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{concept.title}{i === 0 && <span class="recommended"> Recommended</span>}</button>)}
+        </div>
       </div>
-      {concepts.map((concept, i) => <section role="tabpanel" id={concept.id} aria-labelledby={`tab-${concept.id}`} tabindex="0" hidden={i !== 0} data-concept={concept.id}>
-        <div class="study-caption"><p>{concept.description}</p></div>
-        <div class={`study-stage stage-${concept.id}`} data-stage>
-          <Illustration concept={concept.id}/>
-          <div class="usd-host" data-viewer aria-label={`${concept.title} interactive asset preview`}></div>
-          {concept.id === 'working-set' && <div class="asset-annotations" aria-hidden="true"><span>input</span><span>attention</span><span>revision</span></div>}
-          <span class="stage-medium" data-medium>Authored illustration · awaiting OpenUSD</span>
-        </div>
-        <div class="study-controls">
-          {concept.id === 'dispatch' && <><label for="dispatch-route">Route</label><select id="dispatch-route" data-route><option value="a">A · Through</option><option value="b">B · Divert</option></select><button type="button" data-motion aria-pressed="false">Pause movement</button></>}
-          {concept.id === 'working-set' && <><label for="working-set-pull">Pull apart</label><input id="working-set-pull" class="pull-slider" data-explode type="range" min="0" max="100" value="0"/><output for="working-set-pull" data-amount>0%</output></>}
-          {concept.id === 'counter-study' && <><label for="counter-light">Light</label><select id="counter-light" data-light><option value="morning">Morning</option><option value="window">Window</option><option value="late">Late</option></select><button type="button" data-reset>Reset composition</button><span class="orbit-hint">Drag to orbit · arrows to pan · + / − to zoom</span></>}
-        </div>
-        <div class="load-status" role="status" aria-live="polite" aria-atomic="true"><p data-status>Loading OpenUSD preview…</p><progress data-progress max="1" aria-label={`${concept.title} asset loading`}></progress></div>
-        <details class="load-warnings" data-warnings hidden><summary>Preview warnings <span data-warning-count></span></summary><ul data-warning-list></ul></details>
-        <p class="asset-link"><a href={assetUrl(concept.asset)}>Source asset ↗</a><span>OpenUSD / {concept.number}</span></p>
+      {concepts.map((concept, i) => <section role="tabpanel" id={concept.id} aria-labelledby={`tab-${concept.id}`} tabindex="0" hidden={i !== 0}>
+        <p class="concept-summary">{concept.description}</p>
+        <HomepagePreview concept={concept.id} />
+        <div class="load-status" role="status" aria-live="polite" aria-atomic="true"><p data-status>Loading spray can…</p><progress data-progress max="1" aria-label={`${concept.title} spray can loading`}></progress></div>
       </section>)}
-      <noscript><p>JavaScript is needed to switch studies and load OpenUSD. The Dispatch illustration and its source link remain available.</p></noscript>
-      <footer class="lab-footer">
-        <p>Visual preview, not physics simulation. Movement, exploded offsets, and lighting are authored studies.</p>
-        <p>Assets: <a href="https://developer.nvidia.com/simready">NVIDIA SimReady</a> via <a href={source}>Hugging Face</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>. Preview presentation modified by Jordan Blum.</p>
+      <noscript><p>JavaScript enables the preview switcher and live 3D. The Workbench illustration remains available.</p></noscript>
+      <footer class="preview-disclosure">
+        <p>Visual preview, not physics simulation. The illustration is an authored fallback; 3D materials may be simplified.</p>
+        <p><a href={assetUrl(concepts[0].asset)}>Source spray can</a> · <a href="https://developer.nvidia.com/simready">NVIDIA SimReady</a> via <a href={source}>Hugging Face</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY-4.0</a>. Presentation modified by Jordan Blum.</p>
       </footer>
     </main>
     <script>

@@ -1,19 +1,9 @@
+const sprayCan = 'paint_container_spraycan_a01/simready_usd/sm_paint_container_spraycan_a01_01.usd';
+
 export const concepts = [
-  {
-    id: 'dispatch', number: '01', title: 'Dispatch',
-    description: 'A conveyor in motion. Switch routes to change its orientation.',
-    asset: 'conveyor_belt_a02/simready_usd/sm_conveyor_belt_a02_01.usd',
-  },
-  {
-    id: 'working-set', number: '02', title: 'Working Set',
-    description: 'Pull the chair apart: input, attention, revision.',
-    asset: 'chair_office_amf_black_a01/simready_usd/sm_chair_office_amf_black_a01_01.usd',
-  },
-  {
-    id: 'counter-study', number: '03', title: 'Counter Study',
-    description: 'Move the cup. Shift the light.',
-    asset: 'food_beverage_coffeeCup_a01/simready_usd/sm_food_beverage_coffeeCup_a01_01.usd',
-  },
+  { id: 'workbench', title: 'Workbench', description: 'Adds an interactive spray can to the existing BLUM workbench.', asset: sprayCan },
+  { id: 'hero-accent', title: 'Hero Accent', description: 'Adds the can as a small foreground detail while Jordan’s portrait stays primary.', asset: sprayCan },
+  { id: 'about-signature', title: 'About Signature', description: 'Adds the can to the existing collage as a quiet studio signature.', asset: sprayCan },
 ] as const;
 
 export type ConceptId = typeof concepts[number]['id'];

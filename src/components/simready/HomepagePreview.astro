@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets';
+import { hero, about } from '../../data/site';
+import type { ConceptId } from '../../data/simready';
+import jordanPortrait from '../../assets/identity/jordan-portrait-blue.png';
+import fieldWash from '../../assets/textures/field-wash.webp';
+import blumMarkSource from '../../assets/identity/blum-mark.svg?raw';
+import blumCollage from '../../assets/identity/blum-collage.png';
+import blumTagLogo from '../../assets/identity/blum-tag-logo.png';
+import SprayCan from './SprayCan.astro';
+
+interface Props { concept: ConceptId }
+const { concept } = Astro.props;
+const blumMark = blumMarkSource.replace(/<\?xml[^>]*>\s*/, '').replace(/<defs>[\s\S]*?<\/defs>/, '');
+---
+
+{concept !== 'about-signature' ? (
+  <div class:list={['homepage-hero', { 'workbench-hero': concept === 'workbench' }]}>
+    <div class="intro-panel">
+      <h1>{hero.statement}</h1>
+      <div class="hero-detail">
+        <p class="support">{hero.support}</p>
+        <ul class="profile-facts" aria-label="A few quick facts about Jordan">
+          <li>Member of technical staff at <a href="https://www.savvywealth.com" target="_blank" rel="noopener"><img src="/company/savvy.svg" alt="Savvy" width="47" height="16" /><span class="visually-hidden"> (opens in a new tab)</span></a></li>
+          <li>New York</li>
+        </ul>
+      </div>
+    </div>
+    <div class="portrait-panel">
+      <Image class="portrait" src={jordanPortrait} alt="Illustrated portrait of Jordan Blum" widths={[512, 768, 1024]} sizes="(max-width: 52rem) 65vw, 28vw" loading="eager" />
+      {concept === 'hero-accent' && <SprayCan />}
+    </div>
+    {concept === 'workbench' && <div class="workbench-field">
+      <Image class="field-wash" src={fieldWash} alt="" widths={[688, 1376]} sizes="(max-width: 72rem) 100vw, 72rem" loading="eager" />
+      <span class="field-mark" aria-hidden="true" set:html={blumMark}></span>
+      <SprayCan />
+      <a class="field-link" href="/#work">See the work <span aria-hidden="true">↓</span></a>
+    </div>}
+  </div>
+) : (
+  <div class="about-preview">
+    <div class="about-copy">
+      <h1>{about.title}</h1>
+      <p>{about.paragraphs[0]}</p>
+      <p>{about.paragraphs[2]}</p>
+      <a class="round-link" href="/about">Read the longer version <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="signature-collage">
+      <a class="personal-note" href="https://blumblumblum.com" target="_blank" rel="noopener">
+        <Image class="personal-note-image" src={blumCollage} alt="" widths={[480, 640, 960, 1280]} sizes="(max-width: 52rem) calc(100vw - 2rem), 58vw" loading="eager" />
+        <span class="note-arrow" aria-hidden="true">↗</span>
+        <span class="note-plaque"><Image class="note-logo" src={blumTagLogo} alt="" width={300} /></span>
+        <span class="visually-hidden">Visit blumblumblum (opens in a new tab)</span>
+      </a>
+      <SprayCan />
+    </div>
+  </div>
+)}

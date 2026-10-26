@@ -30,7 +30,7 @@ export function mountLab(root: HTMLElement, loadStage: () => Promise<StageModule
       if (!current.signal.aborted) dispose = createStage(panel, concept, current.signal);
     }).catch(() => {
       if (current.signal.aborted) return;
-      panel.querySelector('[data-status]')!.textContent = 'Preview module unavailable. Showing the authored illustration.';
+      panel.querySelector('[data-status]')!.textContent = '3D preview unavailable. Showing the authored illustration.';
       panel.querySelector<HTMLProgressElement>('[data-progress]')!.hidden = true;
     });
   }
