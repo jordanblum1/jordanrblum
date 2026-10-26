@@ -1,7 +1,7 @@
 const sprayCan = 'paint_container_spraycan_a01/simready_usd/sm_paint_container_spraycan_a01_01.usd';
 
 export const concepts = [
-  { id: 'workbench', title: 'Workbench', description: 'Pairs Jordan’s homepage headline with an MTN-inspired can on the BLUM workbench.', asset: sprayCan },
+  { id: 'workbench', title: 'Workbench', description: 'Pairs Jordan’s homepage headline with a BLUM can on the BLUM workbench.', asset: sprayCan },
   { id: 'hero-accent', title: 'Hero Accent', description: 'Adds the can as a small foreground detail while Jordan’s portrait stays primary.', asset: sprayCan },
   { id: 'about-signature', title: 'About Signature', description: 'Adds the can to the existing collage as a quiet studio signature.', asset: sprayCan },
 ] as const;

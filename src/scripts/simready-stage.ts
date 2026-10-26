@@ -27,11 +27,15 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
   host.replaceChildren();
 
   function releaseViewer() {
+    events.abort();
     releaseTreatment?.();
     releaseTreatment = undefined;
     const current = viewer;
     viewer = undefined;
-    current?.dispose();
+    if (current) {
+      current.controls.enabled = false;
+      current.dispose();
+    }
     host.replaceChildren();
     stage.dataset.loaded = 'false';
     illustration?.setAttribute('aria-hidden', 'false');
@@ -58,8 +62,9 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
       viewer.controls.enabled = false;
       const canvas = viewer.renderer.domElement;
       canvas.tabIndex = -1;
-      canvas.setAttribute('role', 'img');
-      canvas.setAttribute('aria-label', 'MTN-inspired spray can 3D preview');
+      canvas.setAttribute('role', 'region');
+      canvas.setAttribute('aria-label', 'Interactive BLUM spray can. Arrow keys rotate; plus and minus zoom; Home or double-click resets.');
+      viewer.controls.stopListenToKeyEvents();
       const result = await viewer.load(assetUrl(concept.asset), {
         textures: 'preview', maxTextureSize: 1024, maxTriangles: 1_000_000, maxInstances: 10_000,
         maxConcurrentFetches: 4, maxLayerBytes: 128 * 1024 * 1024, maxTextureBytes: 64 * 1024 * 1024, maxLayers: 128,
@@ -88,16 +93,60 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
       camera.lookAt(center);
       camera.updateMatrixWorld();
       viewer.controls.target.copy(center);
-      viewer.controls.update();
+      const controls = viewer.controls;
+      controls.enablePan = false;
+      controls.enableRotate = true;
+      controls.enableZoom = true;
+      controls.autoRotate = false;
+      controls.minDistance = distance * .65;
+      controls.maxDistance = distance * 2;
+      controls.update();
+      controls.saveState();
+      const reset = () => {
+        const damping = controls.enableDamping;
+        controls.enableDamping = false;
+        controls.update();
+        controls.reset();
+        controls.enableDamping = damping;
+        viewer?.requestRender();
+      };
+      const zoom = (factor: number) => {
+        const offset = camera.position.clone().sub(controls.target);
+        const next = Math.min(controls.maxDistance, Math.max(controls.minDistance, offset.length() * factor));
+        camera.position.copy(controls.target).add(offset.setLength(next));
+        camera.updateMatrixWorld();
+        controls.update();
+        viewer?.requestRender();
+      };
+      canvas.addEventListener('dblclick', reset, {signal:events.signal});
+      canvas.addEventListener('keydown', event => {
+        if (!controls.enabled || event.ctrlKey || event.metaKey || event.altKey) return;
+        switch (event.key) {
+          case 'ArrowLeft': controls.rotateLeft(.15); break;
+          case 'ArrowRight': controls.rotateLeft(-.15); break;
+          case 'ArrowUp': controls.rotateUp(.15); break;
+          case 'ArrowDown': controls.rotateUp(-.15); break;
+          case '+':
+          case '=': zoom(.9); break;
+          case '-':
+          case '_': zoom(1.1); break;
+          case 'Home': reset(); break;
+          default: return;
+        }
+        event.preventDefault();
+        viewer?.requestRender();
+      }, {signal:events.signal});
+      controls.enabled = true;
+      canvas.tabIndex = 0;
       viewer.requestRender();
       stage.dataset.loaded = 'true';
       illustration?.setAttribute('aria-hidden', 'true');
+      const ready = 'Spray can ready · drag to rotate · scroll to zoom · Home or double-click to reset.';
+      status.textContent = ready;
       const textures = await complete;
       if (!textures || signal.aborted || load.signal.aborted) return;
       clearTimeout(timer);
-      status.textContent = result.info.warnings.length || textures.failed
-        ? 'Spray can ready · some materials are simplified.'
-        : 'Spray can ready.';
+      status.textContent = ready + (result.info.warnings.length || textures.failed ? ' Some materials are simplified.' : '');
       progress.hidden = true;
       viewer?.requestRender();
     } catch {
@@ -111,7 +160,6 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
     if (disposed) return;
     disposed = true;
     clearTimeout(timer);
-    events.abort();
     load.abort();
     releaseViewer();
     signal.removeEventListener('abort', dispose);

@@ -12,6 +12,7 @@ colors:
   success: "#52735B"
   warning: "#A86E32"
   error: "#A3453C"
+  can-black: "#151515"
 typography:
   h1:
     fontFamily: Chillax
@@ -38,6 +39,9 @@ components:
   secondary-text:
     backgroundColor: "{colors.neutral}"
     textColor: "{colors.secondary}"
+  can-artwork:
+    backgroundColor: "{colors.can-black}"
+    textColor: "{colors.surface}"
   text-link:
     backgroundColor: "{colors.neutral}"
     textColor: "{colors.primary}"
@@ -89,4 +93,10 @@ The public directory registry is `src/data/apps.ts`, with email derived from the
 
 Reference strategy: **existing product system**, sharpened with the warm editorial principles in [`popular-web-designs/templates/claude.md`](https://github.com/VoltAgent/awesome-design-md). This installed reference is a third-party analysis, not an official brand system. Borrowed principles: warm paper/ink contrast; a restrained terracotta/oxblood accent; typography and spacing as hierarchy; original illustration as the focal evidence. Preserve Jordan's own Chillax/Switzer fonts, navigation, texture and BLUM artwork rather than copying a reference layout.
 
-The original inline can uses paper-raised cream, ink outlines, oxblood and warning-ochre (`--paper-raised`, `--ink`, `--accent`, `--warning`); bold, tightly tracked MTN + 94 typography conveys **MTN-inspired concept styling** without fetching brand artwork or claiming affiliation. The default SVG is server-rendered, visible during module/asset loading and retained on failure/no JavaScript. The live can uses an opaque Three.js material with a shared sRGB CanvasTexture: cream body, oxblood MTN + 94 lettering and ochre cap/band. Project artwork in mesh coordinates onto the actual curved surfaces; never add a floating DOM label. Use the same palette and normalized artwork positions as the fallback. The camera stays fixed and pointer/keyboard orbit stays disabled. Keep exactly three tabs, existing focus/history behavior, accessible status and attribution, reduced-motion support, 44px controls and active-only resource lifecycle. No extra headings, badges, marketing copy, dependencies or production CSS changes.
+The can is an **Explore** interaction within the comparison. Its original BLUM studio identity borrows only the visual grammar in the user-supplied research from the official Montana BLACK 400ml product page: matte black, oversized vertical white type, dense cream utility type and a small color ring. No Montana logo, official artwork or product specifications are reproduced. The existing site composition remains the reference for everything outside the can.
+
+The fallback and live paint use only lab-scoped `--can-black` (`#151515`), `--accent` (`#9C4037`) and `--paper-raised` (`#FCFAF6`). The cap/body are charcoal, the exact four paths from `src/assets/identity/blum-mark.svg` are oxblood, and vertical STUDIO/utility details are cream. Never use the global warning/ochre token in can artwork. Utility text describes Jordan and the visual study; do not invent volume, pressure, paint chemistry or performance claims.
+
+The server-rendered SVG appears during loading, on failure and without JavaScript. The live paint uses an opaque Three.js material and shared 1200×1120 sRGB CanvasTexture. An object-relative cylindrical shader projection wraps the print around existing mesh geometry, with fragment-space angular coordinates to avoid interpolation across the rear seam. The print follows the surface at every camera angle; never add a floating DOM label. Top/bottom surfaces share the black treatment, with radially projected details rather than separately authored cap artwork.
+
+Start in the authored frontal pose. Only after drawable, treated geometry arrives, enable pointer/touch orbit, wheel/pinch zoom, focus and keyboard controls. Disable panning, constrain zoom distance to 0.65–2× the authored distance, and keep auto-rotation off. Arrow keys rotate, +/− zoom; Home or double-click resets. Show concise drag/zoom/reset guidance in the existing status line. Reduced motion disables damping and decorative transitions, preserving direct input. Keep exactly three tabs, focus/history behavior, attribution, 44px controls and active-only resource lifecycle. No extra headings, badges, marketing copy, dependencies or production CSS changes.

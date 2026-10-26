@@ -1,18 +1,25 @@
+---
+import blumMark from '../../assets/identity/blum-mark.svg?raw';
+const blumPaths = [...blumMark.matchAll(/<path\b[^>]*>/g)].map(([path]) => path).join('');
+---
 <div class="spray-object" data-stage data-loaded="false">
-  <svg class="spray-fallback" role="img" aria-label="MTN-inspired 94 spray can illustration" viewBox="0 0 200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="100" cy="317" rx="57" ry="8" fill="var(--ink)" opacity=".14"/>
-    <path d="M60 76C60 59 76 52 100 52C124 52 140 59 140 76L150 92V295C150 309 50 309 50 295V92L60 76Z" fill="var(--paper-raised)" stroke="var(--ink-muted)" stroke-width="2"/>
-    <path d="M65 66V32C65 20 135 20 135 32V66C119 75 81 75 65 66Z" fill="var(--warning)" stroke="var(--ink)" stroke-width="2"/>
-    <ellipse cx="100" cy="32" rx="35" ry="8" fill="var(--paper-raised)" opacity=".24"/>
-    <path d="M60 76C80 86 120 86 140 76M50 92C75 102 125 102 150 92M50 290C76 300 124 300 150 290" stroke="var(--ink-muted)" stroke-width="2"/>
-    <path d="M51 107H149V283H51Z" fill="var(--paper-raised)"/>
-    <path d="M51 107H149V112H51Z" fill="var(--accent)"/>
-    <text x="100" y="145" text-anchor="middle" fill="var(--accent)" font-family="Arial, sans-serif" font-size="28" font-weight="900" letter-spacing="-2">MTN</text>
-    <text x="100" y="227" text-anchor="middle" fill="var(--accent)" font-family="Arial, sans-serif" font-size="85" font-weight="900" letter-spacing="-8">94</text>
-    <path d="M64 240H136M64 246H115" stroke="var(--ink)" stroke-width="2"/>
-    <path d="M51 258H149V283H51Z" fill="var(--warning)"/>
-    <path d="M57 98V288" stroke="var(--paper-raised)" stroke-width="7" opacity=".5"/>
-    <path d="M144 98V288" stroke="var(--ink)" stroke-width="8" opacity=".1"/>
+  <svg class="spray-fallback" role="img" aria-label="BLUM studio spray can illustration" viewBox="0 0 200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="317" rx="57" ry="8" fill="var(--can-black)" opacity=".14"/>
+    <path d="M60 76C60 59 76 52 100 52C124 52 140 59 140 76L150 92V295C150 309 50 309 50 295V92L60 76Z" fill="var(--can-black)"/>
+    <path d="M65 66V32C65 20 135 20 135 32V66C119 75 81 75 65 66Z" fill="var(--can-black)"/>
+    <ellipse cx="100" cy="32" rx="35" ry="8" fill="var(--paper-raised)" opacity=".12"/>
+    <path d="M65 68C81 76 119 76 135 68M51 284H149" stroke="var(--accent)" stroke-width="3"/>
+    <path d="M60 76C80 86 120 86 140 76M50 92C75 102 125 102 150 92M50 295C76 305 124 305 150 295" stroke="var(--paper-raised)" opacity=".25"/>
+    <g data-can-logo transform="translate(60 90) scale(.13868)" fill="var(--accent)" set:html={blumPaths}/>
+    <text transform="translate(117 268) rotate(-90)" fill="var(--paper-raised)" font-family="Arial, sans-serif" font-size="36" font-weight="900">STUDIO</text>
+    <g fill="var(--paper-raised)" font-family="Arial, sans-serif" font-size="5">
+      <text x="61" y="158">JORDAN</text><text x="61" y="165">BLUM</text>
+      <path d="M61 172H75M61 216H75" stroke="var(--paper-raised)"/>
+      <text x="61" y="185">NEW YORK</text><text x="61" y="199">COLOR</text><text x="61" y="206">STUDY</text>
+      <text x="61" y="229">WORK IN</text><text x="61" y="236">PROGRESS</text>
+      <text x="60" y="277">ORIGINAL WORK / BLUM STUDIO</text>
+    </g>
+    <path d="M56 100V289" stroke="var(--paper-raised)" stroke-width="3" opacity=".08"/>
   </svg>
   <div class="usd-host" data-viewer></div>
 </div>

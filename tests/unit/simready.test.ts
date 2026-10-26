@@ -10,7 +10,7 @@ test('exactly three homepage placements share the required revision-pinned spray
     ['workbench', 'Workbench'], ['hero-accent', 'Hero Accent'], ['about-signature', 'About Signature'],
   ]);
   expect(concepts.map(({ description }) => description)).toEqual([
-    'Pairs Jordan’s homepage headline with an MTN-inspired can on the BLUM workbench.',
+    'Pairs Jordan’s homepage headline with a BLUM can on the BLUM workbench.',
     'Adds the can as a small foreground detail while Jordan’s portrait stays primary.',
     'Adds the can to the existing collage as a quiet studio signature.',
   ]);
@@ -33,23 +33,24 @@ test('homepage prototypes consume actual copy, portrait, field, collage and iden
   expect(read(route)).toContain('Recommended');
 });
 
-test('only the ambient spray-can treatment survives the technical lab', () => {
+test('only the spray-can treatment survives the technical lab', () => {
   const page = read(route) + read('src/styles/simready.css') + read('src/scripts/simready-stage.ts');
   expect(page).not.toMatch(/data-route|data-explode|data-light|data-motion|data-reset|data-warnings/);
-  expect(read('src/components/simready/SprayCan.astro')).toContain('MTN-inspired 94 spray can illustration');
+  expect(read('src/components/simready/SprayCan.astro')).toContain('BLUM studio spray can illustration');
   expect(read('src/styles/simready.css')).toContain('prefers-reduced-motion: reduce');
 });
 
-test('authored fallback retains MTN 94 styling without a floating DOM decal', () => {
+test('authored fallback uses the real BLUM mark with black, cream and red only', () => {
   const can = read('src/components/simready/SprayCan.astro');
-  expect(can).toContain('MTN-inspired 94 spray can illustration');
-  expect(can).not.toContain('data-can-decal');
+  expect(can).toContain('blum-mark.svg?raw');
+  expect(can).toContain('BLUM studio spray can illustration');
+  expect(can).toContain('var(--can-black)');
+  expect(can).toContain('var(--accent)');
+  expect(can).toContain('var(--paper-raised)');
+  expect(can).not.toMatch(/--warning|ochre|orange|>MTN<|>94<|data-can-decal/);
   expect(read('src/styles/simready.css')).not.toContain('.can-decal');
-  expect(can.match(/>MTN</g)).toHaveLength(1);
-  expect(can.match(/>94</g)).toHaveLength(1);
-  expect(can).not.toMatch(/(?:href|src)=["\']https?:|<image\b/);
-  expect(read(route)).toContain('MTN-inspired concept styling');
-  expect(read('src/scripts/simready-stage.ts')).not.toMatch(/Drag to orbit|arrows to pan|plus or minus to zoom/);
+  expect(can).not.toMatch(/(?:href|src)=["']https?:|<image\b/);
+  expect(read(route)).toContain('Original BLUM can');
 });
 
 test('Workbench gives the live field its own desktop hero column instead of a full-width second row', () => {
