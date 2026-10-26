@@ -1,0 +1,86 @@
+.simready-page { margin:0; background:var(--paper); color:var(--ink); }
+.simready-page .lab-header, .simready-page main { width:min(calc(100% - 80px),var(--wide)); margin-inline:auto; }
+.simready-page .lab-header { display:flex; justify-content:space-between; align-items:center; min-height:96px; border-bottom:1px solid var(--hairline); }
+.lab-header a { color:var(--ink); font-weight:600; text-decoration:none; }
+.lab-header span, .stage-medium, .drawing-label, .asset-link, .lab-header, .asset-annotations { font-family:var(--font-mono); font-size:11px; letter-spacing:.035em; }
+.lab-header span { color:var(--ink-muted); }
+.lab-title { display:flex; align-items:baseline; justify-content:space-between; gap:24px; padding:48px 0 32px; }
+.lab-title h1 { font-family:var(--font-personality); font-size:clamp(1.7rem,3.6vw,2.8rem); font-weight:600; letter-spacing:-.04em; line-height:1.15; }
+.simready-page [role=tablist] { display:flex; border-bottom:1px solid var(--hairline); gap:32px; }
+.simready-page [role=tab] { display:flex; align-items:center; gap:12px; padding:16px 0; border:0; border-bottom:2px solid transparent; background:none; color:var(--ink-muted); font:inherit; cursor:pointer; min-height:52px; }
+.simready-page [role=tab] span { font:11px var(--font-mono); }
+.simready-page [role=tab][aria-selected=true] { color:var(--accent); border-bottom-color:var(--accent); }
+.simready-page [role=tab]:hover { color:var(--ink); }
+.simready-page :focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+.simready-page [hidden] { display:none !important; }
+.study-caption { display:flex; gap:32px; align-items:baseline; justify-content:space-between; padding-top:28px; }
+.study-caption p { color:var(--ink-muted); font-size:14px; max-width:31rem; }
+.study-stage { position:relative; height:clamp(340px,48vw,550px); overflow:hidden; isolation:isolate; }
+.study-illustration { display:block; width:100%; height:100%; color:var(--ink); }
+.drawing-grid { opacity:.11; }
+.drawing-label { font-size:12px; }
+.usd-host { position:absolute; inset:0; visibility:hidden; opacity:0; pointer-events:none; }
+.usd-host canvas { width:100%; height:100%; touch-action:pan-y; }
+.study-stage[data-loaded=true] .usd-host { visibility:visible; opacity:1; pointer-events:auto; }
+.study-stage[data-loaded=true] :is(.dispatch-machine, .chair-object, .cup-composition) { visibility:hidden; }
+.stage-medium { position:absolute; bottom:12px; left:0; color:var(--ink-muted); font-size:10px; pointer-events:none; }
+.study-controls { border-block:1px solid var(--hairline); display:flex; align-items:center; gap:24px; padding:12px 0; min-height:69px; }
+.study-controls label { display:flex; gap:16px; align-items:center; font-size:13px; }
+.study-controls select, .study-controls button { font:13px var(--font-body); color:var(--ink); background:transparent; border:1px solid var(--hairline); border-radius:var(--radius-xs); padding:0 12px; height:44px; cursor:pointer; }
+.study-controls button:hover, .study-controls select:hover { background:var(--hover-fill); border-color:var(--ink-muted); }
+.study-controls input { accent-color:var(--accent); min-height:44px; width:clamp(100px,26vw,320px); cursor:ew-resize; }
+.pull-control output { font:11px var(--font-mono); width:4ch; }
+.orbit-hint { margin-left:auto; font-size:12px; color:var(--ink-muted); }
+.load-status { display:flex; gap:16px; align-items:center; min-height:50px; font-size:12px; color:var(--ink-muted); }
+.load-status p { margin:0; }
+.load-status progress { width:90px; height:4px; accent-color:var(--accent); flex-shrink:0; }
+.load-warnings { font-size:12px; color:var(--accent); margin-bottom:16px; }
+.load-warnings summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:8px; }
+.load-warnings ul { padding-left:20px; overflow-wrap:anywhere; }
+.asset-link { display:flex; justify-content:space-between; margin:0 0 28px; }
+.asset-link a, .lab-footer a { color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
+.asset-link a { display:inline-flex; align-items:center; min-height:44px; }
+.asset-link span { align-self:center; color:var(--ink-muted); }
+.lab-footer { border-top:1px solid var(--hairline); padding:24px 0 40px; color:var(--ink-muted); font-size:12px; line-height:1.7; }
+.lab-footer p + p { margin-top:8px; }
+.asset-annotations { display:none; position:absolute; inset:18% 8%; pointer-events:none; color:var(--accent); }
+.study-stage[data-loaded=true] .asset-annotations { display:flex; flex-direction:column; justify-content:space-between; }
+.asset-annotations span { border-bottom:1px solid var(--hairline); width:110px; }
+.asset-annotations span:nth-child(2) { align-self:flex-end; }
+.chair-back, .chair-seat, .chair-base { transform-box:fill-box; transform-origin:center; }
+.chair-back { transform:translateY(calc(var(--pull,0) * -65px)); }
+.chair-seat { transform:translateX(calc(var(--pull,0) * 35px)); }
+.chair-base { transform:translateY(calc(var(--pull,0) * 40px)); }
+.stage-dispatch[data-route=b] .dispatch-machine { transform:translate(15px,-8px) rotate(4deg); transform-origin:center; }
+.stage-dispatch[data-moving=true] .dispatch-parcel { animation:parcel-drift 6s ease-in-out infinite alternate; }
+.stage-dispatch[data-moving=true] .route-line { animation:route-dash 3s linear infinite; }
+.stage-counter-study[data-light=window] .window-light { opacity:.17; transform:translateX(-95px); }
+.stage-counter-study[data-light=late] .window-light { opacity:.22; transform:translateX(100px) skewX(-12deg); }
+.stage-counter-study[data-light=late] .cup-shadow { transform:translateX(80px) scaleX(1.2); transform-origin:center; }
+.cup-composition { transform:translateX(var(--cup-x,0px)) rotate(var(--cup-turn,0deg)); transform-origin:center; }
+@keyframes parcel-drift { to { transform:translate(35px,-17px); } }
+@keyframes route-dash { to { stroke-dashoffset:-48; } }
+@media(prefers-reduced-motion:reduce) { .simready-page *, .simready-page *::before, .simready-page *::after { animation:none !important; transition:none !important; } }
+@media(max-width:600px) {
+  .simready-page .lab-header, .simready-page main { width:calc(100% - 40px); }
+  .simready-page .lab-header { min-height:76px; }
+  .lab-header span { font-size:9px; }
+  .lab-title { padding:32px 0 24px; display:block; }
+  .simready-page [role=tablist] { gap:0; justify-content:space-between; }
+  .simready-page [role=tab] { display:block; font-size:12px; text-align:left; }
+  .simready-page [role=tab] span { display:block; margin-bottom:5px; font-size:10px; }
+  .study-caption { display:block; padding-top:24px; }
+  .study-caption p { margin-top:8px; font-size:13px; }
+  .study-stage { height:340px; margin-inline:-12px; }
+  .study-illustration { width:145%; max-width:none; margin-left:-22.5%; }
+  .stage-medium { left:12px; font-size:9px; }
+  .study-controls { gap:12px; flex-wrap:wrap; }
+  .study-controls label { gap:10px; }
+  .study-controls select, .study-controls button { padding-inline:8px; font-size:12px; }
+  .orbit-hint { margin-left:0; font-size:11px; width:100%; }
+  .load-status { align-items:flex-start; padding-block:14px; font-size:11px; }
+  .load-status progress { margin-top:7px; width:50px; }
+  .lab-footer { font-size:11px; }
+  .asset-annotations { inset:18% 5%; font-size:9px; }
+  .asset-annotations span { width:75px; }
+}

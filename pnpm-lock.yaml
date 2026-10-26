@@ -17,6 +17,9 @@ importers:
       '@fontsource/geist-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@huggingface/usd-web-viewer':
+        specifier: 0.2.0
+        version: 0.2.0(@types/three@0.185.4)(three@0.185.1)
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
@@ -549,6 +552,16 @@ packages:
 
   '@fontsource/geist-mono@5.3.0':
     resolution: {integrity: sha512-UtJ1BBBCVpMYdIcW7nEB45UAoAw5M53ZXs2t0ciPW+IokuAAIc56M8+kW5tXbRJCTpDw4XTtU7proT6NdQAHTg==}
+
+  '@huggingface/usd-web-viewer@0.2.0':
+    resolution: {integrity: sha512-2VpC0Gwbq0n7cl4/Lb5YpxQeUdFg6rvM2ZpIkU/Hc5eYaM5nsHqcDgwy2RVaZ/DOJcgDpmwkxWAlrVXhq3rpqg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@types/three': '>=0.162.0 <0.187.0'
+      three: '>=0.162.0 <0.187.0'
+    peerDependenciesMeta:
+      '@types/three':
+        optional: true
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2707,6 +2720,12 @@ snapshots:
   '@fontsource/baloo-2@5.3.0': {}
 
   '@fontsource/geist-mono@5.3.0': {}
+
+  '@huggingface/usd-web-viewer@0.2.0(@types/three@0.185.4)(three@0.185.1)':
+    dependencies:
+      three: 0.185.1
+    optionalDependencies:
+      '@types/three': 0.185.4
 
   '@img/colour@1.1.0': {}
 
