@@ -25,6 +25,7 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
   let yaw = 0;
   let disposed = false;
   let parts: { mesh: Mesh; origin: Matrix4; offset: Vector3 }[] = [];
+  let clones: Mesh[] = [];
   const lamp = new DirectionalLight(0xffffff, 2);
   const motionButton = panel.querySelector<HTMLButtonElement>('[data-motion]');
   let timer: ReturnType<typeof setTimeout>;
@@ -42,6 +43,10 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
   host.replaceChildren();
 
   function stopMotion() { cancelAnimationFrame(frame); frame = 0; }
+  function removeClones() {
+    for (const clone of clones) clone.removeFromParent();
+    clones = [];
+  }
   function motion() {
     stopMotion();
     const moving = concept.id === 'dispatch' && !paused && !media.matches && !document.hidden;
@@ -83,6 +88,7 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
     progress.hidden = true;
     showWarnings();
     load.abort();
+    removeClones();
     viewer?.dispose();
     viewer = undefined;
     model = undefined;
@@ -183,8 +189,24 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
         const center = bounds.getCenter(new Vector3());
         const size = bounds.getSize(new Vector3());
         model.root.updateMatrixWorld(true);
-        model.root.traverse(object => {
-          if (!(object instanceof Mesh) || !object.parent) return;
+        const meshes: Mesh[] = [];
+        model.root.traverse(object => { if (object instanceof Mesh && object.parent) meshes.push(object); });
+        if (meshes.length === 1) {
+          // The published chair is one composed mesh. Build three lightweight,
+          // shared-geometry impressions so the editorial slider still reveals
+          // input / attention / revision instead of lifting the intact chair.
+          const original = meshes[0];
+          const parent = original.parent!;
+          const middle = original.clone();
+          const right = original.clone();
+          parent.add(middle, right);
+          clones = [middle, right];
+          const spread = Math.max(size.x, size.y, size.z) * .72;
+          for (const [mesh, offset] of [[original, -spread], [middle, 0], [right, spread]] as const) {
+            mesh.matrixAutoUpdate = false;
+            parts.push({mesh, origin:mesh.matrix.clone(), offset:new Vector3(offset, 0, 0)});
+          }
+        } else for (const object of meshes) {
           const partCenter = new Box3().setFromObject(object).getCenter(new Vector3());
           const direction = partCenter.clone().sub(center);
           if (direction.lengthSq() < .000001) direction.set(0, 1, 0);
@@ -194,12 +216,15 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
           // USD keeps authored matrices (including shear); offset their translation without decomposing them.
           object.matrixAutoUpdate = false;
           parts.push({mesh:object, origin:object.matrix.clone(), offset});
-        });
+        }
         applyPull();
-        // Frame the full pull-apart envelope once so the slider never clips parts.
+        // The expanded envelope contains the collapsed composition, so one frame
+        // operation keeps both slider endpoints visible.
         positionParts(1);
+        model.root.updateMatrixWorld(true);
         viewer.frame();
         applyPull();
+        model.root.updateMatrixWorld(true);
       }
       if (concept.id === 'dispatch') applyRoute();
       if (concept.id === 'counter-study') applyLight();
@@ -231,6 +256,7 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
     stage.dataset.moving = 'false';
     events.abort();
     load.abort();
+    removeClones();
     viewer?.dispose();
     viewer = undefined;
     model = undefined;

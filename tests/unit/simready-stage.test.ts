@@ -16,18 +16,19 @@ beforeEach(() => {
 });
 afterEach(() => { cleanups.splice(0).forEach(fn => fn()); vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ''; });
 
-function setup(index = 0) {
+function setup(index = 0, partCount = 2) {
   document.body.innerHTML = `<section><div data-stage><div data-viewer></div><span data-medium></span><span data-route-label></span><span data-time-label></span></div><p data-status></p><progress data-progress></progress><details data-warnings><span data-warning-count></span><ul data-warning-list></ul></details><select data-route><option value="a">A</option><option value="b">B</option></select><button data-motion></button><input data-explode type="range" value="0"/><output></output><select data-light><option value="morning">Morning</option><option value="late">Late</option></select><button data-reset></button></section>`;
   const panel = document.querySelector('section')!;
   const root = new Group();
-  for (const y of [-1, 1]) {
+  const positions = partCount === 1 ? [0] : [-1, 1];
+  for (const y of positions) {
     const part = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial());
     part.matrix.makeTranslation(0, y, 0);
     part.matrix.elements[4] = .2;
     part.matrixAutoUpdate = false;
     root.add(part);
   }
-  const result = {root, info:{meshes:2, warnings:[] as {code:string; message:string}[]}, complete:Promise.resolve({textures:0, failed:0}), dispose:vi.fn()};
+  const result = {root, info:{meshes:partCount, warnings:[] as {code:string; message:string}[]}, complete:Promise.resolve({textures:0, failed:0}), dispose:vi.fn()};
   let loadOptions: LoadOptions | undefined;
   let viewerOptions: ViewerOptions | undefined;
   const canvas = document.createElement('canvas');
@@ -107,6 +108,20 @@ test('the chair slider separates actual mesh parts and returns them to authored 
   slider.value = '0'; slider.dispatchEvent(new Event('input'));
   expect(study.root.children.map(part => part.getWorldPosition(new Vector3()))).toEqual(initial);
   expect(study.root.children.every(part => part.matrix.elements[4] === .2)).toBe(true);
+});
+
+test('a single-mesh chair becomes a three-layer editorial exploded study', async () => {
+  const study = setup(1, 1);
+  study.start();
+  await flush();
+  expect(study.root.children).toHaveLength(3);
+  const slider = study.panel.querySelector<HTMLInputElement>('[data-explode]')!;
+  slider.value = '100'; slider.dispatchEvent(new Event('input'));
+  const xs = study.root.children.map(part => part.getWorldPosition(new Vector3()).x);
+  expect(Math.min(...xs)).toBeLessThan(0);
+  expect(Math.max(...xs)).toBeGreaterThan(0);
+  slider.value = '0'; slider.dispatchEvent(new Event('input'));
+  expect(study.root.children.map(part => part.getWorldPosition(new Vector3()).x)).toEqual([0, 0, 0]);
 });
 
 test('reduced motion disables stage movement while route and light controls still work', async () => {
