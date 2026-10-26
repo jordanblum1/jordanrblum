@@ -31,28 +31,25 @@
 .homepage-hero .portrait-panel { grid-column:span 7; min-height:clamp(32rem,48vw,40rem); background:radial-gradient(circle at 72% 22%,color-mix(in oklab,var(--accent) 13%,var(--surface-raised)),transparent 36%),radial-gradient(circle at 22% 78%,color-mix(in oklab,var(--success) 15%,var(--surface-raised)),transparent 42%),var(--surface-raised); }
 .portrait-panel::before { content:""; position:absolute; width:84%; aspect-ratio:1; border:1px solid color-mix(in oklab,var(--accent) 15%,transparent); border-radius:50%; top:45%; left:50%; transform:translate(-50%,-50%); }
 .portrait-panel .portrait { position:absolute; top:45%; left:50%; width:min(61%,25rem); height:auto; aspect-ratio:1; object-fit:cover; border-radius:50%; transform:translate(-50%,-50%); border:1px solid var(--hairline); box-shadow:var(--shadow-lifted); }
-.portrait-panel .spray-object { right:1%; bottom:0; width:25%; height:34%; }
-.workbench-hero .intro-panel { grid-column:span 9; min-height:0; padding:var(--space-6) 0 var(--space-8); background:none; border:0; gap:var(--space-5); }
-.workbench-hero h1 { max-width:28ch; font-size:clamp(2rem,3vw,2.7rem); line-height:1.08; }
-.workbench-hero .support { max-width:66ch; }
+.portrait-panel .spray-object { right:1%; bottom:0; width:25%; }
+.workbench-hero .intro-panel { grid-column:span 5; justify-content:center; min-height:0; padding:var(--space-8) var(--space-6) var(--space-8) 0; background:none; border:0; gap:var(--space-6); }
+.workbench-hero h1 { max-width:16ch; font-size:clamp(2rem,3.5vw,3.1rem); line-height:1.06; }
+.workbench-hero .support { max-width:43ch; }
 .workbench-hero .hero-detail { gap:var(--space-3); }
-.workbench-hero .profile-facts { display:flex; flex-wrap:wrap; column-gap:var(--space-5); align-items:center; }
-.workbench-hero .portrait-panel { grid-column:span 3; min-height:0; border:0; background:none; }
-.workbench-hero .portrait-panel::before { display:none; }
-.workbench-hero .portrait { width:80%; top:47%; box-shadow:none; }
-.workbench-field { grid-column:1 / -1; min-height:clamp(27rem,45vw,36rem); background:var(--accent-soft); }
+.workbench-field { grid-column:span 7; min-height:clamp(28rem,38vw,33rem); background:var(--accent-soft); }
 .field-wash { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.field-mark { position:absolute; top:45%; left:43%; width:70%; transform:translate(-50%,-50%) rotate(-2deg); }
+.field-mark { position:absolute; top:39%; left:48%; width:88%; transform:translate(-50%,-50%) rotate(-2deg); }
 .field-mark svg { width:100%; height:auto; }
 .field-mark path { fill:var(--accent); }
-.workbench-field .spray-object { width:28%; height:75%; right:1%; bottom:2%; }
+.workbench-field .spray-object { width:38%; right:6%; bottom:12%; }
 .field-link { position:absolute; left:var(--space-6); bottom:var(--space-5); display:flex; align-items:center; gap:var(--space-5); min-height:44px; font-size:.85rem; }
-.spray-object { position:absolute; z-index:2; }
+.spray-object { position:absolute; z-index:2; aspect-ratio:200 / 340; height:auto; transform:rotate(10deg); pointer-events:none; }
 .spray-fallback, .usd-host { position:absolute; inset:0; width:100%; height:100%; }
 .spray-fallback { transition:opacity var(--duration-default) var(--ease); }
-.usd-host { visibility:hidden; }
+.usd-host, .can-decal { visibility:hidden; }
+.can-decal { position:absolute; pointer-events:none; border-radius:8% / 3%; }
 .spray-object[data-loaded="true"] .spray-fallback { opacity:0; pointer-events:none; }
-.spray-object[data-loaded="true"] .usd-host { visibility:visible; }
+.spray-object[data-loaded="true"] .usd-host, .spray-object[data-loaded="true"] .can-decal { visibility:visible; }
 .usd-host canvas { display:block; width:100%; height:100%; border-radius:var(--radius-sm); }
 .about-preview { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--space-8); align-items:start; padding-block:var(--space-16) var(--space-12); }
 .about-copy { grid-column:1 / span 5; display:grid; gap:var(--space-5); }
@@ -65,7 +62,7 @@
 .note-plaque { position:absolute; top:50%; left:50%; display:grid; place-items:center; width:min(72%,26rem); min-height:clamp(8rem,16vw,11rem); padding:var(--space-6); border:1px solid var(--hairline); border-radius:var(--radius-lg); background:var(--paper-raised); box-shadow:var(--shadow-lifted); transform:translate(-50%,-50%); }
 .note-logo { width:min(100%,13rem); height:auto; }
 .note-arrow { position:absolute; top:var(--space-4); right:var(--space-4); display:grid; place-items:center; width:var(--space-8); aspect-ratio:1; border:1px solid var(--hairline); border-radius:50%; background:var(--paper-raised); }
-.signature-collage .spray-object { width:25%; height:48%; left:-4%; bottom:-6%; }
+.signature-collage .spray-object { width:25%; left:-4%; bottom:-6%; }
 .load-status { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); min-height:44px; padding-block:var(--space-3); color:var(--ink-muted); font-size:.75rem; }
 .load-status progress { width:3rem; height:3px; accent-color:var(--accent); }
 .preview-disclosure { margin-block:var(--space-8) var(--space-12); padding-top:var(--space-4); border-top:1px solid var(--hairline); color:var(--ink-muted); font-size:.72rem; line-height:1.6; }
@@ -81,11 +78,11 @@
   .homepage-hero .intro-panel { min-height:32rem; }
   .homepage-hero .portrait-panel { min-height:25rem; }
   .portrait-panel .portrait { width:65%; }
-  .workbench-hero .intro-panel { min-height:0; padding-top:var(--space-4); }
-  .workbench-hero .portrait-panel { display:none; }
-  .workbench-field { min-height:24rem; }
+  .workbench-hero .intro-panel { min-height:0; padding:var(--space-2) 0 var(--space-4); gap:var(--space-4); }
+  .workbench-hero h1 { max-width:22ch; font-size:2rem; }
+  .workbench-field { grid-column:1; min-height:18rem; }
   .field-mark { top:38%; left:45%; width:82%; }
-  .workbench-field .spray-object { width:38%; height:58%; right:0; bottom:4%; }
+  .workbench-field .spray-object { width:auto; height:76%; right:7%; bottom:12%; }
   .about-preview { grid-template-columns:1fr; padding-top:var(--space-8); }
   .about-copy, .signature-collage { grid-column:1; }
   .personal-note { min-height: min(38rem,118vw); }

@@ -55,7 +55,7 @@ test('only the active pinned spray can loads; failure leaves the authored can in
   for (const id of ['hero-accent', 'workbench', 'about-signature']) {
     await page.locator(`#tab-${id}`).click();
     await expect(page.locator(`#${id} [data-status]`)).toContainText('Showing the authored illustration.', {timeout:60_000});
-    await expect(page.getByRole('img', {name:'Spray can illustration'})).toBeVisible();
+    await expect(page.getByRole('img', {name:'MTN-inspired 94 spray can illustration'})).toBeVisible();
     await expect(page.locator('canvas')).toHaveCount(0);
     await expect(page.locator('[data-viewer]')).toHaveCount(3);
   }
@@ -99,8 +99,36 @@ test('without JavaScript the recommended homepage placement and source disclosur
   const page = await context.newPage();
   await page.goto('/labs/simready');
   await expect(page.getByRole('heading', {name:hero.statement})).toBeVisible();
-  await expect(page.getByRole('img', {name:'Spray can illustration'})).toBeVisible();
+  await expect(page.getByRole('img', {name:'MTN-inspired 94 spray can illustration'})).toBeVisible();
   await expect(page.getByRole('link', {name:'Source spray can'})).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
   await context.close();
+});
+
+test('default Workbench shows the MTN can beside the real headline before remote assets arrive', async ({page}) => {
+  await page.setViewportSize({width:1440, height:900});
+  await page.route('https://huggingface.co/**', () => {});
+  await page.goto('/labs/simready', {waitUntil:'domcontentloaded'});
+  const panel = page.locator('#workbench');
+  await expect(panel.locator('[data-stage]')).toBeInViewport({ratio:1});
+  const can = panel.getByRole('img', {name:'MTN-inspired 94 spray can illustration'});
+  await expect(can).toBeVisible();
+  await expect(can).toBeInViewport({ratio:1});
+  await expect(panel.locator('[data-stage]')).toHaveAttribute('data-loaded', 'false');
+  await expect(panel.locator('.spray-fallback')).toContainText('MTN');
+  await expect(panel.locator('.spray-fallback')).toContainText('94');
+  const headline = await panel.getByRole('heading', {name:hero.statement}).boundingBox();
+  const object = await can.boundingBox();
+  expect(object!.x).toBeGreaterThan(headline!.x + headline!.width);
+  expect(object!.y).toBeLessThan(headline!.y + headline!.height);
+  await expect(panel.getByRole('link', {name:'See the work'})).toHaveAttribute('href', '/#work');
+  await expect(page.getByText('MTN-inspired concept styling', {exact:false})).toBeVisible();
+  await page.setViewportSize({width:768, height:900});
+  const tabletField = await panel.locator('.workbench-field').boundingBox();
+  const tabletCan = await panel.locator('[data-stage]').boundingBox();
+  expect(tabletCan!.y).toBeGreaterThanOrEqual(tabletField!.y);
+  expect(tabletCan!.y + tabletCan!.height).toBeLessThanOrEqual(tabletField!.y + tabletField!.height);
+  await page.setViewportSize({width:390, height:844});
+  await expect(can).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

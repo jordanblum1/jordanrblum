@@ -10,7 +10,7 @@ test('exactly three homepage placements share the required revision-pinned spray
     ['workbench', 'Workbench'], ['hero-accent', 'Hero Accent'], ['about-signature', 'About Signature'],
   ]);
   expect(concepts.map(({ description }) => description)).toEqual([
-    'Adds an interactive spray can to the existing BLUM workbench.',
+    'Pairs Jordan’s homepage headline with an MTN-inspired can on the BLUM workbench.',
     'Adds the can as a small foreground detail while Jordan’s portrait stays primary.',
     'Adds the can to the existing collage as a quiet studio signature.',
   ]);
@@ -33,9 +33,27 @@ test('homepage prototypes consume actual copy, portrait, field, collage and iden
   expect(read(route)).toContain('Recommended');
 });
 
-test('only the spray-can fallback and direct manipulation survive the technical lab', () => {
+test('only the ambient spray-can treatment survives the technical lab', () => {
   const page = read(route) + read('src/styles/simready.css') + read('src/scripts/simready-stage.ts');
   expect(page).not.toMatch(/data-route|data-explode|data-light|data-motion|data-reset|data-warnings/);
-  expect(read('src/components/simready/SprayCan.astro')).toContain('Spray can illustration');
+  expect(read('src/components/simready/SprayCan.astro')).toContain('MTN-inspired 94 spray can illustration');
   expect(read('src/styles/simready.css')).toContain('prefers-reduced-motion: reduce');
+});
+
+test('authored fallback and persistent DOM decal carry original MTN 94 concept styling', () => {
+  const can = read('src/components/simready/SprayCan.astro');
+  expect(can).toContain('MTN-inspired 94 spray can illustration');
+  expect(can).toContain('data-can-decal');
+  expect(can.match(/>MTN</g)).toHaveLength(2);
+  expect(can.match(/>94</g)).toHaveLength(2);
+  expect(can).not.toMatch(/(?:href|src)=["\']https?:|<image\b/);
+  expect(read(route)).toContain('MTN-inspired concept styling');
+  expect(read('src/scripts/simready-stage.ts')).not.toMatch(/Drag to orbit|arrows to pan|plus or minus to zoom/);
+});
+
+test('Workbench gives the live field its own desktop hero column instead of a full-width second row', () => {
+  const css = read('src/styles/simready.css');
+  const fieldRule = css.match(/\.workbench-field \{([^}]+)\}/g)!.find(rule => rule.includes('grid-column'))!;
+  expect(fieldRule).not.toContain('grid-column:1 / -1');
+  expect(read('src/components/simready/HomepagePreview.astro')).toContain("concept === 'hero-accent' && <div class=\"portrait-panel\"");
 });

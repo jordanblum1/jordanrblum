@@ -26,10 +26,10 @@ const blumMark = blumMarkSource.replace(/<\?xml[^>]*>\s*/, '').replace(/<defs>[\
         </ul>
       </div>
     </div>
-    <div class="portrait-panel">
+    {concept === 'hero-accent' && <div class="portrait-panel">
       <Image class="portrait" src={jordanPortrait} alt="Illustrated portrait of Jordan Blum" widths={[512, 768, 1024]} sizes="(max-width: 52rem) 65vw, 28vw" loading="eager" />
-      {concept === 'hero-accent' && <SprayCan />}
-    </div>
+      <SprayCan />
+    </div>}
     {concept === 'workbench' && <div class="workbench-field">
       <Image class="field-wash" src={fieldWash} alt="" widths={[688, 1376]} sizes="(max-width: 72rem) 100vw, 72rem" loading="eager" />
       <span class="field-mark" aria-hidden="true" set:html={blumMark}></span>

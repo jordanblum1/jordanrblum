@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, Scene } from 'three';
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, Vector3 } from 'three';
 import { concepts, assetUrl } from '../../src/data/simready';
 import type { LoadOptions, ViewerOptions } from '@huggingface/usd-web-viewer';
 
@@ -17,7 +17,7 @@ beforeEach(() => {
 afterEach(() => { cleanups.splice(0).forEach(fn => fn()); vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ''; });
 
 function setup(index = 0, partCount = 2) {
-  document.body.innerHTML = `<section><div data-stage><svg role="img"></svg><div data-viewer></div></div><p data-status></p><progress data-progress></progress></section>`;
+  document.body.innerHTML = `<section><div data-stage><svg role="img"></svg><div data-viewer></div><svg data-can-decal></svg></div><p data-status></p><progress data-progress></progress></section>`;
   const panel = document.querySelector('section')!;
   const root = new Group();
   const positions = partCount === 1 ? [0] : [-1, 1];
@@ -34,7 +34,7 @@ function setup(index = 0, partCount = 2) {
   const canvas = document.createElement('canvas');
   const viewer = {
     renderer:{setPixelRatio:vi.fn(), domElement:canvas, toneMappingExposure:1},
-    controls:{enableDamping:true}, scene:new Scene(), requestRender:vi.fn(), frame:vi.fn(),
+    camera:new PerspectiveCamera(40, 200 / 340, .01, 1000), controls:{enabled:true, enableDamping:true, target:new Vector3(), update:vi.fn()}, scene:new Scene(), requestRender:vi.fn(), frame:vi.fn(),
     load:vi.fn(async (_url: string, options: LoadOptions) => { loadOptions = options; return result; }),
     dispose:vi.fn(() => { result.dispose(); canvas.remove(); }),
   };
@@ -139,4 +139,29 @@ test('a lost WebGL context returns to the explicit illustration state', async ()
   study.viewerOptions().onContextLost!();
   expect(study.panel.querySelector('[data-status]')!.textContent).toContain('Graphics context lost');
   expect(study.viewer.dispose).toHaveBeenCalledOnce();
+});
+
+test('the live can is ambient so the DOM label cannot drift under pointer or keyboard orbit', async () => {
+  const study = setup();
+  study.start();
+  await flush();
+  expect(study.viewer.controls.enabled).toBe(false);
+  const canvas = study.panel.querySelector('canvas')!;
+  expect(canvas.getAttribute('tabindex')).toBe('-1');
+  expect(canvas.getAttribute('aria-label')).toBe('MTN-inspired spray can 3D preview');
+  expect(study.panel.querySelector('[data-status]')!.textContent).not.toContain('Drag');
+});
+
+test('fixed frontal framing places the live decal inside the can silhouette', async () => {
+  const study = setup();
+  study.start();
+  await flush();
+  expect(study.viewer.camera.position.x).toBe(0);
+  expect(study.viewer.camera.position.z).toBeGreaterThan(0);
+  const decal = study.panel.querySelector<SVGElement>('[data-can-decal]')!;
+  for (const dimension of ['left', 'top', 'width', 'height']) {
+    const value = parseFloat(decal.style.getPropertyValue(dimension));
+    expect(value).toBeGreaterThan(0);
+    expect(value).toBeLessThan(100);
+  }
 });

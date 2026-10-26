@@ -1,5 +1,5 @@
 import { createViewer, type Viewer } from '@huggingface/usd-web-viewer';
-import { Box3 } from 'three';
+import { Box3, Vector3 } from 'three';
 import { assetUrl, type concepts } from '../data/simready';
 
 type Concept = typeof concepts[number];
@@ -51,8 +51,11 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
       viewer = createViewer(host, {onContextLost:() => fallback('Graphics context lost.')});
       viewer.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
       viewer.controls.enableDamping = !media.matches;
+      viewer.controls.enabled = false;
       const canvas = viewer.renderer.domElement;
-      canvas.setAttribute('aria-label', 'Spray can 3D preview. Drag to orbit, arrows to pan, plus or minus to zoom.');
+      canvas.tabIndex = -1;
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', 'MTN-inspired spray can 3D preview');
       const result = await viewer.load(assetUrl(concept.asset), {
         textures: 'preview', maxTextureSize: 1024, maxTriangles: 1_000_000, maxInstances: 10_000,
         maxConcurrentFetches: 4, maxLayerBytes: 128 * 1024 * 1024, maxTextureBytes: 64 * 1024 * 1024, maxLayers: 128,
@@ -66,19 +69,37 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
       if (signal.aborted || load.signal.aborted) { result.dispose(); return; }
       // Observe texture failure even when the geometry cannot be shown.
       const complete = result.complete.catch(error => { fallback('Spray can textures unavailable.'); throw error; });
-      if (!result.info.meshes || new Box3().setFromObject(result.root).isEmpty()) {
+      const bounds = new Box3().setFromObject(result.root);
+      if (!result.info.meshes || bounds.isEmpty()) {
         void complete.catch(() => {});
         fallback('No drawable geometry was returned.');
         return;
       }
+      // Fixed frontal framing keeps the DOM label attached at every responsive size.
+      const center = bounds.getCenter(new Vector3());
+      const size = bounds.getSize(new Vector3());
+      const camera = viewer.camera;
+      const distance = Math.max(size.y, size.x / camera.aspect) / (2 * Math.tan(camera.fov * Math.PI / 360)) * 1.2 + size.z / 2;
+      camera.position.set(center.x, center.y, center.z + distance);
+      camera.lookAt(center);
+      camera.updateMatrixWorld();
+      viewer.controls.target.copy(center);
+      viewer.controls.update();
+      const top = new Vector3(center.x - size.x * .47, bounds.max.y - size.y * .3, bounds.max.z).project(camera);
+      const bottom = new Vector3(center.x + size.x * .47, bounds.min.y + size.y * .06, bounds.max.z).project(camera);
+      const decal = stage.querySelector<SVGElement>('[data-can-decal]')!;
+      decal.style.left = `${(top.x + 1) * 50}%`;
+      decal.style.top = `${(1 - top.y) * 50}%`;
+      decal.style.width = `${(bottom.x - top.x) * 50}%`;
+      decal.style.height = `${(top.y - bottom.y) * 50}%`;
       stage.dataset.loaded = 'true';
       illustration?.setAttribute('aria-hidden', 'true');
       const textures = await complete;
       if (signal.aborted || load.signal.aborted) return;
       clearTimeout(timer);
       status.textContent = result.info.warnings.length || textures.failed
-        ? 'Spray can ready · some materials are simplified. Drag to orbit.'
-        : 'Spray can ready. Drag to orbit.';
+        ? 'Spray can ready · some materials are simplified.'
+        : 'Spray can ready.';
       progress.hidden = true;
       viewer?.requestRender();
     } catch {
