@@ -46,10 +46,9 @@
 .spray-object { position:absolute; z-index:2; aspect-ratio:200 / 340; height:auto; transform:rotate(10deg); pointer-events:none; }
 .spray-fallback, .usd-host { position:absolute; inset:0; width:100%; height:100%; }
 .spray-fallback { transition:opacity var(--duration-default) var(--ease); }
-.usd-host, .can-decal { visibility:hidden; }
-.can-decal { position:absolute; pointer-events:none; border-radius:8% / 3%; }
+.usd-host { visibility:hidden; }
 .spray-object[data-loaded="true"] .spray-fallback { opacity:0; pointer-events:none; }
-.spray-object[data-loaded="true"] .usd-host, .spray-object[data-loaded="true"] .can-decal { visibility:visible; }
+.spray-object[data-loaded="true"] .usd-host { visibility:visible; }
 .usd-host canvas { display:block; width:100%; height:100%; border-radius:var(--radius-sm); }
 .about-preview { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:var(--space-8); align-items:start; padding-block:var(--space-16) var(--space-12); }
 .about-copy { grid-column:1 / span 5; display:grid; gap:var(--space-5); }

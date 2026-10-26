@@ -14,9 +14,13 @@ The [DESIGN.md](../../DESIGN.md) records the lab-only composition and reference 
 2. **Hero Accent.** Adds the can as a small foreground detail in the current split hero. Jordan’s portrait remains the primary image; the can is a smaller foreground accent.
 3. **About Signature.** Adds the can to the existing personal collage beside the real About copy. This is the quietest, lowest-risk placement and connects directly to Jordan’s studio-art background.
 
-All three show an original, inline SVG can with bold MTN + 94 lettering, a cream body, oxblood print, and ochre cap/band. This is **MTN-inspired concept styling**, without external brand artwork or affiliation. The illustration is the immediate default and stays visible until drawable geometry is ready; textures may finish afterward. Failures and no JavaScript retain the illustration.
+All three show an original, inline SVG can with bold MTN + 94 lettering, a cream body, oxblood print, and ochre cap/band. This is **MTN-inspired concept styling**, without external brand artwork or affiliation. The illustration is the immediate default and stays visible until drawable geometry has the 3D paint treatment attached; textures may finish afterward. Failures and no JavaScript retain the illustration.
 
-The live model gets an inline SVG decal projected onto its frontal body bounds. A fixed frontal camera and constant 200:340 stage aspect ratio keep the label aligned as the viewport changes; the complete object is gently tilted with CSS. Pointer/orbit/pan/zoom controls are disabled, the canvas is removed from the tab order, and “Drag to orbit” instructions are removed. The model is ambient, with no idle animation. The decal is shown only with loaded geometry and hidden again on fallback/disposal.
+The live model uses `MeshStandardMaterial` paint on its existing meshes, with a shared 400×1120 sRGB `CanvasTexture`. Its cream body, oxblood MTN + 94 lettering, fine print and ochre cap/band use the fallback’s CSS colors and normalized artwork positions. The vertex shader projects the artwork using each mesh’s initial transform (including shear and instances), so lighting, depth and curvature come from the actual can surface. Moving the mesh carries the print with it. This is a frontal projection; hidden-side artwork is approximate.
+
+`DecalGeometry` is unsuitable for reliable post-load projection with this viewer: `@huggingface/usd-web-viewer` 0.2.0 streams meshes before `load()` resolves and its `createGeometry()` upload callback releases CPU vertex arrays. The shader uses the GPU vertices and cached bounds instead. Replacing the surface material creates no competing geometry, so standard depth testing/writing avoids z-fighting without polygon offsets. Original materials are restored before viewer disposal; replacement materials and the shared texture are explicitly disposed on tab switch or failure. No extra geometry needs disposal, and streamed source textures cannot overwrite the independent paint materials.
+
+A fixed frontal camera and constant 200:340 stage aspect ratio preserve the composition as the viewport changes; the complete object is gently tilted with CSS. Pointer/orbit/pan/zoom controls stay disabled and the canvas stays outside the tab order. The model is ambient, with no idle animation. There is no HTML/SVG label over the live canvas.
 
 The underlying asset remains the same NVIDIA SimReady spray can in all three placements:
 
@@ -34,15 +38,14 @@ Loading progress and errors stay visually quiet beneath the composition. Network
 
 The result is a visual preview, not a physics simulation. MDL materials and exact Omniverse rendering may be simplified. NVIDIA SimReady, Hugging Face, CC-BY-4.0, source asset, and modification attribution appear on the route.
 
-## Verification — October 26, 2026 correction
+## Verification — October 26, 2026 3D material correction
 
-1. **RED:** updated focused tests failed before implementation for the missing MTN/94 treatment, still-enabled controls, full-width second-row Workbench field, and missing frontal decal framing. The original 14 applicable checks passed while the first three new expectations failed; subsequent targeted runs separately confirmed layout/framing failures.
-2. **GREEN:** `pnpm test:unit tests/unit/simready.test.ts tests/unit/simready-stage.test.ts tests/unit/simready-tabs.test.ts` passed **19/19** across three files. `pnpm test:unit` passed **110/110** across seven files. `pnpm exec tsc --noEmit` exited **0**.
-3. **Build:** `pnpm build` exited **0**, producing all **eight** static routes including `/labs/simready`. `git diff --check` exited **0**. The existing Vite warning for a chunk above 500kB remains; the USD viewer runtime is still lazy-loaded only by this unlisted route.
-4. **Browser:** `pnpm test:e2e tests/e2e/simready.spec.ts` passed **5/5**. Coverage includes keyboard/hash/history behavior, active-only loading and failure fallback, 390px/reduced-motion behavior, no-JavaScript support, and an intercepted-remote-request check proving the MTN illustration and real headline are visible before the asset arrives. A real browser then loaded the pinned model successfully: the MTN decal remained aligned at desktop, 768px tablet, and 390px mobile widths; the tablet can stayed fully contained in its workbench; exactly one canvas remained active; the status reached `Spray can ready.`; and mobile had no horizontal overflow.
-5. **Review:** final `ponytail-review` traced the unchanged tab/load/dispose callers and checked the changed can, layout, and tests. Reused the geometry bounds instead of calculating them twice, then reran focused tests. The `claude-design` composition audit scored **0/10** for the listed generic-design tells in source; no decorative copy or extra controls were added. `DESIGN.md` preserves its existing Google-format front matter and token references, with a lab-only contract appended; the optional design.md CLI is not installed, so CLI lint was not run.
+1. **RED:** the first focused run failed exactly two new assertions: no 3D treatment was attached and the DOM overlay still existed (13 existing assertions passed). After inspecting the viewer’s GPU-only geometry lifecycle, the attachment regression was refined to require a real `MeshStandardMaterial`/`CanvasTexture` on the scene mesh with released CPU positions. A separate RED run exposed an unhandled texture rejection when canvas artwork failed; the completion handler now consumes that rejection while retaining fallback status.
+2. **GREEN:** focused SimReady unit tests passed **24/24**; the full unit suite passed **115/115** across seven files. Coverage includes fixed camera/accessibility, projected material/transform behavior, shared texture disposal, original material restoration, timeout/context/texture failures, artwork failure and unchanged active-only tabs/loading. `pnpm exec tsc --noEmit` passed.
+3. **Build and review:** `pnpm build` passed for all **eight** routes; the existing lazy viewer chunk warning above 500kB remains. `git diff --check` passed. The final ponytail review traced the tab/load/dispose callers, projection/material ownership and error paths. The source composition audit found no added decorative copy, controls or generic design elements. Google-format `DESIGN.md` front matter and existing token references are preserved; the optional design.md CLI is not installed, so CLI lint was not run.
+4. **Browser limitation:** `pnpm test:e2e tests/e2e/simready.spec.ts` was attempted but blocked before test execution: the sandbox denies the preview server’s socket bind (`listen EPERM ::1:4321`). A direct Chromium probe was also denied by macOS process permissions. The updated suite has six tests, adding a self-contained cylindrical USD fixture that checks loaded canvas print pixels, shader/page errors, active-only canvases and desktop/mobile placements without relying on the remote asset. These browser assertions and the live pinned asset’s visual handoff remain unverified in this session; the parent will visually verify the remote asset.
 
-No dependency was added. The production homepage remains unchanged.
+No dependency was added. No commit, push or deployment was performed.
 
 ## Files
 
@@ -53,6 +56,7 @@ No dependency was added. The production homepage remains unchanged.
 - `src/styles/simready.css`
 - `src/scripts/simready.ts`
 - `src/scripts/simready-stage.ts`
+- `src/scripts/simready-can.ts`
 - `tests/unit/simready.test.ts`
 - `tests/unit/simready-tabs.test.ts`
 - `tests/unit/simready-stage.test.ts`

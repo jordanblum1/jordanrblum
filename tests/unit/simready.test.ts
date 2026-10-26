@@ -40,12 +40,13 @@ test('only the ambient spray-can treatment survives the technical lab', () => {
   expect(read('src/styles/simready.css')).toContain('prefers-reduced-motion: reduce');
 });
 
-test('authored fallback and persistent DOM decal carry original MTN 94 concept styling', () => {
+test('authored fallback retains MTN 94 styling without a floating DOM decal', () => {
   const can = read('src/components/simready/SprayCan.astro');
   expect(can).toContain('MTN-inspired 94 spray can illustration');
-  expect(can).toContain('data-can-decal');
-  expect(can.match(/>MTN</g)).toHaveLength(2);
-  expect(can.match(/>94</g)).toHaveLength(2);
+  expect(can).not.toContain('data-can-decal');
+  expect(read('src/styles/simready.css')).not.toContain('.can-decal');
+  expect(can.match(/>MTN</g)).toHaveLength(1);
+  expect(can.match(/>94</g)).toHaveLength(1);
   expect(can).not.toMatch(/(?:href|src)=["\']https?:|<image\b/);
   expect(read(route)).toContain('MTN-inspired concept styling');
   expect(read('src/scripts/simready-stage.ts')).not.toMatch(/Drag to orbit|arrows to pan|plus or minus to zoom/);

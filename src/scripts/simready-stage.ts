@@ -1,6 +1,7 @@
 import { createViewer, type Viewer } from '@huggingface/usd-web-viewer';
 import { Box3, Vector3 } from 'three';
 import { assetUrl, type concepts } from '../data/simready';
+import { applyCanTreatment } from './simready-can';
 
 type Concept = typeof concepts[number];
 
@@ -14,6 +15,7 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
   const load = new AbortController();
   const events = new AbortController();
   let viewer: Viewer | undefined;
+  let releaseTreatment: (() => void) | undefined;
   let disposed = false;
   let timer: ReturnType<typeof setTimeout>;
 
@@ -25,6 +27,8 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
   host.replaceChildren();
 
   function releaseViewer() {
+    releaseTreatment?.();
+    releaseTreatment = undefined;
     const current = viewer;
     viewer = undefined;
     current?.dispose();
@@ -68,14 +72,14 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
       });
       if (signal.aborted || load.signal.aborted) { result.dispose(); return; }
       // Observe texture failure even when the geometry cannot be shown.
-      const complete = result.complete.catch(error => { fallback('Spray can textures unavailable.'); throw error; });
+      const complete = result.complete.catch(() => { fallback('Spray can textures unavailable.'); });
       const bounds = new Box3().setFromObject(result.root);
       if (!result.info.meshes || bounds.isEmpty()) {
-        void complete.catch(() => {});
         fallback('No drawable geometry was returned.');
         return;
       }
-      // Fixed frontal framing keeps the DOM label attached at every responsive size.
+      releaseTreatment = applyCanTreatment(result.root, bounds, getComputedStyle(stage));
+      // Keep the authored frontal composition across all three placements.
       const center = bounds.getCenter(new Vector3());
       const size = bounds.getSize(new Vector3());
       const camera = viewer.camera;
@@ -85,17 +89,11 @@ export function createStage(panel: HTMLElement, concept: Concept, signal: AbortS
       camera.updateMatrixWorld();
       viewer.controls.target.copy(center);
       viewer.controls.update();
-      const top = new Vector3(center.x - size.x * .47, bounds.max.y - size.y * .3, bounds.max.z).project(camera);
-      const bottom = new Vector3(center.x + size.x * .47, bounds.min.y + size.y * .06, bounds.max.z).project(camera);
-      const decal = stage.querySelector<SVGElement>('[data-can-decal]')!;
-      decal.style.left = `${(top.x + 1) * 50}%`;
-      decal.style.top = `${(1 - top.y) * 50}%`;
-      decal.style.width = `${(bottom.x - top.x) * 50}%`;
-      decal.style.height = `${(top.y - bottom.y) * 50}%`;
+      viewer.requestRender();
       stage.dataset.loaded = 'true';
       illustration?.setAttribute('aria-hidden', 'true');
       const textures = await complete;
-      if (signal.aborted || load.signal.aborted) return;
+      if (!textures || signal.aborted || load.signal.aborted) return;
       clearTimeout(timer);
       status.textContent = result.info.warnings.length || textures.failed
         ? 'Spray can ready · some materials are simplified.'

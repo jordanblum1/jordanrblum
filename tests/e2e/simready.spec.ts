@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { CylinderGeometry } from 'three';
+import sharp from 'sharp';
 import { hero, about } from '../../src/data/site';
 
 const titles = ['Workbench Recommended', 'Hero Accent', 'About Signature'];
@@ -9,6 +11,7 @@ test('homepage previews have manual keyboard tabs, deep links and browser histor
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://huggingface.co/**', route => route.abort());
   await page.goto('/labs/simready');
+  await expect(page.locator('[data-can-decal], .can-decal')).toHaveCount(0);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
   await expect(page.getByRole('navigation', {name:'Primary'})).toBeVisible();
   await expect(page.getByRole('link', {name:'Jordan Blum — home'})).toBeVisible();
@@ -131,4 +134,52 @@ test('default Workbench shows the MTN can beside the real headline before remote
   await page.setViewportSize({width:390, height:844});
   await expect(can).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('the loaded canvas itself carries the can print across placements and responsive sizes', async ({page}) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  const geometry = new CylinderGeometry(.5, .5, 2.8, 48);
+  const positions = geometry.getAttribute('position');
+  const indices = geometry.getIndex()!;
+  const points = Array.from({length:positions.count}, (_, i) => `(${positions.getX(i)}, ${positions.getY(i)}, ${positions.getZ(i)})`);
+  const fixture = `#usda 1.0
+(upAxis = "Y")
+def Mesh "Can" {
+  point3f[] points = [${points.join(',')}]
+  int[] faceVertexCounts = [${Array(indices.count / 3).fill(3).join(',')}]
+  int[] faceVertexIndices = [${Array.from(indices.array).join(',')}]
+  uniform token subdivisionScheme = "none"
+}`;
+  geometry.dispose();
+  await page.route('https://huggingface.co/**', route => route.fulfill({
+    body:fixture, contentType:'application/octet-stream', headers:{'access-control-allow-origin':'*'},
+  }));
+  await page.goto('/labs/simready');
+  for (const [index, id] of ids.entries()) {
+    await page.setViewportSize({width:index === 1 ? 390 : 1440, height:1000});
+    await page.locator(`#tab-${id}`).click();
+    const panel = page.locator(`#${id}`);
+    await expect(panel.locator('[data-stage]')).toHaveAttribute('data-loaded', 'true');
+    await expect(panel.locator('[data-status]')).toContainText('Spray can ready');
+    await expect(panel.locator('.spray-fallback')).toHaveAttribute('aria-hidden', 'true');
+    await expect(page.locator('[data-can-decal], .can-decal')).toHaveCount(0);
+    await expect(page.locator('canvas')).toHaveCount(1);
+    const canvas = panel.locator('canvas');
+    await expect(canvas).toHaveAttribute('tabindex', '-1');
+    // Isolate canvas pixels from the oxblood BLUM artwork behind the transparent stage.
+    await canvas.evaluate(element => { element.style.background = 'white'; });
+    const {data, info} = await sharp(await canvas.screenshot()).removeAlpha().raw().toBuffer({resolveWithObject:true});
+    let oxblood = 0;
+    let ochre = 0;
+    for (let i = 0; i < data.length; i += info.channels) {
+      const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+      if (r > g * 1.4 && r > b * 1.4 && r < 220) oxblood++;
+      if (r > g * 1.2 && g > b * 1.3 && g < 200) ochre++;
+    }
+    expect(oxblood).toBeGreaterThan(5);
+    expect(ochre).toBeGreaterThan(5);
+  }
+  expect(errors).toEqual([]);
 });
