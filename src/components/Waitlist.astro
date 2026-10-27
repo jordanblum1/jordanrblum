@@ -1,0 +1,28 @@
+---
+import { supportEmail } from '../data/apps';
+interface Props { endpoint: string | null }
+const { endpoint } = Astro.props;
+---
+<section aria-labelledby="waitlist-title">
+  <h2 id="waitlist-title">Coming soon.</h2>
+  {endpoint ? <>
+    <form class="waitlist-form" data-waitlist data-endpoint={endpoint} data-contact={`mailto:${supportEmail}?subject=Stamp%20Shift%20waitlist`}>
+      <fieldset disabled>
+        <label for="waitlist-email">Email address</label>
+        <div class="waitlist-email-row">
+          <input id="waitlist-email" name="email" type="email" autocomplete="email" maxlength="254" required />
+          <button type="submit">Notify me</button>
+        </div>
+        <label class="waitlist-consent"><input name="consent" type="checkbox" required /><span>Email me when Stamp Shift launches.</span></label>
+        <div class="waitlist-trap" aria-hidden="true"><label for="waitlist-website">Website</label><input id="waitlist-website" name="website" tabindex="-1" autocomplete="off" /></div>
+      </fieldset>
+      <p class="docs-caption">Stamp Shift only. <a href="/apps/stamp-shift/privacy#waitlist">Privacy &amp; removal</a>.</p>
+      <p class="waitlist-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    </form>
+    <noscript><p>To request a launch notification, <a href={`mailto:${supportEmail}?subject=Stamp%20Shift%20launch%20notification`}>email Jordan</a>.</p></noscript>
+  </> : <p>Launch notifications are not open yet. <a href={`mailto:${supportEmail}?subject=Stamp%20Shift%20launch%20notification`}>Contact Jordan</a>.</p>}
+</section>
+<script>
+  import { setupWaitlist } from '../scripts/waitlist';
+  document.querySelectorAll('[data-waitlist]').forEach(setupWaitlist);
+</script>

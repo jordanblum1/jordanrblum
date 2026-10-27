@@ -1,0 +1,54 @@
+import { expect, test } from '@playwright/test';
+for (const width of [1280,390]) {
+  test(`synthetic fixture only: consent, invalid, duplicate, success and failure at ${width}px`,async ({ page,request }) => {
+    const errors: string[] = [];
+    const consoleErrors: string[] = [];
+    page.on('console',message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('pageerror',error => errors.push(error.message));
+    await page.setViewportSize({ width,height:900 });
+    await page.goto('/apps/stamp-shift/?source=meta-drawer');
+    const email = page.getByRole('textbox',{ name:'Email address' });
+    const button = page.getByRole('button',{ name:'Notify me',exact:true });
+    const consent = page.getByRole('checkbox',{ name:'Email me when Stamp Shift launches.' });
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(email).toBeFocused();
+    expect(await email.evaluate(input => input instanceof HTMLInputElement && input.validity.valueMissing)).toBe(true);
+    await email.fill(`browser-${width}@example.test`);
+    await button.click();
+    await expect(consent).toBeFocused();
+    await consent.check();
+    await button.click();
+    await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
+    await expect(page.getByRole('button',{ name:'Saved',exact:true })).toBeDisabled();
+    await page.screenshot({ path:`docs/evidence/waitlist/fixture-success-${width}.png`,fullPage:true });
+    const count = (await (await request.get('http://127.0.0.1:4334/_fixture')).json()).subscriptions;
+    await page.reload();
+    await email.fill(` BROWSER-${width}@EXAMPLE.TEST `);
+    await consent.check();
+    await button.click();
+    await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
+    expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).subscriptions).toBe(count);
+    await page.reload();
+    await email.fill('failure@example.test');
+    await consent.check();
+    await button.click();
+    await expect(page.getByRole('status')).toContainText('Your signup could not be saved.');
+    await expect(button).toBeEnabled();
+    await expect(email).toHaveValue('failure@example.test');
+    await page.screenshot({ path:`docs/evidence/waitlist/fixture-failure-${width}.png`,fullPage:true });
+    const dimensions = await page.evaluate(() => ({ width:innerWidth,document:document.documentElement.scrollWidth }));
+    expect(dimensions.document).toBeLessThanOrEqual(dimensions.width + 1);
+    expect(errors).toEqual([]);
+    expect(consoleErrors.every(message => message.includes('503'))).toBe(true);
+    expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).sources).toContain('meta-drawer');
+  });
+}
+test('no JavaScript provides a contact path and keeps the form disabled',async ({ browser,baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled:false,baseURL });
+  const page = await context.newPage();
+  await page.goto('/apps/stamp-shift');
+  await expect(page.getByRole('button',{ name:'Notify me' })).toBeDisabled();
+  await expect(page.getByRole('link',{ name:'email Jordan',exact:true })).toHaveAttribute('href',/mailto:/);
+  await context.close();
+});

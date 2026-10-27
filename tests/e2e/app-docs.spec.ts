@@ -16,13 +16,14 @@ for (const width of [1280, 390]) {
       expect(response?.status()).toBe(200);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://jordanblum.com${route}`);
-      await expect(page.locator('script, [data-chat-widget], [data-chat-trigger]')).toHaveCount(0);
+      await expect(page.locator('[data-chat-widget], [data-chat-trigger]')).toHaveCount(0);
+      await expect(page.locator('script')).toHaveCount(route === '/apps/stamp-shift' ? 1 : 0);
       await expect(page.locator('body')).not.toContainText('UNCONFIGURED');
       const dimensions = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
       expect(dimensions.document).toBeLessThanOrEqual(dimensions.width + 1);
     }
     expect(errors).toEqual([]);
-    expect(scripts).toEqual([]);
+    expect(scripts.every(url => url.includes('/_astro/'))).toBe(true);
   });
 }
 

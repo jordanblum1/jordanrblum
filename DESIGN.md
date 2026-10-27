@@ -71,7 +71,7 @@ Retain the brand's 8/16/24/32px radius vocabulary where needed; reading pages do
 
 ## Components
 
-Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. No forms, client-side JavaScript or dependencies are added. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
+Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. Only the Stamp Shift overview may load the optional waitlist form script. Support, privacy and the directory remain static. Use a visible email label, explicit unchecked per-app consent, 44px controls, pending/disabled/error/success states and a live status region. No new dependencies. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
 
 ## Do's and Don'ts
 
@@ -79,6 +79,8 @@ Keep rules, privacy language and purchase information specific and verifiable. D
 
 ## App documentation contract
 
-`src/layouts/AppDocs.astro` deliberately does not import `Base`, `Nav`, `Footer` or `ChatWidget`, because those components load scripts and assistant behavior. It reuses global CSS and local fonts through a static shell. Tests assert zero script elements, no chat controls, stable canonical URLs, working keyboard disclosures/navigation, and narrow-screen layout.
+`src/layouts/AppDocs.astro` deliberately does not import `Base`, `Nav`, `Footer` or `ChatWidget`, because those components load scripts and assistant behavior. It reuses global CSS and local fonts through a static shell. Tests assert zero script elements on support, privacy and directory, no chat controls, stable canonical URLs, working keyboard disclosures/navigation, and narrow-screen layout.
 
-The public directory registry is `src/data/apps.ts`, with email derived from the existing site contact. To add an app, add one registry entry and create its overview, support and bespoke privacy pages under `src/pages/apps/{slug}/`, using the shared layout. Only list apps after those routes exist. Never inherit another app's data practices by generating a generic policy from its registry entry. Keep the `/apps/{slug}/support` and `/apps/{slug}/privacy` addresses stable for app-store review and existing users. Publishing remains an owner action; these files alone do not deploy the site.
+The public directory registry is `src/data/apps.ts`, with email derived from the existing site contact. To add an app, add one registry entry and create its overview, support and bespoke privacy pages under `src/pages/apps/{slug}/`, using the shared layout. Only list apps after those routes exist. Never inherit another app's data practices by generating a generic policy from its registry entry. Keep the `/apps/{slug}/support` and `/apps/{slug}/privacy` addresses stable for app-store review and existing users. The overview is a Decide/Learn prelaunch surface: Coming soon and Notify me must not imply availability. When the explicit API build variable is absent, show the existing support email instead of an enabled form. Reference provenance: the installed popular-web-designs Figma template informed only restrained chrome with colorful product evidence; retain existing fonts, layout and tokens, never clone its composition.
+
+Publishing remains an owner action; these files alone do not deploy the site.

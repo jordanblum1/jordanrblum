@@ -266,3 +266,25 @@ html.app-docs-page {
     break-inside: avoid;
   }
 }
+
+.app-docs .waitlist-form fieldset { border: 0; padding: 0; margin: 0 0 var(--space-4); min-width: 0; }
+.app-docs .waitlist-form label { display: block; font-weight: 500; margin-bottom: var(--space-2); }
+.app-docs .waitlist-email-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
+.app-docs .waitlist-email-row input { min-width: 0; flex: 1 1 160px; border: 1px solid var(--ink-muted); background: var(--paper-raised); color: var(--ink); border-radius: var(--radius-sm,8px); padding: 10px 12px; min-height: 48px; font: inherit; }
+.app-docs .waitlist-form button { background: var(--accent); color: var(--paper-raised); border: 1px solid var(--accent); border-radius: var(--radius-sm,8px); padding: 10px 20px; min-height: 48px; font: inherit; font-weight: 500; cursor: pointer; }
+.app-docs .waitlist-form button:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); }
+.app-docs .waitlist-form :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.app-docs .waitlist-form input:disabled,.app-docs .waitlist-form button:disabled { opacity: .65; cursor: default; }
+.app-docs .waitlist-form .waitlist-consent { display: flex; gap: var(--space-3); align-items: center; min-height: 44px; font-weight: 400; cursor: pointer; }
+.app-docs .waitlist-consent input { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
+.app-docs .waitlist-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.app-docs .waitlist-status:empty { display: none; }
+.app-docs .waitlist-status[data-error] { color: var(--accent); }
+@media(max-width:30rem) { .app-docs .waitlist-email-row { flex-direction: column; } .app-docs .waitlist-email-row input { flex: none; width: 100%; } }
+
+.app-docs .docs-launch { display: grid; grid-template-columns: minmax(0,1fr) 200px; gap: var(--space-8); align-items: start; }
+.app-docs .docs-launch section { margin: 0; }
+.app-docs .docs-app-preview { margin: 0; text-align: center; }
+.app-docs .docs-app-preview img { display: block; width: 100%; height: auto; border-radius: 16px; }
+.app-docs .docs-app-preview figcaption { margin-top: var(--space-3); }
+@media(max-width:60rem) { .app-docs .docs-launch { grid-template-columns: minmax(0,1fr); } .app-docs .docs-app-preview { width: 240px; max-width: 100%; margin-inline: auto; } }
