@@ -54,5 +54,11 @@ test('documentation supports keyboard entry and the portfolio links to the hub',
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
   await page.goto('/');
-  await expect(page.getByRole('contentinfo').getByRole('link', { name: 'App docs', exact: true })).toHaveAttribute('href', '/apps');
+  await page.setViewportSize({ width: 390, height: 844 });
+  const docsLink = page.getByRole('contentinfo').getByRole('link', { name: 'App docs', exact: true });
+  await expect(docsLink).toHaveAttribute('href', '/apps');
+  await docsLink.scrollIntoViewIfNeeded();
+  expect((await docsLink.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await docsLink.click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('App support & privacy.');
 });

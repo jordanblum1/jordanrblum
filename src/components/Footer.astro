@@ -504,6 +504,7 @@ const blumMark = blumMarkSource
 
   .colophon {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--space-3) var(--space-8);
@@ -512,6 +513,11 @@ const blumMark = blumMarkSource
     color: var(--ink);
     font-family: var(--font-mono);
     font-size: 0.7rem;
+  }
+
+  .colophon .text-link {
+    align-items: center;
+    min-height: 44px;
   }
 
   /* Colophon text sits directly on the art, so each span gets a frosted chip. */
