@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      validate_only:
+        description: Run checks without publishing the website
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -56,10 +61,10 @@ jobs:
 
   # Never deploy from a pull_request event — that trigger exists only to run
   # the test job as a PR check. push (to master) and workflow_dispatch (manual
-  # re-deploy) both still deploy, unchanged from before.
+  # re-deploy) still deploy unless a manual run requests validation only.
   deploy:
     needs: test
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && inputs.validate_only != true
     runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v7
