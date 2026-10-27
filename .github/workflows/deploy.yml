@@ -27,6 +27,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm build
+        env:
+          PUBLIC_WAITLIST_API_URL: ${{ vars.PUBLIC_WAITLIST_API_URL }}
 
       - run: pnpm test:unit
 
@@ -40,6 +42,11 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - run: pnpm test:e2e
+        env:
+          PUBLIC_WAITLIST_API_URL: ${{ vars.PUBLIC_WAITLIST_API_URL }}
+
+      - name: Test the isolated waitlist fixture
+        run: pnpm exec playwright test --config playwright.waitlist.config.ts
 
       - name: Build and test the chat backend
         working-directory: server
@@ -69,6 +76,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm build
+        env:
+          PUBLIC_WAITLIST_API_URL: ${{ vars.PUBLIC_WAITLIST_API_URL }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

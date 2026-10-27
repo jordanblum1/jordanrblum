@@ -70,7 +70,7 @@ test.describe('no JavaScript', () => {
 });
 
 test.describe('reduced motion', () => {
-  test.use({ reducedMotion: 'reduce' });
+  test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
   test('navigation remains static while the page scrolls', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });

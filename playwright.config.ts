@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/e2e',
+  testIgnore: 'waitlist.spec.ts',
   // The scroll/animation physics tests are timing-sensitive; shared CI
   // runners can stall long enough to miss an animation window. Retries keep
   // a one-off stall from failing the deploy; local runs stay strict.
