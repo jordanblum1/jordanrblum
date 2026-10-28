@@ -67,26 +67,25 @@ test('the Stamp Shift game page has its own identity and respects reduced motion
   await expect(page.getByRole('contentinfo')).toContainText('Blum Studio');
   await expect(page.getByRole('link', { name: 'Notify me', exact: true })).toHaveAttribute('href', '#launch');
   await expect(page.locator('[data-gameplay]')).toHaveAttribute('poster', /\S+/);
-  await expect(page.locator('[data-motion-toggle]')).toBeHidden();
+  await expect(page.locator('[data-motion-toggle]')).toHaveCount(0);
   expect(await page.locator('[data-landing-motion]').evaluateAll(videos => videos.every(video => video instanceof HTMLVideoElement && video.paused && !video.getAttribute('src')))).toBe(true);
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
 });
 
 for (const width of [320, 361, 390]) {
-test(`the ${width}px phone header stays readable and motion can be paused`, async ({ page }) => {
+test(`the ${width}px phone layout stays readable and visible motion plays by default`, async ({ page }) => {
   await page.setViewportSize({ width, height:740 });
   await page.goto('/apps/stamp-shift');
   const mark = page.getByRole('link', { name:'Stamp Shift home' });
-  const motion = page.locator('[data-motion-toggle]');
-  await expect(motion).toBeVisible();
-  const a = await mark.boundingBox(), b = await motion.boundingBox();
-  expect(a).not.toBeNull(); expect(b).not.toBeNull();
-  expect(a!.x + a!.width).toBeLessThanOrEqual(b!.x);
-  expect(b!.width).toBeGreaterThanOrEqual(44);
-  await motion.click();
-  await expect(motion).toHaveAttribute('aria-pressed','true');
-  expect(await page.locator('[data-landing-motion]').evaluateAll(videos => videos.every(v => v instanceof HTMLVideoElement && v.paused))).toBe(true);
+  await expect(mark).toBeVisible();
+  await expect(page.locator('[data-motion-toggle]')).toHaveCount(0);
+  await expect.poll(() => page.locator('[data-landing-motion]').evaluateAll(videos => videos.some(video => {
+    if (!(video instanceof HTMLVideoElement)) return false;
+    const bounds = video.getBoundingClientRect();
+    const visible = bounds.bottom > 0 && bounds.top < innerHeight && bounds.right > 0 && bounds.left < innerWidth;
+    return visible && Boolean(video.getAttribute('src')) && !video.paused && video.muted && video.loop;
+  }))).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 }

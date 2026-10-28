@@ -16,7 +16,7 @@ const mailbox = asset('mailbox.png');
 const mechanics = [
   { name: 'Stash', detail: 'Save one stamp for later.', art: asset('drawer.png') },
   { name: 'Flip', detail: 'Turn a pile around.', art: asset('flip.png') },
-  { name: 'Send', detail: 'Match the delivery order.', art: asset('reward.png') },
+  { name: 'Send', detail: 'Match the delivery order.', art: asset('delivered.webp'), motion: asset('delivered.mp4') },
 ];
 ---
 <StampShiftLanding title="Stamp Shift — Three piles. One perfect order." description="A little stamp-sorting puzzle for iPhone. Stash, flip and send your way to the perfect delivery. Coming soon.">
@@ -25,7 +25,6 @@ const mechanics = [
       {mailbox && <img src={mailbox} width="72" height="72" alt="" />}
       <span>Stamp Shift<span class="mark-dot" aria-hidden="true">.</span></span>
     </a>
-    <button class="motion-toggle" data-motion-toggle hidden type="button" aria-pressed="false"><span data-motion-label>Pause motion</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path class="motion-pause" d="M4 2v10M10 2v10"/><path class="motion-play" d="m4 2 7 5-7 5Z"/></svg></button>
   </header>
   <main id="main-content" tabindex="-1">
     <section class="game-hero" aria-labelledby="game-title">
@@ -47,7 +46,7 @@ const mechanics = [
     </section>
     <section class="game-mechanics game-width" aria-label="How to play">
       <ol>
-        {mechanics.map(mechanic => <li>{mechanic.art && <img src={mechanic.art} alt="" width="112" height="112" loading="lazy" />}<div><h2>{mechanic.name}<span aria-hidden="true">.</span></h2><p>{mechanic.detail}</p></div></li>)}
+        {mechanics.map(mechanic => <li>{mechanic.art && <span class="mechanic-art" aria-hidden="true"><img src={mechanic.art} alt="" width="112" height="112" loading="lazy" />{'motion' in mechanic && mechanic.motion && <video data-landing-motion data-src={mechanic.motion} muted loop playsinline preload="none" poster={mechanic.art} tabindex="-1"></video>}</span>}<div><h2>{mechanic.name}<span aria-hidden="true">.</span></h2><p>{mechanic.detail}</p></div></li>)}
       </ol>
     </section>
     <div class="game-launch game-width" id="launch">

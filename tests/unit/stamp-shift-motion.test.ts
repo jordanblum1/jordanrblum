@@ -9,7 +9,7 @@ const play = vi.fn<() => Promise<void>>();
 const pause = vi.fn();
 
 beforeEach(() => {
-  document.body.innerHTML = '<button data-motion-toggle hidden aria-pressed="false"><span data-motion-label>Pause motion</span></button><video data-landing-motion data-src="/gameplay.mp4" poster="/poster.webp"></video>';
+  document.body.innerHTML = '<video data-landing-motion data-src="/gameplay.mp4" poster="/poster.webp"></video>';
   reduced = Object.assign(new EventTarget(), { matches: false }) as MediaQueryList;
   vi.stubGlobal('matchMedia', () => reduced);
   vi.stubGlobal('IntersectionObserver', class {
@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.spyOn(HTMLVideoElement.prototype, 'play').mockImplementation(play);
   vi.spyOn(HTMLVideoElement.prototype, 'pause').mockImplementation(pause);
 });
-afterEach(() => { cleanup?.(); cleanup = undefined; vi.restoreAllMocks(); vi.unstubAllGlobals(); Reflect.deleteProperty(navigator, 'connection'); play.mockClear(); pause.mockClear(); });
+afterEach(() => { cleanup?.(); cleanup = undefined; vi.restoreAllMocks(); vi.unstubAllGlobals(); Reflect.deleteProperty(document, 'hidden'); Reflect.deleteProperty(navigator, 'connection'); play.mockClear(); pause.mockClear(); });
 
 function enter() {
   const video = document.querySelector('video')!;
@@ -30,21 +30,22 @@ function enter() {
 }
 
 describe('optional landing motion', () => {
-  it('loads only visible motion, lets the player pause and keeps the poster available', () => {
+  it('loops muted video only while visible and pauses it with the page lifecycle', () => {
     cleanup = setupLandingMotion(document);
     const video = document.querySelector('video')!;
     expect(video.getAttribute('src')).toBeNull();
     expect(play).not.toHaveBeenCalled();
     enter();
     expect(video.getAttribute('src')).toBe('/gameplay.mp4');
+    expect(video.muted).toBe(true);
+    expect(video.loop).toBe(true);
     expect(play).toHaveBeenCalledOnce();
-    const button = document.querySelector('button')!;
-    button.click();
-    expect(button.getAttribute('aria-pressed')).toBe('true');
-    expect(button.textContent).toBe('Play motion');
-    expect(pause).toHaveBeenCalled();
     expect(video.getAttribute('poster')).toBe('/poster.webp');
-    button.click();
+    Object.defineProperty(document, 'hidden', { configurable:true, value:true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(pause).toHaveBeenCalled();
+    Object.defineProperty(document, 'hidden', { configurable:true, value:false });
+    document.dispatchEvent(new Event('visibilitychange'));
     expect(play).toHaveBeenCalledTimes(2);
     intersect([{ target: video, isIntersecting: false }]);
     expect(pause).toHaveBeenCalled();
@@ -55,7 +56,6 @@ describe('optional landing motion', () => {
     const video = enter();
     expect(video.getAttribute('src')).toBeNull();
     expect(play).not.toHaveBeenCalled();
-    expect(document.querySelector('button')!.hidden).toBe(true);
   });
   it('does not load video for Save-Data', () => {
     Object.defineProperty(navigator, 'connection', { configurable: true, value: Object.assign(new EventTarget(), { saveData: true }) });
@@ -63,12 +63,50 @@ describe('optional landing motion', () => {
     expect(enter().getAttribute('src')).toBeNull();
     expect(play).not.toHaveBeenCalled();
   });
-  it('offers an explicit play action when autoplay is refused', async () => {
+  it('keeps the poster and does not retry-loop when autoplay is refused', async () => {
     play.mockRejectedValueOnce(new Error('Autoplay blocked'));
     cleanup = setupLandingMotion(document);
-    enter();
+    const video = enter();
     await Promise.resolve();
-    expect(document.querySelector('button')!.textContent).toBe('Play motion');
-    expect(document.querySelector('button')!.hidden).toBe(false);
+    expect(pause).toHaveBeenCalled();
+    expect(video.getAttribute('poster')).toBe('/poster.webp');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(play).toHaveBeenCalledOnce();
+  });
+  it('resumes after a pending play rejects while the video is offscreen', async () => {
+    let rejectPlay!: (reason?: unknown) => void;
+    play.mockImplementationOnce(() => new Promise<void>((_, reject) => { rejectPlay = reject; }));
+    cleanup = setupLandingMotion(document);
+    const video = enter();
+    intersect([{ target:video, isIntersecting:false }]);
+    rejectPlay(new Error('Playback interrupted'));
+    await Promise.resolve();
+    intersect([{ target:video, isIntersecting:true }]);
+    expect(play).toHaveBeenCalledTimes(2);
+  });
+  it('ignores a delayed AbortError after a hidden video becomes visible again', async () => {
+    let rejectPlay!: (reason?: unknown) => void;
+    play.mockImplementationOnce(() => new Promise<void>((_, reject) => { rejectPlay = reject; }));
+    cleanup = setupLandingMotion(document);
+    enter();
+    Object.defineProperty(document, 'hidden', { configurable:true, value:true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'hidden', { configurable:true, value:false });
+    document.dispatchEvent(new Event('visibilitychange'));
+    rejectPlay(new DOMException('Playback interrupted', 'AbortError'));
+    await Promise.resolve();
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(play).toHaveBeenCalledTimes(3);
+  });
+  it('isolates a failed video while the remaining motion keeps playing', () => {
+    document.body.insertAdjacentHTML('beforeend', '<video data-landing-motion data-src="/collection.mp4" poster="/collection.webp"></video>');
+    cleanup = setupLandingMotion(document);
+    const videos = [...document.querySelectorAll('video')];
+    intersect(videos.map(target => ({ target, isIntersecting:true })));
+    expect(play).toHaveBeenCalledTimes(2);
+    videos[0].dispatchEvent(new Event('error'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(play).toHaveBeenCalledTimes(3);
+    expect(videos[0].getAttribute('poster')).toBe('/poster.webp');
   });
 });

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 for (const width of [1280,390]) {
-  test(`synthetic fixture only: consent, invalid, duplicate, success and failure at ${width}px`,async ({ page,request }) => {
+  test(`synthetic fixture only: invalid, scoped consent, duplicate and retry at ${width}px`,async ({ page,request }) => {
     const errors: string[] = [];
     const consoleErrors: string[] = [];
     page.on('console',message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
@@ -9,39 +9,45 @@ for (const width of [1280,390]) {
     await page.goto('/apps/stamp-shift/?source=meta-drawer');
     const email = page.getByRole('textbox',{ name:'Email address' });
     const button = page.getByRole('button',{ name:'Notify me',exact:true });
-    const consent = page.getByRole('checkbox',{ name:'Email me when Stamp Shift launches.' });
+    const before = await (await request.get('http://127.0.0.1:4334/_fixture')).json();
+    await expect(page.getByRole('heading',{ name:'Notify me when it’s available.' })).toBeVisible();
+    await expect(page.getByRole('checkbox')).toHaveCount(0);
     await expect(button).toBeEnabled();
+    await page.screenshot({ path:`docs/evidence/waitlist/fixture-initial-${width}.png`,fullPage:true });
     await button.click();
     await expect(email).toBeFocused();
     expect(await email.evaluate(input => input instanceof HTMLInputElement && input.validity.valueMissing)).toBe(true);
+    expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).requests).toBe(before.requests);
     await email.fill(`browser-${width}@example.test`);
-    await button.click();
-    await expect(consent).toBeFocused();
-    await consent.check();
     await button.click();
     await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
     await expect(page.getByRole('button',{ name:'Saved',exact:true })).toBeDisabled();
     await page.screenshot({ path:`docs/evidence/waitlist/fixture-success-${width}.png`,fullPage:true });
-    const count = (await (await request.get('http://127.0.0.1:4334/_fixture')).json()).subscriptions;
+    const success = await (await request.get('http://127.0.0.1:4334/_fixture')).json();
+    expect(success.verifiedRequests).toBe(before.verifiedRequests + 1);
+    const count = success.subscriptions;
     await page.reload();
     await email.fill(` BROWSER-${width}@EXAMPLE.TEST `);
-    await consent.check();
     await button.click();
     await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
     expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).subscriptions).toBe(count);
     await page.reload();
-    await email.fill('failure@example.test');
-    await consent.check();
+    await email.fill(`failure-${width}@example.test`);
     await button.click();
     await expect(page.getByRole('status')).toContainText('Your signup could not be saved.');
     await expect(button).toBeEnabled();
-    await expect(email).toHaveValue('failure@example.test');
+    await expect(email).toHaveValue(`failure-${width}@example.test`);
     await page.screenshot({ path:`docs/evidence/waitlist/fixture-failure-${width}.png`,fullPage:true });
+    await button.click();
+    await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
+    await expect(page.getByRole('button',{ name:'Saved',exact:true })).toBeDisabled();
     const dimensions = await page.evaluate(() => ({ width:innerWidth,document:document.documentElement.scrollWidth }));
     expect(dimensions.document).toBeLessThanOrEqual(dimensions.width + 1);
     expect(errors).toEqual([]);
     expect(consoleErrors.every(message => message.includes('503'))).toBe(true);
-    expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).sources).toContain('meta-drawer');
+    const final = await (await request.get('http://127.0.0.1:4334/_fixture')).json();
+    expect(final.verifiedRequests).toBe(before.verifiedRequests + 4);
+    expect(final.sources).toContain('meta-drawer');
   });
 }
 test('no JavaScript provides a contact path and keeps the form disabled',async ({ browser,baseURL }) => {

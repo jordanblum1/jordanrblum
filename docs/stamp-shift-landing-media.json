@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-27",
+  "date": "2026-10-28",
   "status": "reviewed-local-not-published",
   "higgsfield": {
     "imageJob": "39d917ec-cfb3-4b66-91f0-b2597a3e11a3",
@@ -16,15 +16,15 @@
     "use": "Decorative illustration and ambient clouds/leaves only; no generated gameplay"
   },
   "gameplay": {
-    "source": "/Users/jordan/projects/stamp-shift/build/evidence/launch-sequence-2026-10-24/route4-final-raw.mp4",
-    "sourceSha256": "ae31412e00cc894d80fb230eff85df8847bc4aca45673211e46a313a5c386d4b",
-    "sourceCaptureDate": "2026-10-24",
-    "trimStartSeconds": 21.5,
-    "trimEndSeconds": 35.8,
+    "source": "/Users/jordan/projects/stamp-shift/build/evidence/postal-motion-2026-10-28/final-journey-raw.mp4",
+    "sourceSha256": "4a8cc4e34e200c09d4a8704dbddfe7ab59d0689310f41c5f3f1447497d4c6752",
+    "sourceCaptureDate": "2026-10-27",
+    "trimStartSeconds": 39,
+    "trimEndSeconds": 46.4,
     "speed": 1,
-    "heldEndingSeconds": 0.7,
-    "durationSeconds": 15,
-    "capture": "Continuous genuine native Route4 play-through. No intermediate moves omitted, generated UI or tap indicators added. Some small action icons predate latest cosmetic polish; game rules and Stash/Flip/Send vocabulary match.",
+    "heldEndingSeconds": 0.6,
+    "durationSeconds": 8,
+    "capture": "Continuous native tutorial excerpt at1x showing stamp flight and earned delivery animation from postal-motion verification. Development simulator recording, not a public or TestFlight phone recording. No generated UI or omitted intermediate moves. Entire shorter-screen recording fit uniformly at532px wide, x26/y90 in584x1200 canvas; sage padding keeps native controls below the licensed phone island.",
     "frame": {
       "creator": "Webmobilefirst",
       "source": "https://www.webmobilefirst.com/img/mockups/mockup-apple-iphone-17-pro-2025-transparent.png",
@@ -66,52 +66,16 @@
       "bytes": 32962
     },
     "gameplay-poster.webp": {
-      "sha256": "a50f92d8d96f2154d1f004cf4cc996050b33a1766343d11fc606d08411ec4ba2",
-      "bytes": 53080
+      "sha256": "4572b6dcfd8390e6ea0febe66b1f24c1cc5f19df3950b93dbe353f53f599aca4",
+      "bytes": 46056
     },
     "gameplay.mp4": {
-      "sha256": "a239da979c4948867c5ab838e31fd2b05111915a07f1160cdd703427d0478008",
-      "bytes": 211338,
-      "probe": {
-        "programs": [],
-        "stream_groups": [],
-        "streams": [
-          {
-            "codec_name": "h264",
-            "codec_type": "video",
-            "width": 584,
-            "height": 1200,
-            "pix_fmt": "yuv420p",
-            "r_frame_rate": "30/1"
-          }
-        ],
-        "format": {
-          "duration": "15.000000",
-          "size": "211338"
-        }
-      }
+      "sha256": "46790e6f6c40ddc7c032498fd0b557a43bd10b353b5c71429373ffdfd0b91f4f",
+      "bytes": 251172
     },
     "landscape.mp4": {
       "sha256": "811a60487c44fff0128241a7bc71f01fd53a08a69e23333d22e584dca2df0fad",
-      "bytes": 204234,
-      "probe": {
-        "programs": [],
-        "stream_groups": [],
-        "streams": [
-          {
-            "codec_name": "h264",
-            "codec_type": "video",
-            "width": 1280,
-            "height": 714,
-            "pix_fmt": "yuv420p",
-            "r_frame_rate": "24/1"
-          }
-        ],
-        "format": {
-          "duration": "5.041667",
-          "size": "204234"
-        }
-      }
+      "bytes": 204234
     },
     "landscape.webp": {
       "sha256": "4279f7c76dd0e7667bc7d746e3d94f25b3544407581d7bd49eb391d38ab5ecc8",
@@ -140,6 +104,27 @@
     "sun.svg": {
       "sha256": "d6b9d85fd04fa6e818fc4bc4aa92b97eeef8d9997ba116ab5d0009d5a0cabeaa",
       "bytes": 1986
+    },
+    "collection.mp4": {
+      "sha256": "55eb1c710e0028029ca98225d3a6adf7ffcc6d2a7d6a960324f54ed4d6535791",
+      "bytes": 33982
+    },
+    "collection.webp": {
+      "sha256": "eb9fa13d1e973661820f1246eca364fc0289cc7f14d578ef98de9ecf9bc5ab6b",
+      "bytes": 6218
+    },
+    "delivered.mp4": {
+      "sha256": "ad02aebee93e7470aec1043b9774fa7afc1bc98787dc5d30c4dfe8558449f79e",
+      "bytes": 37587
+    },
+    "delivered.webp": {
+      "sha256": "22c7c034e4e61c336920618176dbdb6e64d36b2742a780f6f47e15f3c37b6b49",
+      "bytes": 5620
     }
+  },
+  "reusedCelebrations": {
+    "source": "stamp-shift/art/celebrations/provenance.json",
+    "newCredits": 0,
+    "use": "Existing 2-second transparent native animation exports composited onto page surfaces; decorative, not playable UI."
   }
 }
