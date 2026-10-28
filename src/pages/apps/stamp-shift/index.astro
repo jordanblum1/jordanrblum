@@ -1,18 +1,61 @@
 ---
-import AppDocs from '../../../layouts/AppDocs.astro';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { getImage } from 'astro:assets';
+import StampShiftLanding from '../../../layouts/StampShiftLanding.astro';
 import Waitlist from '../../../components/Waitlist.astro';
-import { Image } from 'astro:assets';
 import preview from '../../../assets/projects/stamp-shift-preview.png';
 import { waitlistEndpoint } from '../../../data/waitlist';
-import { stampShift, supportEmail } from '../../../data/apps';
 const endpoint = waitlistEndpoint(import.meta.env.PUBLIC_WAITLIST_API_URL, import.meta.env.MODE);
+const asset = (name: string) => existsSync(join(process.cwd(), 'public/assets/stamp-shift', name)) ? `/assets/stamp-shift/${name}` : undefined;
+const poster = asset('gameplay-poster.webp') ?? (await getImage({ src: preview, width: 600, format: 'webp' })).src;
+const gameplay = asset('gameplay.mp4');
+const landscape = asset('landscape.webp');
+const landscapeMotion = asset('landscape.mp4');
+const mailbox = asset('mailbox.png');
+const mechanics = [
+  { name: 'Stash', detail: 'Save one stamp for later.', art: asset('drawer.png') },
+  { name: 'Flip', detail: 'Turn a pile around.', art: asset('flip.png') },
+  { name: 'Send', detail: 'Match the delivery order.', art: asset('reward.png') },
+];
 ---
-<AppDocs app={stampShift} active="overview" title="Stamp Shift" description="How Stamp Shift works, what Extra Routes includes, and where to find support and privacy information." heading="Stamp Shift." intro="Three piles. One perfect order. Match the sun, leaf and moon stamps to the delivery order.">
-  <div class="docs-launch">
-    <Waitlist endpoint={endpoint} />
-    <figure class="docs-app-preview"><Image src={preview} alt="Stamp Shift's Morning Collection route, showing the sun, leaf and moon piles and the delivery order." widths={[240,480]} sizes="240px" width={240} format="webp" /><figcaption class="docs-caption">Development preview</figcaption></figure>
-  </div>
-  <section><h2>A small sorting puzzle</h2><p>Send a stamp from the front of a pile when it matches the next stamp in the delivery order. Use Stash to keep one blocking stamp in the Drawer for later. Its single slot is reusable after you Send the stashed stamp. Use Flip to turn one pile around, once per route.</p><p>Start with 30 free routes, including three short, replayable lessons. Open Learn on the home screen to practice, or Routes to explore the puzzles. Undo, Restart and three-stage hints are always free. There are no timers, lives, ads or in-app accounts.</p><div class="docs-actions"><a href="/apps/stamp-shift/support">Get help with Stamp Shift</a><a href="/apps/stamp-shift/privacy">Read the privacy policy</a></div></section>
-  <section><h2>Extra Routes</h2><p>Explore 300 routes in total: 30 free routes and 270 additional routes unlocked with one permanent in-app purchase. There is no subscription. Apple's current localized price appears in the app before purchase.</p><p>To restore, open Routes on the home screen and select a route marked Paid, then choose Restore purchases in The post shop using the Apple Account that bought the pack.</p></section>
-  <section><h2>Made by Jordan Blum</h2><p>Progress and settings stay on your device. Apple handles purchases. You choose whether to share puzzle information when asking for help.</p><p class="docs-contact">Support: <a href={`mailto:${supportEmail}?subject=Stamp%20Shift%20support`}>{supportEmail}</a>.</p></section>
-</AppDocs>
+<StampShiftLanding title="Stamp Shift — Three piles. One perfect order." description="A little stamp-sorting puzzle for iPhone. Stash, flip and send your way to the perfect delivery. Coming soon.">
+  <header class="game-header game-width">
+    <a class="game-mark" href="/apps/stamp-shift" aria-label="Stamp Shift home">
+      {mailbox && <img src={mailbox} width="72" height="72" alt="" />}
+      <span>Stamp Shift<span class="mark-dot" aria-hidden="true">.</span></span>
+    </a>
+    <button class="motion-toggle" data-motion-toggle hidden type="button" aria-pressed="false"><span data-motion-label>Pause motion</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path class="motion-pause" d="M4 2v10M10 2v10"/><path class="motion-play" d="m4 2 7 5-7 5Z"/></svg></button>
+  </header>
+  <main id="main-content" tabindex="-1">
+    <section class="game-hero" aria-labelledby="game-title">
+      {landscape && <div class="game-scenery" aria-hidden="true"><img src={landscape} alt="" width="1920" height="1080" fetchpriority="high" />{landscapeMotion && <video data-landing-motion data-src={landscapeMotion} muted loop playsinline preload="none" poster={landscape} tabindex="-1"></video>}</div>}
+      <div class="hero-layout game-width">
+        <div class="hero-copy">
+          <h1 id="game-title">Three piles.<br />One perfect order.</h1>
+          <p>A little puzzle about getting<br class="desktop-break" /> every stamp to the right place.</p>
+          <a class="hero-notify" href="#launch">Notify me <span aria-hidden="true">↓</span></a>
+          <div class="stamp-friends" aria-hidden="true">
+            {['sun', 'leaf', 'moon'].map(name => { const src = asset(`${name}.svg`); return src && <img src={src} alt="" width="88" height="88" />; })}
+          </div>
+        </div>
+        <figure class="gameplay-preview">
+          <video class="gameplay-video" data-landing-motion data-gameplay data-src={gameplay} muted loop playsinline preload="none" poster={poster} aria-label="Recorded Stamp Shift gameplay: stash a stamp, send matching stamps and finish a delivery."></video>
+          <figcaption>Gameplay preview · Coming soon for iPhone</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="game-mechanics game-width" aria-label="How to play">
+      <ol>
+        {mechanics.map(mechanic => <li>{mechanic.art && <img src={mechanic.art} alt="" width="112" height="112" loading="lazy" />}<div><h2>{mechanic.name}<span aria-hidden="true">.</span></h2><p>{mechanic.detail}</p></div></li>)}
+      </ol>
+    </section>
+    <div class="game-launch game-width" id="launch">
+      <Waitlist endpoint={endpoint} />
+    </div>
+  </main>
+</StampShiftLanding>
+<script>
+  import { setupLandingMotion } from '../../../scripts/stamp-shift-motion';
+  setupLandingMotion(document);
+</script>

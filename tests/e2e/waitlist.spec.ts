@@ -49,6 +49,6 @@ test('no JavaScript provides a contact path and keeps the form disabled',async (
   const page = await context.newPage();
   await page.goto('/apps/stamp-shift');
   await expect(page.getByRole('button',{ name:'Notify me' })).toBeDisabled();
-  await expect(page.getByRole('link',{ name:'email Jordan',exact:true })).toHaveAttribute('href',/mailto:/);
+  await expect(page.getByRole('link',{ name:'Contact support',exact:true })).toHaveAttribute('href',/mailto:/);
   await context.close();
 });

@@ -47,7 +47,7 @@ components:
 
 This is a machine-readable companion to the existing [brand book](docs/brand.md) and [generated tokens](src/styles/tokens.css). The vault brand book remains canonical; this file documents the current implementation and does not replace or regenerate it.
 
-The portfolio is a quiet editorial shell with expressive product evidence. The app-documentation surface is **Decide/Learn**: find the right app, understand its rules, restore a purchase, contact its maker, and read the app's own privacy policy. Reference strategy: **existing product system**. Preserve the site's paper/ink palette, readable Switzer prose, Chillax destination headings, generous spacing and plain text links. No new microsite identity or external layout is introduced.
+The portfolio is a quiet editorial shell with expressive product evidence. The app-documentation surface is **Decide/Learn**: find the right app, understand its rules, restore a purchase, contact its maker, and read the app's own privacy policy. Reference strategy: **existing product system**. Preserve the site's paper/ink palette, readable Switzer prose, Chillax destination headings, generous spacing and plain text links. The Stamp Shift overview is now an explicitly approved standalone game microsite; its scoped contract is [Stamp Shift landing](docs/stamp-shift-landing-DESIGN.md). Other app documentation retains this existing system.
 
 ## Colors
 
@@ -71,7 +71,7 @@ Retain the brand's 8/16/24/32px radius vocabulary where needed; reading pages do
 
 ## Components
 
-Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. Only the Stamp Shift overview may load the optional waitlist form script. Support, privacy and the directory remain static. Use a visible email label, explicit unchecked per-app consent, 44px controls, pending/disabled/error/success states and a live status region. No new dependencies. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
+Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. Only the Stamp Shift overview may load its isolated game-landing motion and waitlist scripts; its scoped contract supersedes this editorial shell for that overview. Support, privacy and the directory remain static. Use a visible email label, explicit unchecked per-app consent, 44px controls, pending/disabled/error/success states and a live status region. No new dependencies. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
 
 ## Do's and Don'ts
 
@@ -84,3 +84,7 @@ Keep rules, privacy language and purchase information specific and verifiable. D
 The public directory registry is `src/data/apps.ts`, with email derived from the existing site contact. To add an app, add one registry entry and create its overview, support and bespoke privacy pages under `src/pages/apps/{slug}/`, using the shared layout. Only list apps after those routes exist. Never inherit another app's data practices by generating a generic policy from its registry entry. Keep the `/apps/{slug}/support` and `/apps/{slug}/privacy` addresses stable for app-store review and existing users. The overview is a Decide/Learn prelaunch surface: Coming soon and Notify me must not imply availability. When the explicit API build variable is absent, show the existing support email instead of an enabled form. Reference provenance: the installed popular-web-designs Figma template informed only restrained chrome with colorful product evidence; retain existing fonts, layout and tokens, never clone its composition.
 
 Publishing remains an owner action; these files alone do not deploy the site.
+
+## Stamp Shift overview exception
+
+Jordan explicitly requested a compact, independently branded game page on October27,2026. Use [its scoped DESIGN.md](docs/stamp-shift-landing-DESIGN.md) for `/apps/stamp-shift` only; retain all support/privacy URLs and their static reading surfaces. No personal-site navigation or repeated owner-name attribution belongs on the game overview.

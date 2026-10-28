@@ -1,0 +1,145 @@
+{
+  "date": "2026-10-27",
+  "status": "reviewed-local-not-published",
+  "higgsfield": {
+    "imageJob": "39d917ec-cfb3-4b66-91f0-b2597a3e11a3",
+    "videoJob": "f719b57b-441d-4c13-8dee-4ac2ab72119a",
+    "imageCredits": 2,
+    "videoCredits": 7.5,
+    "totalCredits": 9.5,
+    "balanceBefore": 873.7,
+    "balanceAfter": 864.2,
+    "reference": "stamp-shift/art/splash/postal-opening-reference.png",
+    "referenceSha256": "58407a9196f5caee6588bd7e3ae2992caf6d3eb183209f915582df821438c36d",
+    "imageSourceSha256": "7501278fe5dbaae615749bbc25808e900c3aa440ef3d836e1bb2ffd0d3ae5508",
+    "videoSourceSha256": "29b90ff0d0642c2f890890db8553cff67755ae1fc4e43e2d054798c66d3d8176",
+    "use": "Decorative illustration and ambient clouds/leaves only; no generated gameplay"
+  },
+  "gameplay": {
+    "source": "/Users/jordan/projects/stamp-shift/build/evidence/launch-sequence-2026-10-24/route4-final-raw.mp4",
+    "sourceSha256": "ae31412e00cc894d80fb230eff85df8847bc4aca45673211e46a313a5c386d4b",
+    "sourceCaptureDate": "2026-10-24",
+    "trimStartSeconds": 21.5,
+    "trimEndSeconds": 35.8,
+    "speed": 1,
+    "heldEndingSeconds": 0.7,
+    "durationSeconds": 15,
+    "capture": "Continuous genuine native Route4 play-through. No intermediate moves omitted, generated UI or tap indicators added. Some small action icons predate latest cosmetic polish; game rules and Stash/Flip/Send vocabulary match.",
+    "frame": {
+      "creator": "Webmobilefirst",
+      "source": "https://www.webmobilefirst.com/img/mockups/mockup-apple-iphone-17-pro-2025-transparent.png",
+      "license": "https://www.webmobilefirst.com/en/license-agreement/#mockups",
+      "sha256": "4d7b36e5495dfc853ea92f8c9b623eedff7daa7d77c01fa7171807c26616ace6",
+      "use": "Flattened into completed video/poster/OG only; raw PNG excluded",
+      "sourceDimensions": [
+        389,
+        800
+      ],
+      "sourceScreen": [
+        17,
+        14,
+        355,
+        772
+      ]
+    }
+  },
+  "art": {
+    "sprites": "Original Stamp Shift SVG masters",
+    "postalIcons": "Existing original fun-isometric art; unmodified MIT license included",
+    "gameIcon": "Existing Stamp Shift AppIcon master"
+  },
+  "files": {
+    "FunIsometric-LICENSE.txt": {
+      "sha256": "27629f45ecfba90562cf343b0dbc78145d4d6ee5b497d0b131cc3bd31429e407",
+      "bytes": 1067
+    },
+    "apple-touch-icon.png": {
+      "sha256": "d13efca3c928ef1662b1bb89f3383ade94c8ad2b67a399c4fafe6fd33fedd110",
+      "bytes": 46286
+    },
+    "drawer.png": {
+      "sha256": "e635f9e92b1318d71550337c82de57b3484b20b207a2315a39a45262d2b1bb89",
+      "bytes": 39338
+    },
+    "flip.png": {
+      "sha256": "e6ba6b2b071c49103528ff45b46ca3e976cfd38627ba580fe52116bd86799d1c",
+      "bytes": 32962
+    },
+    "gameplay-poster.webp": {
+      "sha256": "a50f92d8d96f2154d1f004cf4cc996050b33a1766343d11fc606d08411ec4ba2",
+      "bytes": 53080
+    },
+    "gameplay.mp4": {
+      "sha256": "a239da979c4948867c5ab838e31fd2b05111915a07f1160cdd703427d0478008",
+      "bytes": 211338,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 584,
+            "height": 1200,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "30/1"
+          }
+        ],
+        "format": {
+          "duration": "15.000000",
+          "size": "211338"
+        }
+      }
+    },
+    "landscape.mp4": {
+      "sha256": "811a60487c44fff0128241a7bc71f01fd53a08a69e23333d22e584dca2df0fad",
+      "bytes": 204234,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1280,
+            "height": 714,
+            "pix_fmt": "yuv420p",
+            "r_frame_rate": "24/1"
+          }
+        ],
+        "format": {
+          "duration": "5.041667",
+          "size": "204234"
+        }
+      }
+    },
+    "landscape.webp": {
+      "sha256": "4279f7c76dd0e7667bc7d746e3d94f25b3544407581d7bd49eb391d38ab5ecc8",
+      "bytes": 42276
+    },
+    "leaf.svg": {
+      "sha256": "91d4f4347fae0433a98e8fa941b22f4c83c282f0e32333d28de4976291160472",
+      "bytes": 1017
+    },
+    "mailbox.png": {
+      "sha256": "da8fe31ab1140a2435fa7de94497203f44088886e59796172ce072284feccf37",
+      "bytes": 39362
+    },
+    "moon.svg": {
+      "sha256": "1c1e20a07eda043111645869906853dd0d91998297d8cff291c0af185b5af542",
+      "bytes": 1220
+    },
+    "og.jpg": {
+      "sha256": "07e07d5ac04449e645b256b0be796b4cf6b295cbc257c5ed404ae82fb4efd1b7",
+      "bytes": 100667
+    },
+    "reward.png": {
+      "sha256": "adf73330fa68f08462f2740ece6f7630bd64c286167847b712483d86a6db5532",
+      "bytes": 35967
+    },
+    "sun.svg": {
+      "sha256": "d6b9d85fd04fa6e818fc4bc4aa92b97eeef8d9997ba116ab5d0009d5a0cabeaa",
+      "bytes": 1986
+    }
+  }
+}

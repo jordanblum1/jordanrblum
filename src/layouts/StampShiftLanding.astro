@@ -1,0 +1,36 @@
+---
+import '@fontsource/baloo-2/latin-700.css';
+import '../styles/stamp-shift-landing.css';
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+const canonical = new URL('/apps/stamp-shift', Astro.site ?? Astro.url.origin);
+---
+<!doctype html>
+<html lang="en" class="stamp-shift-page">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/assets/stamp-shift/sun.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/stamp-shift/apple-touch-icon.png" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#E6EEDF" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Stamp Shift" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/assets/stamp-shift/og.jpg', canonical)} />
+    <meta property="og:image:alt" content="Stamp Shift — Three piles. One perfect order." />
+  </head>
+  <body class="stamp-shift">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <slot />
+    <footer class="game-footer game-width">
+      <span>Blum Studio</span>
+      <nav aria-label="Help and privacy"><a href="/apps/stamp-shift/support">Support</a><a href="/apps/stamp-shift/privacy">Privacy</a></nav>
+    </footer>
+  </body>
+</html>

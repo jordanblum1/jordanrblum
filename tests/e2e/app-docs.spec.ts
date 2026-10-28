@@ -17,7 +17,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://jordanblum.com${route}`);
       await expect(page.locator('[data-chat-widget], [data-chat-trigger]')).toHaveCount(0);
-      await expect(page.locator('script')).toHaveCount(route === '/apps/stamp-shift' ? 1 : 0);
+      await expect(page.locator('script')).toHaveCount(route === '/apps/stamp-shift' ? 2 : 0);
       await expect(page.locator('body')).not.toContainText('UNCONFIGURED');
       const dimensions = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
       expect(dimensions.document).toBeLessThanOrEqual(dimensions.width + 1);
@@ -32,7 +32,7 @@ test('a player can find restore help, privacy and the support email without Java
   const page = await context.newPage();
   await page.goto('/apps');
   await page.getByRole('link', { name: 'Stamp Shift', exact: true }).click();
-  await page.getByRole('link', { name: 'Get help with Stamp Shift' }).click();
+  await page.getByRole('link', { name: 'Support', exact: true }).click();
   const restore = page.getByText('How do I restore Extra Routes?', { exact: true });
   await restore.focus();
   await page.keyboard.press('Space');
@@ -56,3 +56,37 @@ test('documentation supports keyboard entry and the portfolio links to the hub',
   await page.goto('/');
   await expect(page.getByRole('contentinfo').getByRole('link', { name: 'App docs', exact: true })).toHaveAttribute('href', '/apps');
 });
+
+test('the Stamp Shift game page has its own identity and respects reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/apps/stamp-shift');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Three piles.One perfect order.');
+  await expect(page.getByRole('banner')).toContainText('Stamp Shift');
+  await expect(page.getByRole('banner')).not.toContainText('Jordan');
+  await expect(page.getByRole('navigation', { name: 'Stamp Shift documentation' })).toHaveCount(0);
+  await expect(page.getByRole('contentinfo')).toContainText('Blum Studio');
+  await expect(page.getByRole('link', { name: 'Notify me', exact: true })).toHaveAttribute('href', '#launch');
+  await expect(page.locator('[data-gameplay]')).toHaveAttribute('poster', /\S+/);
+  await expect(page.locator('[data-motion-toggle]')).toBeHidden();
+  expect(await page.locator('[data-landing-motion]').evaluateAll(videos => videos.every(video => video instanceof HTMLVideoElement && video.paused && !video.getAttribute('src')))).toBe(true);
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+});
+
+for (const width of [320, 361, 390]) {
+test(`the ${width}px phone header stays readable and motion can be paused`, async ({ page }) => {
+  await page.setViewportSize({ width, height:740 });
+  await page.goto('/apps/stamp-shift');
+  const mark = page.getByRole('link', { name:'Stamp Shift home' });
+  const motion = page.locator('[data-motion-toggle]');
+  await expect(motion).toBeVisible();
+  const a = await mark.boundingBox(), b = await motion.boundingBox();
+  expect(a).not.toBeNull(); expect(b).not.toBeNull();
+  expect(a!.x + a!.width).toBeLessThanOrEqual(b!.x);
+  expect(b!.width).toBeGreaterThanOrEqual(44);
+  await motion.click();
+  await expect(motion).toHaveAttribute('aria-pressed','true');
+  expect(await page.locator('[data-landing-motion]').evaluateAll(videos => videos.every(v => v instanceof HTMLVideoElement && v.paused))).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+}

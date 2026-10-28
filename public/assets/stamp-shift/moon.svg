@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Moon puzzle character">
+  <g id="outline" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="3" stroke-linejoin="round"><rect x="18" y="51" width="8" height="11" rx="4"/><rect x="32" y="51" width="8" height="11" rx="4"/><path d="M49 5 C26 -2 7 13 7 33 C7 50 21 59 39 57 C48 55 55 50 58 43 C41 44 28 34 31 20 C33 13 40 8 49 5 Z"/><path d="M53 9 L55 14 L60 16 L55 18 L53 23 L51 18 L46 16 L51 14 Z"/></g>
+  <g id="body" fill="#9C82EE"><rect x="18" y="51" width="8" height="11" rx="4"/><rect x="32" y="51" width="8" height="11" rx="4"/><path d="M49 5 C26 -2 7 13 7 33 C7 50 21 59 39 57 C48 55 55 50 58 43 C41 44 28 34 31 20 C33 13 40 8 49 5 Z"/><path d="M53 9 L55 14 L60 16 L55 18 L53 23 L51 18 L46 16 L51 14 Z"/></g>
+  <g id="face" fill="#FFFFFF"><ellipse cx="27" cy="43" rx="11" ry="9"/><path d="M16 23 Q19 16 27 13" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/></g>
+  <g id="ink" fill="#1B1B1B"><ellipse cx="22" cy="40" rx="1.8" ry="2.8"/><ellipse cx="32" cy="40" rx="1.8" ry="2.8"/><path d="M23 46 Q27 52 31 46" fill="none" stroke="#1B1B1B" stroke-width="2.6" stroke-linecap="round"/></g>
+</svg>
