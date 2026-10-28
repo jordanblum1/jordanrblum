@@ -13,6 +13,8 @@ for (const width of [1280,390]) {
     await expect(page.getByRole('heading',{ name:'Notify me when it’s available.' })).toBeVisible();
     await expect(page.getByRole('checkbox')).toHaveCount(0);
     await expect(button).toBeEnabled();
+    await page.getByRole('link',{ name:'Notify me',exact:true }).click();
+    await expect(email).toBeFocused();
     await page.screenshot({ path:`docs/evidence/waitlist/fixture-initial-${width}.png`,fullPage:true });
     await button.click();
     await expect(email).toBeFocused();

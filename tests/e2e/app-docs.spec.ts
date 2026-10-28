@@ -89,3 +89,13 @@ test(`the ${width}px phone layout stays readable and visible motion plays by def
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 }
+
+test('support explains current pack ownership and build-specific analytics', async ({ page }) => {
+  await page.goto('/apps/stamp-shift/support');
+  await page.getByText('What does Extra Routes include?', { exact:true }).click();
+  await expect(page.getByText(/Evening Post unlocks routes 31–60/)).toBeVisible();
+  await expect(page.getByText(/earlier purchases are not credited/)).toBeVisible();
+  await page.getByText('Can I play without an account?', { exact:true }).click();
+  await expect(page.getByText(/whether purchase analytics are enabled in your build/)).toBeVisible();
+  await expect(page.getByText('The current launch build has purchase analytics disabled.')).toHaveCount(0);
+});

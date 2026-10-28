@@ -9,6 +9,9 @@ export function setupWaitlist(element: Element): void {
   const endpoint = element.dataset.endpoint;
   if (!(fieldset instanceof HTMLFieldSetElement) || !(email instanceof HTMLInputElement) || !(website instanceof HTMLInputElement) || !(button instanceof HTMLButtonElement) || !status || !endpoint) return;
   fieldset.disabled = false;
+  document.querySelector('.hero-notify[href="#launch"]')?.addEventListener('click', () => {
+    requestAnimationFrame(() => email.focus({ preventScroll: true }));
+  });
   element.addEventListener('submit', async event => {
     event.preventDefault();
     if (fieldset.disabled || !element.reportValidity()) return;
