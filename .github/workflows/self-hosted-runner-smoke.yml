@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Verify runner
         run: |
           test "$(uname -m)" = "arm64"

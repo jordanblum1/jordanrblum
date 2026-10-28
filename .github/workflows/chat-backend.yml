@@ -43,11 +43,13 @@ jobs:
   # Actions tab (workflow_dispatch) after review.
   provision:
     if: github.event_name == 'workflow_dispatch' && !inputs.diagnose
-    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, macOS, ARM64, personal-mac]
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
@@ -351,11 +353,13 @@ jobs:
   # S3, CloudFront) is expected to already exist via the provision job above.
   deploy:
     if: github.event_name == 'push'
-    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, macOS, ARM64, personal-mac]
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
@@ -431,7 +435,7 @@ jobs:
   # deliberately excludes Environment (it contains the API key).
   diagnose:
     if: github.event_name == 'workflow_dispatch' && inputs.diagnose
-    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, macOS, ARM64, personal-mac]
     permissions:
       contents: read
     steps:

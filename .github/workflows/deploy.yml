@@ -13,12 +13,27 @@ on:
         default: false
 
 jobs:
+  # Fork pull requests never execute untrusted code on the private Mac. Keep
+  # this red so a skipped private-runner check cannot be mistaken for acceptance.
+  untrusted-fork:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require a trusted branch for validation
+        run: |
+          echo "::error::Fork pull requests are not executed on the private self-hosted runner. A maintainer must move reviewed changes to a trusted branch before validation."
+          exit 1
+
   test:
-    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, macOS, ARM64, personal-mac]
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
@@ -30,6 +45,8 @@ jobs:
         with: { node-version: 22, cache: pnpm }
 
       - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
 
       - run: pnpm build
         env:
@@ -50,8 +67,32 @@ jobs:
         env:
           PUBLIC_WAITLIST_API_URL: ${{ vars.PUBLIC_WAITLIST_API_URL }}
 
-      - name: Test the isolated waitlist fixture
-        run: pnpm exec playwright test --config playwright.waitlist.config.ts
+      - name: Test isolated launch journeys
+        run: pnpm test:launch-qa
+
+      - name: Preserve launch QA evidence locally
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -d output/launch-qa ]; then
+            echo "No launch QA evidence was produced."
+            exit 0
+          fi
+
+          evidence_dir="$HOME/.local/share/agent-workflows/launch-qa/${GITHUB_REPOSITORY}/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "$evidence_dir"
+          cp -R output/launch-qa/. "$evidence_dir/"
+          echo "Saved launch QA evidence to $evidence_dir"
+
+      - name: Upload short-lived launch QA evidence
+        if: always() && hashFiles('output/launch-qa/**') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: launch-qa-${{ github.run_id }}
+          path: output/launch-qa
+          if-no-files-found: ignore
+          retention-days: 3
 
       - name: Build and test the chat backend
         working-directory: server
@@ -65,9 +106,11 @@ jobs:
   deploy:
     needs: test
     if: github.event_name != 'pull_request' && inputs.validate_only != true
-    runs-on: ${{ vars.ENABLE_SELF_HOSTED_RUNNER == 'true' && fromJSON('["self-hosted","macOS","ARM64","personal-mac"]') || 'ubuntu-latest' }}
+    runs-on: [self-hosted, macOS, ARM64, personal-mac]
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
