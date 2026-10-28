@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "capture:roam": "node scripts/record-roam-demos.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "astro sync && tsc --noEmit",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:launch-qa": "playwright test --config playwright.launch-qa.config.ts",
