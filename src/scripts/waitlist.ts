@@ -3,17 +3,19 @@ export function setupWaitlist(element: Element): void {
   if (!(element instanceof HTMLFormElement)) return;
   const fieldset = element.querySelector('fieldset');
   const email = element.querySelector('[name="email"]');
-  const consent = element.querySelector('[name="consent"]');
   const website = element.querySelector('[name="website"]');
   const button = element.querySelector('button');
   const status = element.querySelector('[role="status"]');
   const endpoint = element.dataset.endpoint;
-  if (!(fieldset instanceof HTMLFieldSetElement) || !(email instanceof HTMLInputElement) || !(consent instanceof HTMLInputElement) || !(website instanceof HTMLInputElement) || !(button instanceof HTMLButtonElement) || !status || !endpoint) return;
+  if (!(fieldset instanceof HTMLFieldSetElement) || !(email instanceof HTMLInputElement) || !(website instanceof HTMLInputElement) || !(button instanceof HTMLButtonElement) || !status || !endpoint) return;
   fieldset.disabled = false;
+  document.querySelector('.hero-notify[href="#launch"]')?.addEventListener('click', () => {
+    requestAnimationFrame(() => email.focus({ preventScroll: true }));
+  });
   element.addEventListener('submit', async event => {
     event.preventDefault();
     if (fieldset.disabled || !element.reportValidity()) return;
-    const payload = { idea:'stamp-shift',email:email.value,consent:consent.checked,consentVersion:'launch-v1',website:website.value,source:waitlistSource(new URL(location.href).searchParams.get('source')) };
+    const payload = { idea:'stamp-shift',email:email.value,consent:true,consentVersion:'launch-v1',website:website.value,source:waitlistSource(new URL(location.href).searchParams.get('source')) };
     fieldset.disabled = true;
     button.textContent = 'Saving…';
     status.textContent = '';

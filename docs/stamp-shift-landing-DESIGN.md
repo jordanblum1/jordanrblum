@@ -66,7 +66,7 @@ Use existing locally bundled Baloo2 700 for the game mark/headline and system sa
 
 ## Layout
 
-Header: game wordmark only, small motion control when needed. Hero: short headline and one-line premise beside a large real gameplay preview. Generated postcard landscape anchors the hero, never replaces genuine board UI. A short visual mechanic strip uses actual Stash/Flip/Send art without feature-card chrome. One launch form completes the page. Footer: Support, Privacy, Blum Studio. Necessary consent/removal/state copy remains; detailed game rules and purchases stay in support. Keep the whole page compact; no carousel, testimonials, fake metrics, pricing section or long lore.
+Header: game wordmark only; no pause control. Hero: short headline and one-line premise beside a large real gameplay preview. Generated postcard landscape anchors the hero, never replaces genuine board UI. A short visual mechanic strip uses actual Stash/Flip/Send art without feature-card chrome. One launch form completes the page. Footer: Support, Privacy, Blum Studio. Necessary consent/removal/state copy remains; detailed game rules and purchases stay in support. Keep the whole page compact; no carousel, testimonials, fake metrics, pricing section or long lore.
 
 ## Elevation & Depth
 
@@ -78,8 +78,10 @@ Rounded rectangles and original stamp perforations. Use existing recolorable sun
 
 ## Components
 
-Retain the waitlist's exact payload, explicit unchecked app-specific consent, honeypot, no-cookie fetch, native validation, timeout, success/error states and no-JS/unconfigured fallback. Adapt its copy/theme without owner-name repetition. Buttons and links have44px targets, visible focus, hover/press/disabled/loading states. Keep a semantic h1, skip link and stable canonical. Availability remains Coming soon; never imply App Store approval/download availability.
+Submitting the clearly named notification form is the app-specific request; send consent:true only on valid submit. Retain the endpoint, version, scope, honeypot, no-cookie fetch, native validation, timeout, success/error states and no-JS/unconfigured fallback. Adapt its copy/theme without owner-name repetition. Buttons and links have44px targets, visible focus, hover/press/disabled/loading states. Keep a semantic h1, skip link and stable canonical. Availability remains Coming soon; never imply App Store approval/download availability.
 
 ## Do's and Don'ts
 
-Generated ambiance and actual gameplay are separate assets. Motion is silent, optional, offscreen/hidden-tab paused, disabled for reduced motion and Save-Data, and controlled by one discoverable pause/play control. Posters must tell the same product story without video or JS. Lazy-load media only after poster/critical content; no new JS framework, animation package, 3D runtime or dependency. Use fun-isometric's existing authored motion/export family rather than inventing idle CSS wobbles. Generated animation should have a short coherent loop and stay below3MB where practical. Keep screenshot/clip provenance and budget receipts. Verify desktop/mobile, keyboard, reduced motion, no-JS, real form success/failure, and console before shipping.
+Generated ambiance and actual gameplay are separate assets. Motion loops silently by default without a pause control; offscreen/hidden-tab media pauses, and reduced motion/Save-Data use posters. Browser autoplay refusal leaves the poster. Reuse existing delivered/collection animations; no new generation. Posters must tell the same product story without video or JS. Lazy-load media only after poster/critical content; no new JS framework, animation package, 3D runtime or dependency. Use fun-isometric's existing authored motion/export family rather than inventing idle CSS wobbles. Generated animation should have a short coherent loop and stay below3MB where practical. Keep screenshot/clip provenance and budget receipts. Verify desktop/mobile, keyboard, reduced motion, no-JS, real form success/failure, and console before shipping.
+
+October28 persona audit: preserve intentional postal outlines and real pile/route numbering; no decorative labels, repeated subtitles or marketing section numbers. The hero notification link focuses the email field after native anchor navigation. Public Support mirrors native mini/full-pack overlap and conditional analytics disclosures.

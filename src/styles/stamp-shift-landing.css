@@ -16,12 +16,6 @@
 .stamp-shift .game-mark { display:inline-flex; gap:8px; align-items:center; text-decoration:none; font-size:32px; line-height:1; white-space:nowrap; min-height:44px; }
 .stamp-shift .game-mark img { width:64px; height:64px; object-fit:contain; }
 .stamp-shift .mark-dot { color:#667D52; }
-.stamp-shift .motion-toggle { display:inline-flex; align-items:center; gap:12px; border:1.5px solid var(--game-ink); border-radius:999px; min-height:44px; padding:8px 15px; background:var(--game-sage); color:var(--game-ink); cursor:pointer; font-size:13px; font-weight:600; }
-.stamp-shift .motion-toggle:hover { background:var(--game-paper); }
-.stamp-shift .motion-toggle svg { fill:none; stroke:currentColor; stroke-width:2; stroke-linejoin:round; }
-.stamp-shift .motion-play { display:none; }
-.stamp-shift .motion-toggle[aria-pressed=true] .motion-pause { display:none; }
-.stamp-shift .motion-toggle[aria-pressed=true] .motion-play { display:block; }
 .stamp-shift .game-hero { position:relative; isolation:isolate; }
 .stamp-shift .game-scenery { position:absolute; z-index:-1; inset:18% 0 0; overflow:hidden; }
 .stamp-shift .game-scenery::after { content:''; position:absolute; inset:0; background:linear-gradient(var(--game-sage),transparent 34%); }
@@ -60,8 +54,6 @@
 .stamp-shift .waitlist-form button:hover:not(:disabled) { background:#ffdb66; }
 .stamp-shift .waitlist-form button:active:not(:disabled) { transform:translateY(2px); box-shadow:0 1px 0 var(--game-ink); }
 .stamp-shift .waitlist-form :disabled { opacity:.6; cursor:default; }
-.stamp-shift .waitlist-form .waitlist-consent { display:flex; align-items:center; gap:10px; min-height:44px; margin-bottom:0; font-weight:400; cursor:pointer; }
-.stamp-shift .waitlist-consent input { flex:none; width:20px; height:20px; margin:0; accent-color:var(--game-ink); }
 .stamp-shift .waitlist-trap { position:absolute; left:-10000px; width:1px; height:1px; overflow:hidden; }
 .stamp-shift .docs-caption { color:var(--game-muted); font-size:12px; margin-top:4px; }
 .stamp-shift .docs-caption a { display:inline-flex; align-items:center; min-height:44px; }
@@ -79,7 +71,6 @@
   .stamp-shift .game-header { min-height:88px; gap:8px; }
   .stamp-shift .game-mark { font-size:26px; gap:2px; }
   .stamp-shift .game-mark img { width:48px; height:48px; }
-  .stamp-shift .motion-toggle { font-size:12px; padding-inline:11px; gap:8px; }
   .stamp-shift .hero-layout { grid-template-columns:1fr; gap:24px; padding-block:14px 30px; }
   .stamp-shift .hero-copy { padding:0; }
   .stamp-shift h1 { font-size:clamp(42px,10.8vw,64px); line-height:1.03; letter-spacing:-1.5px; }
@@ -103,11 +94,17 @@
   .stamp-shift .game-launch h2 { font-size:36px; }
   .stamp-shift .game-launch noscript { grid-column:auto; }
   .stamp-shift .waitlist-email-row { flex-direction:column; gap:10px; }
-  .stamp-shift .waitlist-form .waitlist-consent { font-size:13px; }
   .stamp-shift .game-footer { padding-bottom:16px; }
 }
 @media(prefers-reduced-motion:reduce) { .stamp-shift *, .stamp-shift *::before, .stamp-shift *::after { scroll-behavior:auto!important; } }
-@media(max-width:400px) {
-  .stamp-shift .motion-toggle { width:44px; height:44px; flex:none; justify-content:center; padding:8px; }
-  .stamp-shift [data-motion-label] { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
-}
+
+
+.stamp-shift .mechanic-art { position:relative; display:block; flex:none; width:96px; height:96px; }
+.stamp-shift .mechanic-art video { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.stamp-shift .game-launch h2 { font-size:clamp(30px,3.2vw,38px); }
+@media(max-width:680px) { .stamp-shift .mechanic-art { width:70px; height:70px; } .stamp-shift .mechanic-art img { width:100%; height:100%; } }
+.stamp-shift .launch-invitation { display:flex; flex-direction:column; align-items:flex-start; gap:8px; }
+.stamp-shift .launch-art { position:relative; display:block; width:128px; height:128px; }
+.stamp-shift .launch-art :is(img,video) { width:100%; height:100%; object-fit:contain; }
+.stamp-shift .launch-art video { position:absolute; inset:0; }
+@media(max-width:680px) { .stamp-shift .launch-invitation { flex-direction:row; align-items:center; gap:8px; } .stamp-shift .launch-art { width:90px; height:90px; flex:none; } }

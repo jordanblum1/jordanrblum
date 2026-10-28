@@ -71,7 +71,7 @@ Retain the brand's 8/16/24/32px radius vocabulary where needed; reading pages do
 
 ## Components
 
-Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. Only the Stamp Shift overview may load its isolated game-landing motion and waitlist scripts; its scoped contract supersedes this editorial shell for that overview. Support, privacy and the directory remain static. Use a visible email label, explicit unchecked per-app consent, 44px controls, pending/disabled/error/success states and a live status region. No new dependencies. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
+Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. Only the Stamp Shift overview may load its isolated game-landing motion and waitlist scripts; its scoped contract supersedes this editorial shell for that overview. Support, privacy and the directory remain static. Use a visible email label, an explicit per-app notification request on form submission, 44px controls, pending/disabled/error/success states and a live status region. No new dependencies. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
 
 ## Do's and Don'ts
 

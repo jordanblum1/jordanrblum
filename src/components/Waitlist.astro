@@ -1,10 +1,18 @@
 ---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { supportEmail } from '../data/apps';
 interface Props { endpoint: string | null }
 const { endpoint } = Astro.props;
+const asset = (name: string) => existsSync(join(process.cwd(), 'public/assets/stamp-shift', name)) ? `/assets/stamp-shift/${name}` : undefined;
+const collection = asset('collection.webp');
+const collectionMotion = asset('collection.mp4');
 ---
 <section aria-labelledby="waitlist-title">
-  <h2 id="waitlist-title">Coming soon.</h2>
+  <div class="launch-invitation">
+    <h2 id="waitlist-title">Notify me when it’s available.</h2>
+    {collection && <span class="launch-art" aria-hidden="true"><img src={collection} alt="" width="512" height="512" loading="lazy" />{collectionMotion && <video data-landing-motion data-src={collectionMotion} muted loop playsinline preload="none" poster={collection} tabindex="-1"></video>}</span>}
+  </div>
   {endpoint ? <>
     <form class="waitlist-form" data-waitlist data-endpoint={endpoint} data-contact={`mailto:${supportEmail}?subject=Stamp%20Shift%20waitlist`}>
       <fieldset disabled>
@@ -13,7 +21,6 @@ const { endpoint } = Astro.props;
           <input id="waitlist-email" name="email" type="email" autocomplete="email" maxlength="254" required />
           <button type="submit">Notify me</button>
         </div>
-        <label class="waitlist-consent"><input name="consent" type="checkbox" required /><span>Email me when Stamp Shift launches.</span></label>
         <div class="waitlist-trap" aria-hidden="true"><label for="waitlist-website">Website</label><input id="waitlist-website" name="website" tabindex="-1" autocomplete="off" /></div>
       </fieldset>
       <p class="docs-caption">Stamp Shift only. <a href="/apps/stamp-shift/privacy#waitlist">Privacy &amp; removal</a>.</p>
