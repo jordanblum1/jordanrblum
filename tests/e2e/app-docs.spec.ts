@@ -17,7 +17,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://jordanblum.com${route}`);
       await expect(page.locator('[data-chat-widget], [data-chat-trigger]')).toHaveCount(0);
-      await expect(page.locator('script')).toHaveCount(route === '/apps/stamp-shift' ? 2 : 0);
+      await expect(page.locator('script')).toHaveCount(route === '/apps/stamp-shift' ? 1 : 0);
       await expect(page.locator('body')).not.toContainText('UNCONFIGURED');
       const dimensions = await page.evaluate(() => ({ width: innerWidth, document: document.documentElement.scrollWidth }));
       expect(dimensions.document).toBeLessThanOrEqual(dimensions.width + 1);
@@ -32,6 +32,7 @@ test('a player can find restore help, privacy and the support email without Java
   const page = await context.newPage();
   await page.goto('/apps');
   await page.getByRole('link', { name: 'Stamp Shift', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Download on the App Store', exact: true })).toHaveAttribute('href', 'https://apps.apple.com/us/app/stamp-shift/id6824269145');
   await page.getByRole('link', { name: 'Support', exact: true }).click();
   const restore = page.getByText('How do I restore Extra Routes?', { exact: true });
   await restore.focus();
@@ -65,7 +66,7 @@ test('the Stamp Shift game page has its own identity and respects reduced motion
   await expect(page.getByRole('banner')).not.toContainText('Jordan');
   await expect(page.getByRole('navigation', { name: 'Stamp Shift documentation' })).toHaveCount(0);
   await expect(page.getByRole('contentinfo')).toContainText('Blum Studio');
-  await expect(page.getByRole('link', { name: 'Notify me', exact: true })).toHaveAttribute('href', '#launch');
+  await expect(page.getByRole('link', { name: 'Download on the App Store', exact: true })).toHaveAttribute('href', 'https://apps.apple.com/us/app/stamp-shift/id6824269145');
   await expect(page.locator('[data-gameplay]')).toHaveAttribute('poster', /\S+/);
   await expect(page.locator('[data-motion-toggle]')).toHaveCount(0);
   expect(await page.locator('[data-landing-motion]').evaluateAll(videos => videos.every(video => video instanceof HTMLVideoElement && video.paused && !video.getAttribute('src')))).toBe(true);
@@ -98,4 +99,9 @@ test('support explains current pack ownership and build-specific analytics', asy
   await page.getByText('Can I play without an account?', { exact:true }).click();
   await expect(page.getByText(/whether purchase analytics are enabled in your build/)).toBeVisible();
   await expect(page.getByText('The current launch build has purchase analytics disabled.')).toHaveCount(0);
+});
+
+test('production builds exclude the synthetic waitlist page', async ({ page }) => {
+  const response = await page.goto('/qa-fixtures/waitlist');
+  expect(response?.status()).toBe(404);
 });

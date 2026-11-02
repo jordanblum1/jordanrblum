@@ -6,7 +6,7 @@ for (const width of [1280,390]) {
     page.on('console',message => { if (message.type() === 'error') consoleErrors.push(message.text()); });
     page.on('pageerror',error => errors.push(error.message));
     await page.setViewportSize({ width,height:900 });
-    await page.goto('/apps/stamp-shift/?source=meta-drawer');
+    await page.goto('/qa-fixtures/waitlist/?source=meta-drawer');
     const email = page.getByRole('textbox',{ name:'Email address' });
     const button = page.getByRole('button',{ name:'Notify me',exact:true });
     const before = await (await request.get('http://127.0.0.1:4334/_fixture')).json();
@@ -15,7 +15,7 @@ for (const width of [1280,390]) {
     await expect(button).toBeEnabled();
     await page.getByRole('link',{ name:'Notify me',exact:true }).click();
     await expect(email).toBeFocused();
-    await page.screenshot({ path:`docs/evidence/waitlist/fixture-initial-${width}.png`,fullPage:true });
+    await page.screenshot({ path:`output/waitlist/fixture-initial-${width}.png`,fullPage:true });
     await button.click();
     await expect(email).toBeFocused();
     expect(await email.evaluate(input => input instanceof HTMLInputElement && input.validity.valueMissing)).toBe(true);
@@ -24,7 +24,7 @@ for (const width of [1280,390]) {
     await button.click();
     await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
     await expect(page.getByRole('button',{ name:'Saved',exact:true })).toBeDisabled();
-    await page.screenshot({ path:`docs/evidence/waitlist/fixture-success-${width}.png`,fullPage:true });
+    await page.screenshot({ path:`output/waitlist/fixture-success-${width}.png`,fullPage:true });
     const success = await (await request.get('http://127.0.0.1:4334/_fixture')).json();
     expect(success.verifiedRequests).toBe(before.verifiedRequests + 1);
     const count = success.subscriptions;
@@ -39,7 +39,7 @@ for (const width of [1280,390]) {
     await expect(page.getByRole('status')).toContainText('Your signup could not be saved.');
     await expect(button).toBeEnabled();
     await expect(email).toHaveValue(`failure-${width}@example.test`);
-    await page.screenshot({ path:`docs/evidence/waitlist/fixture-failure-${width}.png`,fullPage:true });
+    await page.screenshot({ path:`output/waitlist/fixture-failure-${width}.png`,fullPage:true });
     await button.click();
     await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
     await expect(page.getByRole('button',{ name:'Saved',exact:true })).toBeDisabled();
@@ -55,8 +55,28 @@ for (const width of [1280,390]) {
 test('no JavaScript provides a contact path and keeps the form disabled',async ({ browser,baseURL }) => {
   const context = await browser.newContext({ javaScriptEnabled:false,baseURL });
   const page = await context.newPage();
-  await page.goto('/apps/stamp-shift');
+  await page.goto('/qa-fixtures/waitlist');
   await expect(page.getByRole('button',{ name:'Notify me' })).toBeDisabled();
   await expect(page.getByRole('link',{ name:'Contact support',exact:true })).toHaveAttribute('href',/mailto:/);
   await context.close();
+});
+
+test('synthetic fixture only: invalid email and double click do not create extra requests', async ({ page, request }) => {
+  await page.goto('/qa-fixtures/waitlist');
+  const email = page.getByRole('textbox', { name: 'Email address' });
+  const button = page.getByRole('button', { name: 'Notify me', exact: true });
+  const before = await (await request.get('http://127.0.0.1:4334/_fixture')).json();
+  await email.fill('not-an-email');
+  await button.click();
+  expect(await email.evaluate(input => input instanceof HTMLInputElement && input.validity.typeMismatch)).toBe(true);
+  expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).requests).toBe(before.requests);
+  await email.fill('launch-breaker-double@example.test');
+  await button.evaluate(element => {
+    if (element instanceof HTMLButtonElement) {
+      element.click();
+      element.click();
+    }
+  });
+  await expect(page.getByRole('status')).toContainText('You’re on the Stamp Shift launch list.');
+  expect((await (await request.get('http://127.0.0.1:4334/_fixture')).json()).verifiedRequests).toBe(before.verifiedRequests + 1);
 });

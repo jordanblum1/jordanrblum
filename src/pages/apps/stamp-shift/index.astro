@@ -3,10 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { getImage } from 'astro:assets';
 import StampShiftLanding from '../../../layouts/StampShiftLanding.astro';
-import Waitlist from '../../../components/Waitlist.astro';
 import preview from '../../../assets/projects/stamp-shift-preview.png';
-import { waitlistEndpoint } from '../../../data/waitlist';
-const endpoint = waitlistEndpoint(import.meta.env.PUBLIC_WAITLIST_API_URL, import.meta.env.MODE);
 const asset = (name: string) => existsSync(join(process.cwd(), 'public/assets/stamp-shift', name)) ? `/assets/stamp-shift/${name}` : undefined;
 const poster = asset('gameplay-poster.webp') ?? (await getImage({ src: preview, width: 600, format: 'webp' })).src;
 const gameplay = asset('gameplay.mp4');
@@ -19,7 +16,7 @@ const mechanics = [
   { name: 'Send', detail: 'Match the delivery order.', art: asset('delivered.webp'), motion: asset('delivered.mp4') },
 ];
 ---
-<StampShiftLanding title="Stamp Shift — Three piles. One perfect order." description="A little stamp-sorting puzzle for iPhone. Stash, flip and send your way to the perfect delivery. Coming soon.">
+<StampShiftLanding title="Stamp Shift — Three piles. One perfect order." description="A little stamp-sorting puzzle for iPhone. Stash, flip and send your way to the perfect delivery. Available on the App Store.">
   <header class="game-header game-width">
     <a class="game-mark" href="/apps/stamp-shift" aria-label="Stamp Shift home">
       {mailbox && <img src={mailbox} width="72" height="72" alt="" />}
@@ -33,14 +30,14 @@ const mechanics = [
         <div class="hero-copy">
           <h1 id="game-title">Three piles.<br />One perfect order.</h1>
           <p>A little puzzle about getting<br class="desktop-break" /> every stamp to the right place.</p>
-          <a class="hero-notify" href="#launch">Notify me <span aria-hidden="true">↓</span></a>
+          <a class="hero-action" href="https://apps.apple.com/us/app/stamp-shift/id6824269145">Download on the App Store</a>
           <div class="stamp-friends" aria-hidden="true">
             {['sun', 'leaf', 'moon'].map(name => { const src = asset(`${name}.svg`); return src && <img src={src} alt="" width="88" height="88" />; })}
           </div>
         </div>
         <figure class="gameplay-preview">
           <video class="gameplay-video" data-landing-motion data-gameplay data-src={gameplay} muted loop playsinline preload="none" poster={poster} aria-label="Recorded Stamp Shift gameplay: stash a stamp, send matching stamps and finish a delivery."></video>
-          <figcaption>Gameplay preview · Coming soon for iPhone</figcaption>
+          <figcaption>Gameplay preview · Available for iPhone</figcaption>
         </figure>
       </div>
     </section>
@@ -49,9 +46,6 @@ const mechanics = [
         {mechanics.map(mechanic => <li>{mechanic.art && <span class="mechanic-art" aria-hidden="true"><img src={mechanic.art} alt="" width="112" height="112" loading="lazy" />{'motion' in mechanic && mechanic.motion && <video data-landing-motion data-src={mechanic.motion} muted loop playsinline preload="none" poster={mechanic.art} tabindex="-1"></video>}</span>}<div><h2>{mechanic.name}<span aria-hidden="true">.</span></h2><p>{mechanic.detail}</p></div></li>)}
       </ol>
     </section>
-    <div class="game-launch game-width" id="launch">
-      <Waitlist endpoint={endpoint} />
-    </div>
   </main>
 </StampShiftLanding>
 <script>
