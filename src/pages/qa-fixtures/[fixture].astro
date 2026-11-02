@@ -1,0 +1,16 @@
+---
+import StampShiftLanding from '../../layouts/StampShiftLanding.astro';
+import Waitlist from '../../components/Waitlist.astro';
+import { waitlistEndpoint } from '../../data/waitlist';
+
+export function getStaticPaths() {
+  return import.meta.env.MODE === 'test' ? [{ params: { fixture: 'waitlist' } }] : [];
+}
+const endpoint = waitlistEndpoint(import.meta.env.PUBLIC_WAITLIST_API_URL, import.meta.env.MODE);
+---
+<StampShiftLanding title="Waitlist component fixture" description="Synthetic waitlist regression fixture.">
+  <main id="main-content" class="game-width" tabindex="-1">
+    <a class="hero-action hero-notify" href="#launch">Notify me</a>
+    <div class="game-launch" id="launch"><Waitlist endpoint={endpoint} /></div>
+  </main>
+</StampShiftLanding>
