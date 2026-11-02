@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { getImage } from 'astro:assets';
 import StampShiftLanding from '../../../layouts/StampShiftLanding.astro';
+import { stampShiftAppStoreUrl } from '../../../data/stamp-shift-download';
 import preview from '../../../assets/projects/stamp-shift-preview.png';
 const asset = (name: string) => existsSync(join(process.cwd(), 'public/assets/stamp-shift', name)) ? `/assets/stamp-shift/${name}` : undefined;
 const poster = asset('gameplay-poster.webp') ?? (await getImage({ src: preview, width: 600, format: 'webp' })).src;
@@ -30,7 +31,7 @@ const mechanics = [
         <div class="hero-copy">
           <h1 id="game-title">Three piles.<br />One perfect order.</h1>
           <p>A little puzzle about getting<br class="desktop-break" /> every stamp to the right place.</p>
-          <a class="hero-action" href="https://apps.apple.com/us/app/stamp-shift/id6824269145">Download on the App Store</a>
+          <a class="hero-action" data-stamp-shift-download href={stampShiftAppStoreUrl}>Download on the App Store</a>
           <div class="stamp-friends" aria-hidden="true">
             {['sun', 'leaf', 'moon'].map(name => { const src = asset(`${name}.svg`); return src && <img src={src} alt="" width="88" height="88" />; })}
           </div>
@@ -49,6 +50,9 @@ const mechanics = [
   </main>
 </StampShiftLanding>
 <script>
+  import { getStampShiftDownloadUrl } from '../../../data/stamp-shift-download';
   import { setupLandingMotion } from '../../../scripts/stamp-shift-motion';
+  const download = document.querySelector<HTMLAnchorElement>('[data-stamp-shift-download]');
+  if (download) download.href = getStampShiftDownloadUrl(window.location.search);
   setupLandingMotion(document);
 </script>
