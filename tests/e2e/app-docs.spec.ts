@@ -105,3 +105,53 @@ test('production builds exclude the synthetic waitlist page', async ({ page }) =
   const response = await page.goto('/qa-fixtures/waitlist');
   expect(response?.status()).toBe(404);
 });
+
+for (const width of [1280, 390]) {
+  for (const [campaign, token] of [['route20-a', 'ss_meta_r20_a_202611'], ['route20-b', 'ss_meta_r20_b_202611']]) {
+    test(`the ${campaign} campaign reaches its exact Apple destination at ${width}px`, async ({ page }) => {
+      const destination = `https://apps.apple.com/app/apple-store/id6824269145?pt=127568836&ct=${token}&mt=8`;
+      const errors: string[] = [];
+      const appleRequests: string[] = [];
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+      await page.route('https://apps.apple.com/**', route => {
+        appleRequests.push(route.request().url());
+        return route.fulfill({ contentType: 'text/html', body: '<title>App Store destination fixture</title>' });
+      });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`/apps/stamp-shift?ss_campaign=${campaign}&fbclid=ignored&pt=ignored&ct=ignored`);
+      const action = page.getByRole('link', { name: 'Download on the App Store', exact: true });
+      await expect(action).toHaveAttribute('href', destination);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+      await action.focus();
+      await expect(action).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(page).toHaveURL(destination);
+      expect(appleRequests).toEqual([destination]);
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+test('unknown, duplicate and malformed campaigns retain the original download destination', async ({ page }) => {
+  for (const query of ['ss_campaign=unknown', 'ss_campaign=route20-a&ss_campaign=route20-b', 'ss_campaign=route20-a&other=%GG']) {
+    await page.goto(`/apps/stamp-shift?${query}`);
+    await expect(page.getByRole('link', { name: 'Download on the App Store', exact: true })).toHaveAttribute('href', 'https://apps.apple.com/us/app/stamp-shift/id6824269145');
+  }
+});
+
+test('a campaign still downloads from the original link without JavaScript', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
+  try {
+    const page = await context.newPage();
+    const destination = 'https://apps.apple.com/us/app/stamp-shift/id6824269145';
+    await page.route('https://apps.apple.com/**', route => route.fulfill({ contentType: 'text/html', body: '<title>App Store destination fixture</title>' }));
+    await page.goto('/apps/stamp-shift?ss_campaign=route20-a');
+    const action = page.getByRole('link', { name: 'Download on the App Store', exact: true });
+    await expect(action).toHaveAttribute('href', destination);
+    await action.click();
+    await expect(page).toHaveURL(destination);
+  } finally {
+    await context.close();
+  }
+});
