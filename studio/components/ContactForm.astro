@@ -1,0 +1,15 @@
+---
+import { studio } from '../../src/data/studio';
+const inquiry = `mailto:${studio.contactEmail}?subject=Blum%20Studios%20%E2%80%94%20Project%20inquiry`;
+---
+<form class="studio-contact-form" data-contact-form hidden aria-label="Contact Jordan" action="https://www.chicksofnyc.com/api/studio/contact" method="post">
+  <div class="studio-contact-fields">
+    <div><label for="contact-name">Name</label><input id="contact-name" name="name" autocomplete="name" required maxlength="100" /></div>
+    <div><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254" /></div>
+  </div>
+  <div class="studio-message-field"><label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="3" required minlength="10" maxlength="4000"></textarea></div>
+  <div class="studio-contact-trap" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off" /></div>
+  <div class="studio-contact-submit"><button type="submit">Send message</button><p class="studio-form-status" data-contact-status role="status" aria-live="polite" aria-atomic="true"></p></div>
+  <p class="studio-contact-privacy">Your details are used to reply. <a href="/privacy">Privacy</a></p>
+</form>
+<p class="studio-email-fallback" data-email-fallback>Email <a href={inquiry}>{studio.contactEmail}</a></p>

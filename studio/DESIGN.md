@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Blum Studios
-description: A warm editorial creative studio with expressive lettering and real product evidence.
+description: A quiet creative studio with centered lettering, soft pill actions and animated flat city scenes.
 colors:
   primary: "#9C4037"
   secondary: "#746960"
@@ -12,7 +12,7 @@ colors:
 typography:
   h1:
     fontFamily: Chillax
-    fontSize: 9.5rem
+    fontSize: 3.12rem
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "-0.065em"
@@ -28,7 +28,7 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
 rounded:
-  sm: 0px
+  sm: 99px
   device: 26px
 spacing:
   sm: 8px
@@ -45,7 +45,6 @@ components:
   contact-link:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.neutral}"
-    padding: 16px
     rounded: "{rounded.sm}"
   contact-link-hover:
     backgroundColor: "{colors.text}"
@@ -54,44 +53,46 @@ components:
 
 ## Overview
 
-Blum Studios is Jordan Blum’s independent umbrella for apps, design and art, with a direct route for freelance inquiries. The homepage is an **Explore** surface with contact as the secondary job. The design uses the existing owned product system: the expressive BLUM wordmark, warm paper, oxblood, local Switzer and Chillax. Source context: the root [brand book](../docs/brand.md), [design contract](../DESIGN.md), and the owned `blumblumblum` local site. No external reference, new font, generated artwork or dependency was introduced.
+Blum Studios is Jordan Blum’s independent umbrella for apps, design and art. The homepage is a **Decide/Learn** surface with one primary action: Contact. Its compact identity, one-line description and three pill links sit in the quiet center of an animated flat city illustration. The contact form lives on its own `/contact` route.
 
-This contract applies only to the isolated `studio` build at `https://buildwithblum.com`. It does not change the personal portfolio or Stamp Shift’s own game identity. Source of truth: [studio.css](styles/studio.css), [StudioLayout.astro](layouts/StudioLayout.astro) and [index.astro](pages/index.astro).
+The established owned system supplies the BLUM mark, warm paper, oxblood, Switzer and Chillax. The requested reference, [Daniel D.’s portfolio](https://www.danield.design/), informed three general principles: quiet centered type, soft pill controls and expressive ambient imagery. It was inspected through Firecrawl and a screenshot during this task. The layout, illustration and identity are original; no reference case-study grids or content are copied.
+
+This contract applies only to the isolated studio build at `https://buildwithblum.com`. The personal portfolio and app support routes retain their own contracts. Sources of truth are [studio.css](styles/studio.css), [CityBackdrop.astro](components/CityBackdrop.astro), [city.css](styles/city.css), [index.astro](pages/index.astro) and [contact.astro](pages/contact.astro).
 
 ## Colors
 
-Map tokens to the corresponding `--studio-*` properties. Paper is the light-only canvas; ink is the default text; muted ink is secondary copy; oxblood is identity, contact and keyboard focus. Hairlines divide editorial sections and never carry information alone. Project sage belongs only behind the actual Alive Still screenshot. Stamp Shift’s art supplies its own colors without becoming the studio chrome.
-
-Approved contrasts inherited from the established palette: ink/paper 13.67:1, muted/paper 4.83:1, oxblood/paper 5.93:1. Contact text uses paper on oxblood. There are no synthetic status colors because this page has no status UI.
+Map studio tokens to the existing `--studio-*` properties. Paper is the canvas, ink is content, muted ink is secondary help, and oxblood is identity, the primary action and focus. City art may use restrained pastel fills, while the center stays quiet enough for the existing content contrasts: ink/paper 13.67:1, muted/paper 4.83:1 and oxblood/paper 5.93:1. Contact feedback uses explicit readable text rather than color alone. Privacy and fallback help use ink over the muted illustration to preserve contrast. App-specific imagery does not alter studio chrome.
 
 ## Typography
 
-Use local Switzer 400/500 for text and navigation; local Chillax 600 for short destination/project titles and the Studios half of the identity. The original BLUM SVG remains a mark, with its aspect ratio intact. It is decorative beside the accessible text name. No second monogram appears.
-
-Desktop identity type scales with viewport width to a 9.5rem cap; at 540px and below the mark stacks above Studios, preserving a legible full name. Contact heading scales from 2.2rem to 4rem. Body text is 1rem/1.5; small footer/navigation text is at least .875rem. No all-caps eyebrow labels or ornamental captions.
+Use local Switzer 400/500 for interface copy and Chillax 600 for the Studios half of the identity and Contact heading. Preserve the original BLUM SVG ratio. Its accessible text name remains Blum Studios, without a second monogram. The homepage mark occupies about 320px and its Studios lettering caps at 3.12rem. The one-line statement is 1.125rem; pills and labels are .875rem; necessary privacy and email help are .8125rem. The Contact heading is 2.5rem. No decorative captions or eyebrow labels.
 
 ## Layout
 
-A 77rem maximum canvas uses 40px desktop side gutters, 24px tablet gutters and 20px mobile gutters. The introductory identity is followed by a two-column statement/contact arrangement. Selected projects form a 1.5:1 offset composition, with Alive Still starting 112px below Stamp Shift. Images have distinct proportions; they are work evidence rather than feature cards. Birthday is an editorial row.
+The home main landmark fills at least 100svh and centers one compact composition with a small upward optical adjustment. A flat city backdrop fills the entire viewport; Chicago, San Francisco and New York scenes live around the edges and lower field. The foreground contains only the wordmark, `Apps, design & art.` and Contact, Links and Resume actions. There is no showcase, footer, policy copy or contact form on this route.
 
-At 800px the introduction and contact section stack; at 540px projects become a single column and the wordmark stacks. DOM order remains reading order. Content must fit 375px without horizontal overflow. App directory pages may reuse the static layout while using their own scoped editorial styles.
+The Contact action opens a real `/contact` page with the same backdrop. Its content is centered at 28rem maximum width with a Contact heading and simple Back link above the form. Form labels and entered text remain left-aligned for scanning. Name and email share a row; message spans the width. Necessary privacy and email fallback belong only here. Contact must fit 375px without horizontal overflow and scroll naturally on short screens. Native navigation supplies history and focus behavior; the legacy `/#contact` link replaces its location with `/contact` when JavaScript is available. App directory and overview layouts preserve their scoped editorial styles.
 
 ## Elevation & Depth
 
-The shell is flat. A modest device shadow belongs only to actual app screenshots. No raised navigation island, glass, gradients, floating widgets, artificial badges or extra texture overlays. Product artwork carries the visual variety.
+The shell is flat and the illustration stays 2D. No opaque content card, realistic globe, video frame, glass, decorative shadows or glossy gradients. Depth comes from overlapping illustrated city layers. A quiet center protects readable contrast, especially behind contact fields.
 
 ## Shapes
 
-Project art frames are rectangular. Screenshot corners (16–26px) suggest physical devices; they are not a general card radius. The contact action is a straightforward rectangular button-like link.
+Navigation and the Send message button use fully rounded pills. Inputs use flat, visible hairlines and square corners. Avoid turning content groups into large rounded panels. All interactive targets are at least 44px in both dimensions.
 
 ## Components
 
-All navigation and contact controls are native links with at least 44px hit targets. The primary contact link uses the verified `studio.contactEmail` with the subject `Blum Studios — Project inquiry`. There is no form, signup, chat, analytics or JavaScript behavior. Footer links open Jordan’s portfolio and the studio’s Instagram in the current tab.
+Contact is the single filled homepage action, with a small envelope SVG whose flap lifts on hover. Links opens `https://blumblumblum.com`; Resume uses the existing local PDF. Pills lift gently on hover and compress on press with 160ms transitions, only when reduced motion is not requested. No new dependency is introduced.
 
-The layout supplies a visible-on-focus skip link to a focusable main landmark, canonical and Open Graph/Twitter metadata for the studio domain, a studio favicon, and a local social-preview PNG derived from the existing wordmark. Pages supply accurate title, description and optional canonical path.
+The contact form preserves name, email and message fields, visible labels, native required/email/length validation, a ten-code-point message minimum and server validation. A hidden honeypot is excluded from keyboard navigation. Pending, failure and success appear in a live status region. Sending locks submitted fields and disables Send message; a 15-second timeout restores retry. Failures retain the draft and idempotency key; changed drafts get a new key. JSON bodies are limited to 8KiB. The existing endpoint is `https://www.chicksofnyc.com/api/studio/contact`.
 
-Keyboard focus has a 3px oxblood outline with generous offset. Hover changes link color or the contact fill. Screenshot hover rotations are 220ms and apply only with a hover-capable pointer and `prefers-reduced-motion: no-preference`; reduced motion has no transforms added by interaction. No looping, scroll or entrance animations.
+Contact details are used to reply, with a direct /privacy link and no marketing signup. The form appears only when its handler is ready; the email fallback works without JavaScript. The homepage Contact link also works without JavaScript.
+
+The CityBackdrop root is `[data-city-background]` and has three `[data-city-scene]` layers: `chicago`, `san-francisco` and `new-york`. Decorative artwork is hidden from assistive technology. A minimal 44px pause/play control outside the hidden art supports keyboard users. Reduced motion stops all illustration animation. No motion delays content or interaction.
+
+The layout retains a visible-on-focus skip link and focusable main landmark. Focus uses an oxblood outline with clear offset. Hover and disabled states preserve contrast. Each page has accurate studio metadata.
 
 ## Do's and Don'ts
 
-Keep apps, design and art visible in the studio identity; do not narrow it to an app publisher. Use actual product images and verified routes. Preserve each app’s separate support and policy pages. Keep copy specific and short, with no invented services, team, testimonials, metrics or claims. Do not add a generic feature grid or decorative text to fill space. Keep studio CSS isolated from personal and game layouts.
+Keep the homepage centered, brief and useful. Let the city art carry visual expression. Preserve the actual brand and reviewed contact handling. Do not add projects, app links, social links, cards, promotional copy, emojis, decorative labels, realistic media or invented claims. Preserve app support/privacy routes and isolate studio CSS from personal and game layouts.

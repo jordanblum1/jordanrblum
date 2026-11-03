@@ -17,9 +17,16 @@ const repoRoot = resolve(here, '../../..');
 // sites, public GitHub repos) or from a direct interview where Jordan
 // explicitly approved it for the assistant to share (the "Personal" section).
 // Nothing here may come from private repos or notes, and it must never
-// contain an email address or new contact channels. Hardcoded here (not
+// contain an email address or unapproved contact channels. Hardcoded here (not
 // fetched) so it survives regeneration and stays reviewed.
 const PUBLIC_SUPPLEMENT = `## Curated public supplement (reviewed additions)
+
+### Freelance work and Blum Studios (approved November 3, 2026)
+
+- Blum Studios is Jordan's independent umbrella for apps, design and art. Its website is https://buildwithblum.com/.
+- For freelance product engineering, app development, design or other creative project inquiries, use the contact form at https://buildwithblum.com/contact. Visitors can describe their project there; the form sends an inquiry, not a booking or a mailing-list signup.
+- Do not promise availability, accept a project, quote rates, negotiate scope, or guarantee a reply time. Those details need to be agreed with Jordan directly.
+- Jordan's personal links are at https://blumblumblum.com/. His existing career and project facts remain in the biography below.
 
 ### Savvy Wealth quick facts
 

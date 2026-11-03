@@ -1,0 +1,20 @@
+---
+import StudioLayout from '../layouts/StudioLayout.astro';
+import CityBackdrop from '../components/CityBackdrop.astro';
+import ContactForm from '../components/ContactForm.astro';
+---
+<StudioLayout title="Contact — Blum Studios" description="Get in touch with Blum Studios about apps, design and art." path="/contact">
+  <div class="studio-contact-page">
+    <CityBackdrop />
+    <main id="main-content" tabindex="-1" class="studio-contact-main">
+      <div class="studio-contact-content">
+        <header class="studio-contact-header"><a class="studio-back" href="/">Back</a><h1>Contact</h1></header>
+        <ContactForm />
+      </div>
+    </main>
+  </div>
+</StudioLayout>
+<script>
+  import { initContactForm } from '../scripts/contact';
+  initContactForm();
+</script>

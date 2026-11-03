@@ -1,78 +1,28 @@
 ---
-import { Image } from 'astro:assets';
 import StudioLayout from '../layouts/StudioLayout.astro';
-import { studio } from '../../src/data/studio';
+import CityBackdrop from '../components/CityBackdrop.astro';
 import blumMark from '../../src/assets/identity/blum-mark.svg?raw';
-import aliveHome from '../../src/assets/projects/alive-home.png';
-const inquiry = `mailto:${studio.contactEmail}?subject=${encodeURIComponent('Blum Studios — Project inquiry')}`;
 ---
-<StudioLayout title="Blum Studios — Apps, design & art" description="Independent apps, design and art by Jordan Blum. Explore selected work or get in touch about a project." path="/">
-  <header class="studio-header studio-width">
-    <a class="studio-home" href="/" aria-label="Blum Studios home">Blum Studios</a>
-    <nav aria-label="Main navigation">
-      <a href="#work">Work</a>
-      <a href={inquiry}>Let’s talk <span aria-hidden="true">↗</span></a>
-    </nav>
-  </header>
-
-  <main id="main-content" tabindex="-1">
-    <section class="studio-intro studio-width" aria-labelledby="studio-title">
-      <h1 id="studio-title" class="studio-wordmark">
+<StudioLayout title="Blum Studios — Apps, design & art" description="Apps, design and art by Jordan Blum. Get in touch." path="/">
+  <CityBackdrop />
+  <main id="main-content" tabindex="-1" class="studio-home-page">
+    <div class="studio-home-content">
+      <h1 class="studio-wordmark">
         <span class="studio-blum" aria-hidden="true" set:html={blumMark.replace(/<\?xml[^>]*>/, '')} />
         <span class="studio-sr-only">Blum </span><span class="studio-word">Studios</span>
       </h1>
-      <div class="studio-intro-bottom">
-        <p class="studio-intro-line">Apps, design & art<br />by <a href="https://jordanblum.com">Jordan Blum</a>.</p>
-        <div class="studio-intro-note">
-          <a class="studio-text-link" href={inquiry}>Have a project in mind? <span aria-hidden="true">↗</span></a>
-        </div>
-      </div>
-    </section>
-
-    <section id="work" class="studio-work studio-width" aria-labelledby="work-title">
-      <div class="studio-section-heading">
-        <h2 id="work-title">Out in the world</h2>
-        <a class="studio-text-link" href="/apps">All apps <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="studio-projects">
-        <article class="studio-project studio-project-stamps">
-          <a class="studio-project-link" href="/apps/stamp-shift">
-            <div class="studio-project-art studio-stamp-art">
-              <img class="studio-stamp-landscape" src="/assets/stamp-shift/landscape.webp" width="1920" height="1072" alt="" loading="lazy" />
-              <img class="studio-stamp-game" src="/assets/stamp-shift/gameplay-poster.webp" width="584" height="1200" alt="Stamp Shift gameplay with three piles of illustrated stamps and a delivery order" loading="lazy" />
-              <div class="studio-stamp-friends" aria-hidden="true">
-                <img src="/assets/stamp-shift/sun.svg" width="88" height="88" alt="" loading="lazy" />
-                <img src="/assets/stamp-shift/leaf.svg" width="88" height="88" alt="" loading="lazy" />
-              </div>
-            </div>
-            <div class="studio-project-caption"><h3>Stamp Shift</h3><span aria-hidden="true">↗</span></div>
-            <p>A little stamp-sorting puzzle for iPhone.</p>
-          </a>
-        </article>
-        <article class="studio-project studio-project-alive">
-          <a class="studio-project-link" href="/apps/alive-still">
-            <div class="studio-project-art studio-alive-art">
-              <Image src={aliveHome} width={420} alt="Alive Still app showing a successful check-in and the next check-in time" loading="lazy" class="studio-alive-screen" />
-            </div>
-            <div class="studio-project-caption"><h3>Alive Still</h3><span aria-hidden="true">↗</span></div>
-            <p>A simple check-in. A little peace of mind.</p>
-          </a>
-        </article>
-      </div>
-      <a class="studio-birthday" href="/apps/birthday">
-        <h3>Birthday</h3>
-        <p>Make room for the people worth celebrating.</p>
-        <span aria-hidden="true">↗</span>
-      </a>
-    </section>
-
-    <section id="contact" class="studio-contact studio-width" aria-labelledby="contact-title">
-      <div><h2 id="contact-title">Got a good idea?</h2><p>Let’s make something of it.</p></div>
-      <a class="studio-contact-link" href={inquiry}>Build with Blum <span aria-hidden="true">↗</span></a>
-    </section>
+      <p class="studio-home-line">Apps, design & art.</p>
+      <nav class="studio-home-actions" aria-label="Blum Studios">
+        <a class="studio-pill studio-pill-primary" href="/contact">
+          <svg class="studio-envelope" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path class="studio-envelope-flap" d="m4 7 8 6 8-6" /></svg>
+          Contact
+        </a>
+        <a class="studio-pill" href="https://blumblumblum.com">Links</a>
+        <a class="studio-pill" href="/assets/blum-studios/resume.pdf">Resume</a>
+      </nav>
+    </div>
   </main>
-  <footer class="studio-footer studio-width">
-    <span>© {new Date().getFullYear()} {studio.name}</span>
-    <div><a href="https://jordanblum.com">Jordan’s portfolio <span aria-hidden="true">↗</span></a><a href={studio.instagram}>Instagram <span aria-hidden="true">↗</span></a></div>
-  </footer>
 </StudioLayout>
+<script>
+  if (location.hash === '#contact') location.replace('/contact');
+</script>

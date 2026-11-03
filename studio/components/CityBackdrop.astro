@@ -1,0 +1,128 @@
+---
+import '../styles/city.css';
+---
+<div class="city-background" data-city-background data-paused="false">
+  <svg class="city-art" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+    <defs>
+      <pattern id="city-windows" width="22" height="28" patternUnits="userSpaceOnUse"><path d="M8 7h5v11H8z" fill="#F7F3ED" opacity=".67" /></pattern>
+      <pattern id="city-small-windows" width="17" height="22" patternUnits="userSpaceOnUse"><path d="M6 6h4v8H6z" fill="#F7F3ED" opacity=".62" /></pattern>
+      <pattern id="city-dark-windows" width="23" height="30" patternUnits="userSpaceOnUse"><path d="M8 8h6v11H8z" fill="#746960" opacity=".52" /></pattern>
+      <pattern id="city-tower-windows" width="15" height="24" patternUnits="userSpaceOnUse"><path d="M6 5h3v13H6z" fill="#F7F3ED" opacity=".54" /></pattern>
+      <g id="city-tree"><path d="M0 0v40" stroke="#756C59" stroke-width="3" /><path d="M-16 0c-14-16-8-36 6-39 4-19 29-18 31 0 17 7 17 31 2 39Z" fill="#A7B99D" /><path d="M0-23v22m-11-13L0-4l11-12" fill="none" stroke="#879A7D" stroke-width="1.5" /></g>
+      <g id="city-sailboat"><path d="m-33 0 9 11h45L34 0Z" fill="#F7F3ED" stroke="#638997" stroke-width="1.5" /><path d="M0-52V0m-3-47L-29-7h26Z" fill="#F7F3ED" stroke="#638997" stroke-width="1.5" /><path d="M4-37 23-7H4Z" fill="#D1B98B" /></g>
+      <g id="city-cloud"><path d="M0 9h83M18 0h42" fill="none" stroke="#DCD8CE" stroke-width="3" stroke-linecap="round" /></g>
+    </defs>
+
+    <g data-city-scene="chicago" class="city-scene city-chicago">
+      <g class="city-clouds"><use href="#city-cloud" x="113" y="227" /><use href="#city-cloud" x="1130" y="185" /><use href="#city-cloud" x="1213" y="300" /></g>
+      <g class="city-panorama">
+        <path d="M0 798c245-22 440 39 650 27 259-15 470-41 790-20v195H0Z" fill="#A7C7D5" />
+        <path d="M0 817c244-23 438 44 651 26 258-22 497-37 789-19" fill="none" stroke="#739AA8" stroke-width="2" />
+        <g class="city-water-lines" fill="none" stroke="#D7E3E4" stroke-width="2" stroke-linecap="round"><path d="M557 890h100m52 25h148m-68 42h73M930 860h107m117 43h70M143 924h85m39 29h116" /><path d="M1048 953h116m-613-26h49m652 36h99" /></g>
+        <g class="city-left">
+          <g fill="#C8C9B9"><path d="M0 599h64v206H0Zm64 46h68v167H64Zm56-98h72v270h-72Zm197 85h63v191h-63Zm62 72h75v125h-75Z" /><path d="M8 611h45v184H8Zm123-55h48v245h-48Z" fill="url(#city-dark-windows)" /></g>
+          <g class="city-willis">
+            <path d="M191 806V480h25V363h31V318h42v55h33v103h26v338Z" fill="#716F66" />
+            <path d="M247 318v496h42V318Z" fill="#5E625B" />
+            <path d="M192 481h24v329h-24Zm25-117h28v446h-28Zm73 10h30v440h-30Zm32 104h24v336h-24Z" fill="url(#city-tower-windows)" />
+            <path d="M249 324h39v477h-39Z" fill="url(#city-tower-windows)" />
+            <path d="M255 318v-72m25 72v-86" fill="none" stroke="#5E625B" stroke-width="3" />
+            <path d="M215 480v333m31-449v449m43-439v439m32-335v335" stroke="#9A9B8C" stroke-width="1.5" />
+          </g>
+          <g><path d="M32 681h114v153H32Z" fill="#C28A72" /><path d="M22 673h134v14H22Z" fill="#AD735F" /><path d="M41 696h96v124H41Z" fill="url(#city-windows)" /><path d="M359 728h97v112h-97Z" fill="#D6B69C" /><path d="M365 735h85v98h-85Z" fill="url(#city-dark-windows)" /><path d="M347 719h121v12H347Z" fill="#B9947B" /></g>
+          <path d="M0 850h473v66H0Z" fill="#D8CCB7" /><path d="M0 860h477" stroke="#B5A58C" stroke-width="2" />
+          <g stroke="#867B68" fill="none" stroke-width="4"><path d="M0 819h459M0 837h459M40 837v54m91-54v54m91-54v54m91-54v54m91-54v54" /><path d="m40 837 91 54m-91 0 91-54m91 0 91 54m-91 0 91-54" stroke-width="2" /></g>
+          <g class="city-train"><rect x="-120" y="790" width="200" height="30" rx="5" fill="#DDD4BD" stroke="#867B68" stroke-width="1.5" /><path d="M-109 795H68v12h-177Z" fill="#76939A" /><path d="M-78 791v28m39-28v28m39-28v28m39-28v28" stroke="#867B68" stroke-width="2" /><path d="M-104 814H64" stroke="#AC775F" stroke-width="3" /></g>
+          <use href="#city-tree" x="42" y="900" /><use href="#city-tree" x="393" y="902" />
+        </g>
+        <g class="city-right">
+          <path d="M1099 693h64v127h-64Zm219-106h68v234h-68Zm60 89h62v144h-62Z" fill="#C5C9BC" />
+          <path d="M1111 702h43v109h-43Zm217-105h46v214h-46Z" fill="url(#city-dark-windows)" />
+          <g class="city-hancock"><path d="m1182 819 17-412h89l18 412Z" fill="#7B7A6D" /><path d="m1205 415-14 393h106l-15-393Z" fill="url(#city-tower-windows)" /><path d="M1217 407v-79m51 79v-94" stroke="#6C7065" stroke-width="3" /><path d="m1199 416 97 188-106 203m98-391-94 188 112 203m-112-203h106" fill="none" stroke="#D5D4C1" stroke-width="4" /></g>
+          <path d="M1073 753h98v87h-98Z" fill="#BE8C76" /><path d="M1080 763h84v67h-84Z" fill="url(#city-windows)" /><path d="M1316 737h124v108h-124Z" fill="#D5B89D" /><path d="M1325 746h115v88h-115Z" fill="url(#city-dark-windows)" />
+          <path d="M1048 851c109-20 271-14 392-6v75h-392Z" fill="#D7CCB7" /><path d="M1056 869h384" stroke="#B5A58C" stroke-width="2" /><use href="#city-tree" x="1103" y="892" /><use href="#city-tree" x="1392" y="892" />
+        </g>
+        <g class="city-boat"><use href="#city-sailboat" x="880" y="913" /></g>
+        <path d="M0 962c210-15 271 31 438 38H0Zm1440-10c-96-17-180-3-259 48h259Z" fill="#B7C6AD" />
+      </g>
+    </g>
+
+    <g data-city-scene="san-francisco" class="city-scene city-san-francisco">
+      <g class="city-clouds"><use href="#city-cloud" x="126" y="251" /><use href="#city-cloud" x="1060" y="202" /><use href="#city-cloud" x="1174" y="273" /></g>
+      <g class="city-panorama">
+        <path d="M0 786c186-27 362 25 556 28 285 4 563-29 884 15v171H0Z" fill="#A7C7D5" />
+        <path d="M0 775c100-41 167-64 241-35s112 91 193 84c-137 70-275 89-434 79Z" fill="#B7C6AD" />
+        <path d="M1440 633c-132-28-223 10-331 117-73 73-105 102-205 116 188 1 351 37 536 66Z" fill="#C7D1BA" />
+        <path d="M1440 755c-103-5-171 46-246 88-81 47-137 47-197 50l443 107Z" fill="#A8BB9F" />
+        <g class="city-water-lines" fill="none" stroke="#D7E3E4" stroke-width="2" stroke-linecap="round"><path d="M449 901h93m80 32h137m156-48h81m-139 74h75M86 950h118m55-34h71m691 15h127m-55 33h72" /></g>
+        <g class="city-left">
+          <g class="city-golden-gate" fill="none" stroke="#AD6655">
+            <path d="M-70 800H495" stroke-width="14" /><path d="M-70 787H495" stroke="#D6A486" stroke-width="4" />
+            <path d="M88 800V531h37v269m195 0V563h37v237" stroke-width="12" />
+            <path d="M88 557h37m-37 37h37m195-6h37m-37 37h37" stroke-width="8" />
+            <path d="M-83 757Q31 752 107 531c66 211 156 282 231 32q69 161 178 193" stroke-width="5" />
+            <path d="M-13 735v52m35-80v80m35-130v130m35-192v192m50-163v163m35-99v99m35-68v68m35-58v58m35-78v78m35-137v137m50-172v172m35-104v104m35-60v60m35-39v39" stroke-width="2" />
+            <path d="M82 807v55m49-55v65m183-65v35m49-35v31" stroke-width="14" />
+          </g>
+          <path d="M0 882c103-18 168-13 248 5 69 15 126 33 206 39L370 1000H0Z" fill="#B8C7AA" />
+          <path d="M0 946c97-32 160-23 251 6" fill="none" stroke="#E4D8C2" stroke-width="17" /><path d="M0 946c97-32 160-23 251 6" fill="none" stroke="#CBBD9F" stroke-width="1.5" />
+          <use href="#city-tree" x="55" y="918" /><use href="#city-tree" x="291" y="946" />
+        </g>
+        <g class="city-right">
+          <path d="m1108 800 57-85 56 85v81h-113Z" fill="#D7B38D" /><path d="m1097 801 68-100 68 100" fill="none" stroke="#9F7965" stroke-width="6" /><path d="M1119 805h91v70h-91Z" fill="url(#city-dark-windows)" /><path d="M1153 843h23v38h-23Z" fill="#927866" /><path d="M1154 764h22v24h-22Z" fill="#F7F3ED" /><path d="M1165 765v22" stroke="#9F7965" stroke-width="2" />
+          <g transform="translate(124 32)"><path d="m1108 800 57-85 56 85v81h-113Z" fill="#BE8C76" /><path d="m1097 801 68-100 68 100" fill="none" stroke="#926E5F" stroke-width="6" /><path d="M1119 805h91v70h-91Z" fill="url(#city-windows)" /><path d="M1153 843h23v38h-23Z" fill="#927866" /><path d="M1154 764h22v24h-22Z" fill="#F7F3ED" /><path d="M1165 765v22" stroke="#9F7965" stroke-width="2" /></g>
+          <g transform="translate(248 64)"><path d="m1108 800 57-85 56 85v81h-113Z" fill="#D8C99F" /><path d="m1097 801 68-100 68 100" fill="none" stroke="#A19273" stroke-width="6" /><path d="M1119 805h91v70h-91Z" fill="url(#city-dark-windows)" /><path d="M1153 843h23v38h-23Z" fill="#927866" /><path d="M1154 764h22v24h-22Z" fill="#F7F3ED" /><path d="M1165 765v22" stroke="#A19273" stroke-width="2" /></g>
+          <path d="m1070 891 370 95v14h-117l-269-83Z" fill="#DFD4BE" /><path d="m1070 902 370 95" stroke="#B9A98E" stroke-width="2" /><use href="#city-tree" x="1090" y="922" /><use href="#city-tree" x="1340" y="981" />
+        </g>
+        <g class="city-boat"><use href="#city-sailboat" x="736" y="916" /></g>
+        <path d="M0 988c102-31 229-19 301 12H0Zm1440-6c-147-33-228-14-285 18h285Z" fill="#9FB494" />
+      </g>
+    </g>
+
+    <g data-city-scene="new-york" class="city-scene city-new-york">
+      <g class="city-clouds"><use href="#city-cloud" x="160" y="196" /><use href="#city-cloud" x="1105" y="245" /></g>
+      <g class="city-panorama">
+        <path d="M0 830c225-33 400 4 621 12 315 13 513-18 819-6v164H0Z" fill="#A7C7D5" />
+        <g class="city-water-lines" fill="none" stroke="#D7E3E4" stroke-width="2" stroke-linecap="round"><path d="M470 905h108m74 31h142m80-53h102m114 62h75M74 947h93m130 24h126m787-89h103m-492 88h98" /></g>
+        <g class="city-left">
+          <path d="M0 644h56v189H0Zm46 66h72v131H46Zm70-115h68v251h-68Zm231 76h71v178h-71Z" fill="#C9C8B4" /><path d="M4 653h43v172H4Zm121-50h49v233h-49Zm231 78h52v163h-52Z" fill="url(#city-dark-windows)" />
+          <g class="city-empire"><path d="M212 842V549h15v-43h18v-38h16v-40h17v-46h21v46h17v40h16v38h18v43h15v293Z" fill="#BEAF8F" /><path d="M261 469h55v371h-55Z" fill="#CFC19F" /><path d="M218 556h140v276H218Z" fill="url(#city-tower-windows)" /><path d="M248 510h81v322h-81Z" fill="url(#city-tower-windows)" /><path d="M265 474h47v350h-47Z" fill="url(#city-tower-windows)" /><path d="M284 382v-71h6v71m-6-72v-32" fill="none" stroke="#9B9178" stroke-width="3" /><path d="M228 549h120m-103-43h86m-69-38h53m-39-40h23" stroke="#9E9379" stroke-width="2" /></g>
+          <g><path d="M-10 744H99v125H-10Z" fill="#BA806B" /><path d="M-10 751H91v110H-10Z" fill="url(#city-windows)" /><path d="M-13 736h115v12H-13Z" fill="#8F6D5A" /><path d="M128 779h99v96h-99Z" fill="#D1A483" /><path d="M136 785h83v80h-83Z" fill="url(#city-dark-windows)" /><path d="M125 769h105v14H125Z" fill="#AA8268" /><path d="M366 778h97v99h-97Z" fill="#BD8E73" /><path d="M374 785h81v84h-81Z" fill="url(#city-windows)" /></g>
+          <path d="M0 882h473v69H0Z" fill="#D8CCB7" /><path d="M0 889h473M0 909h473" stroke="#B5A58C" stroke-width="2" /><use href="#city-tree" x="114" y="934" /><use href="#city-tree" x="390" y="934" />
+          <g class="city-taxi"><path d="M59 916h46l12 12h15v18H43v-18h9Z" fill="#D2B469" stroke="#A19065" stroke-width="1.5" /><path d="M65 921h17v9H59Zm23 0h14l8 9H88Z" fill="#D9E4DD" /><circle cx="61" cy="945" r="7" fill="#746960" /><circle cx="117" cy="945" r="7" fill="#746960" /></g>
+        </g>
+        <g class="city-right">
+          <path d="M1297 698h62v141h-62Zm63 43h80v105h-80Z" fill="#C5C8B7" /><path d="M1307 707h44v122h-44Zm63 43h70v86h-70Z" fill="url(#city-dark-windows)" />
+          <g class="city-brooklyn" fill="none" stroke="#B5A181"><path d="M1029 831h411" stroke-width="15" /><path d="M1133 830V647h70v183" stroke-width="12" /><path d="M1134 650h68m-68 21h68" stroke-width="10" /><path d="M1150 827v-108q18-40 36 0v108" stroke-width="9" /><path d="M966 780q137-2 202-131c85 146 181 142 313 138" stroke-width="4" /><path d="m1168 649-119 175m119-175-86 175m86-175-52 175m52-175-18 175m18-175 52 175m-52-175 86 175m-86-175 120 175m-120-175 154 175m-154-175 188 175m-188-175 222 175" stroke-width="1.2" opacity=".7" /><path d="M1133 839v45m70-45v45" stroke-width="16" /></g>
+          <path d="M1235 856h205v98h-205Z" fill="#C49076" /><path d="M1243 864h197v77h-197Z" fill="url(#city-windows)" /><path d="M1228 846h212v14h-212Z" fill="#A97760" /><path d="M1200 946h240v54h-240Z" fill="#D8CCB7" /><path d="M1205 960h235" stroke="#B5A58C" stroke-width="2" /><use href="#city-tree" x="1380" y="983" />
+        </g>
+        <g class="city-boat"><path d="M680 925h104l-16 17h-71Z" fill="#F7F3ED" stroke="#638997" stroke-width="1.5" /><path d="M702 904h52v21h-52Z" fill="#D9D2BC" /><path d="M713 910h9m8 0h9m-9-6v-14" stroke="#638997" stroke-width="3" /></g>
+        <path d="M0 977c149-30 232-18 319 23H0Zm1440 6c-87-24-164-21-226 17h226Z" fill="#B7C6AD" />
+      </g>
+    </g>
+  </svg>
+</div>
+<button class="city-motion-toggle" type="button" data-city-motion-toggle aria-label="Pause city animation" title="Pause city animation" hidden>
+    <svg class="city-pause-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M6.5 4.5v11m7-11v11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+    <svg class="city-play-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="m7 4 9 6-9 6Z" fill="currentColor" /></svg>
+</button>
+<script>
+  const background = document.querySelector<HTMLElement>('[data-city-background]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-city-motion-toggle]');
+  if (background && toggle) {
+    const preference = matchMedia('(prefers-reduced-motion: reduce)');
+    let paused = false;
+    const update = () => {
+      background.dataset.paused = String(paused);
+      toggle.dataset.paused = String(paused);
+      toggle.hidden = preference.matches;
+      const label = paused ? 'Play city animation' : 'Pause city animation';
+      toggle.setAttribute('aria-label', label);
+      toggle.title = label;
+    };
+    toggle.addEventListener('click', () => { paused = !paused; update(); });
+    preference.addEventListener('change', update);
+    background.dataset.motionEnabled = 'true';
+    update();
+  }
+</script>

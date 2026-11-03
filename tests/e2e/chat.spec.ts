@@ -117,7 +117,7 @@ test('the empty state includes the resume download among its starter questions',
   await expect(chips.nth(1)).toHaveText('What has he built?');
   await expect(chips.nth(2)).toHaveText("What's his tech stack?");
   await expect(chips.nth(3)).toHaveText('Can I download his resume?');
-  await expect(chips.nth(4)).toHaveText('How can I get in touch?');
+  await expect(chips.nth(4)).toHaveText('Can I hire Jordan for a project?');
 });
 
 test('a resume request opens a direct download card and downloads the PDF', async ({ page }) => {
@@ -236,10 +236,11 @@ test('clicking a starter chip sends it as a user message and follow-up chips app
 });
 
 test('the footer CTA opens the same widget panel and both triggers mirror the state', async ({ page }) => {
+  await expect(page.getByRole('link', { name: 'Want to work with me?' })).toHaveAttribute('href', 'https://buildwithblum.com/contact');
   const cta = page.locator('[data-footer-chat-cta]');
   await expect(cta).toBeVisible();
   await expect(cta).toHaveAttribute('aria-expanded', 'false');
-  // The chat CTA is the footer's single contact CTA — no mailto fallback.
+  // Freelance inquiries use the studio form; chat remains available separately.
   await expect(page.getByRole('contentinfo').locator('a[href^="mailto:"]')).toHaveCount(0);
 
   await cta.click();
