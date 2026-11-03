@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import { studio } from '../data/studio';
+import studioMark from '../assets/identity/blum-mark.svg?url';
 import '../styles/app-docs.css';
 import switzer400Url from '../assets/fonts/switzer-400.woff2?url';
 import chillax600Url from '../assets/fonts/chillax-600.woff2?url';
@@ -15,6 +17,9 @@ interface Props {
 }
 
 const { title, description, heading, intro, app, active } = Astro.props;
+const isStudio = Astro.site?.origin === studio.origin;
+const siteName = isStudio ? studio.name : 'Jordan Blum';
+const email = isStudio ? studio.supportEmail : supportEmail;
 const path = Astro.url.pathname.replace(/\/+$/, '');
 const canonical = new URL(path, Astro.site ?? Astro.url.origin);
 const sections = app ? [
@@ -29,17 +34,17 @@ const sections = app ? [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>{title} — Jordan Blum</title>
+    <title>{title} — {siteName}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="icon" href={isStudio ? studioMark : "/favicon.png"} type={isStudio ? "image/svg+xml" : "image/png"} sizes="32x32" />
+    <link rel="apple-touch-icon" href={isStudio ? "/assets/stamp-shift/apple-touch-icon.png" : "/apple-touch-icon.png"} sizes="180x180" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={switzer400Url} />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={chillax600Url} />
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#F7F3ED" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Jordan Blum" />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -47,8 +52,8 @@ const sections = app ? [
   <body class="app-docs">
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="docs-header wide">
-      <a class="docs-home" href="/">Jordan Blum</a>
-      <nav aria-label="Site"><a href="/apps" aria-current={app ? undefined : 'page'}>App docs</a><a href={`mailto:${supportEmail}`}>Email me</a></nav>
+      <a class="docs-home" href="/">{siteName}</a>
+      <nav aria-label="Site"><a href="/apps" aria-current={app ? undefined : 'page'}>App docs</a><a href={`mailto:${email}`}>{isStudio ? 'Contact' : 'Email me'}</a></nav>
     </header>
     <main id="main-content" class="docs-main wide" tabindex="-1">
       <div class="docs-intro">
@@ -63,6 +68,6 @@ const sections = app ? [
         <div class="docs-content"><slot /></div>
       </div>
     </main>
-    <footer class="docs-footer wide"><span>© {new Date().getFullYear()} Jordan Blum</span><a href="/apps">All app docs</a><a href={`mailto:${supportEmail}`}>{supportEmail}</a></footer>
+    <footer class="docs-footer wide"><span>© {new Date().getFullYear()} {siteName}</span><a href="/apps">All app docs</a><a href={`mailto:${email}`}>{email}</a></footer>
   </body>
 </html>

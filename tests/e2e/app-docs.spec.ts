@@ -65,7 +65,7 @@ test('the Stamp Shift game page has its own identity and respects reduced motion
   await expect(page.getByRole('banner')).toContainText('Stamp Shift');
   await expect(page.getByRole('banner')).not.toContainText('Jordan');
   await expect(page.getByRole('navigation', { name: 'Stamp Shift documentation' })).toHaveCount(0);
-  await expect(page.getByRole('contentinfo')).toContainText('Blum Studio');
+  await expect(page.getByRole('contentinfo')).toContainText('Blum Studios');
   await expect(page.getByRole('link', { name: 'Download on the App Store', exact: true })).toHaveAttribute('href', 'https://apps.apple.com/us/app/stamp-shift/id6824269145');
   await expect(page.locator('[data-gameplay]')).toHaveAttribute('poster', /\S+/);
   await expect(page.locator('[data-motion-toggle]')).toHaveCount(0);

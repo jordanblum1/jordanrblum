@@ -1,0 +1,23 @@
+---
+import StudioLayout from '../../layouts/StudioLayout.astro';
+import { studio } from '../../../src/data/studio';
+---
+<StudioLayout title="Apps — Blum Studios" description="Games and useful little apps from Blum Studios. Find an app, get support or read its privacy policy." path="/apps">
+  <header class="directory-header">
+    <a href="/" class="directory-home">{studio.name}</a>
+    <a href={`mailto:${studio.contactEmail}?subject=Project%20inquiry`}>Work with us ↗</a>
+  </header>
+  <main id="main-content" tabindex="-1" class="directory-main">
+    <h1>Our apps.</h1>
+    <ul class="directory-list" aria-label="Apps">
+      <li><h2><a href="/apps/stamp-shift">Stamp Shift ↗</a></h2><p>A little stamp-sorting puzzle for iPhone.</p><nav aria-label="Stamp Shift help"><a href="/apps/stamp-shift/support">Support</a><a href="/apps/stamp-shift/privacy">Privacy</a></nav></li>
+      <li><h2><a href="https://alivestill.app">Alive Still ↗</a></h2><p>A daily check-in for people who live alone.</p></li>
+      <li><h2><a href="https://trybirthday.com">Birthday ↗</a></h2><p>A place for birthdays, gift plans and thoughtful reminders.</p></li>
+    </ul>
+    <a href={`mailto:${studio.supportEmail}?subject=App%20support`}>Need a hand? Email support ↗</a>
+  </main>
+  <footer class="directory-footer"><a href="/">Blum Studios</a><a href="https://jordanblum.com">About Jordan ↗</a></footer>
+</StudioLayout>
+<style>
+  .directory-header,.directory-footer{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1.5rem 0;border-bottom:1px solid #DDD5CB}.directory-home{font-weight:600}.directory-main{padding:4rem 0 5rem}.directory-main h1{font-family:Chillax,Switzer,sans-serif;font-size:clamp(3rem,7vw,5rem);margin:0 0 3rem;line-height:1.05;letter-spacing:-.04em}.directory-list{list-style:none;padding:0;margin:0 0 3rem}.directory-list li{padding:1.5rem 0;border-top:1px solid #DDD5CB}.directory-list h2{font-size:1.6rem;margin:0 0 .5rem}.directory-list p{margin:0 0 .75rem}.directory-list nav{display:flex;gap:1.5rem}.directory-footer{border-top:1px solid #DDD5CB;border-bottom:0}.directory-header a,.directory-main a,.directory-footer a{display:inline-flex;min-height:44px;align-items:center}.directory-header,.directory-main,.directory-footer{width:min(100% - 3rem,72rem);margin-inline:auto}@media(max-width:500px){.directory-main{padding-block:3rem}.directory-header,.directory-footer{flex-wrap:wrap}}
+</style>

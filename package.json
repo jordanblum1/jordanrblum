@@ -14,7 +14,12 @@
     "perf:budget": "npx --yes @lhci/cli@0.15.x autorun",
     "perf:lh": "lighthouse http://localhost:4322/ --preset=perf --form-factor=mobile --screenEmulation.mobile --throttling-method=simulate --chrome-flags=--headless=new --view",
     "perf:lh:desktop": "lighthouse http://localhost:4322/ --preset=desktop --chrome-flags=--headless=new --view",
-    "perf:scroll": "node scripts/perf/scroll-bench.mjs"
+    "perf:scroll": "node scripts/perf/scroll-bench.mjs",
+    "build:studio": "astro build --config astro.studio.config.mjs",
+    "dev:studio": "astro dev --config astro.studio.config.mjs",
+    "preview:studio": "astro preview --config astro.studio.config.mjs",
+    "test:studio": "playwright test --config playwright.studio.config.ts",
+    "prepare:studio-deploy": "node scripts/prepare-studio-deploy.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

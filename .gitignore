@@ -23,3 +23,7 @@ tmp/
 .lighthouseci/
 docs/egg-evidence/
 docs/spray-evidence/
+
+# Independent studio build and local hosting linkage
+dist-studio/
+.vercel/
