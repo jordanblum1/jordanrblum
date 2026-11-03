@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import { studio } from '../data/studio';
-import studioMark from '../assets/identity/blum-mark.svg?url';
 import '../styles/app-docs.css';
 import switzer400Url from '../assets/fonts/switzer-400.woff2?url';
 import chillax600Url from '../assets/fonts/chillax-600.woff2?url';
@@ -18,10 +17,10 @@ interface Props {
 
 const { title, description, heading, intro, app, active } = Astro.props;
 const isStudio = Astro.site?.origin === studio.origin;
-const siteName = isStudio ? studio.name : 'Jordan Blum';
-const email = isStudio ? studio.supportEmail : supportEmail;
+const siteName = studio.name;
+const email = supportEmail;
 const path = Astro.url.pathname.replace(/\/+$/, '');
-const canonical = new URL(path, Astro.site ?? Astro.url.origin);
+const canonical = new URL(path, studio.origin);
 const sections = app ? [
   { label: 'Overview', href: `/apps/${app.slug}`, key: 'overview' },
   { label: 'Support', href: `/apps/${app.slug}/support`, key: 'support' },
@@ -37,7 +36,7 @@ const sections = app ? [
     <title>{title} — {siteName}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href={isStudio ? studioMark : "/favicon.png"} type={isStudio ? "image/svg+xml" : "image/png"} sizes="32x32" />
+    <link rel="icon" href="/assets/blum-studios/favicon.svg" type="image/svg+xml" sizes="32x32" />
     <link rel="apple-touch-icon" href={isStudio ? "/assets/stamp-shift/apple-touch-icon.png" : "/apple-touch-icon.png"} sizes="180x180" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={switzer400Url} />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={chillax600Url} />
@@ -52,7 +51,7 @@ const sections = app ? [
   <body class="app-docs">
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="docs-header wide">
-      <a class="docs-home" href="/">{siteName}</a>
+      <a class="docs-home" href={isStudio ? '/' : studio.origin}>{siteName}</a>
       <nav aria-label="Site"><a href="/apps" aria-current={app ? undefined : 'page'}>App docs</a><a href={`mailto:${email}`}>{isStudio ? 'Contact' : 'Email me'}</a></nav>
     </header>
     <main id="main-content" class="docs-main wide" tabindex="-1">

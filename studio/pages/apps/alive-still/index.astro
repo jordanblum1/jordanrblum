@@ -1,0 +1,17 @@
+---
+import { Image } from 'astro:assets';
+import AppOverview from '../../../layouts/AppOverview.astro';
+import { studio } from '../../../../src/data/studio';
+import aliveHome from '../../../../src/assets/projects/alive-home.png';
+---
+<AppOverview
+  name="Alive Still"
+  description="A daily safety check-in for people who live alone."
+  path="/apps/alive-still"
+  appStoreUrl="https://apps.apple.com/us/app/alive-still/id6757885591"
+  website="https://alivestill.app"
+  supportEmail={studio.supportEmail}
+  privacyUrl="https://alivestill.app/privacy"
+>
+  <Image slot="artwork" src={aliveHome} width={520} alt="Alive Still showing a successful check-in and the next check-in time" />
+</AppOverview>
