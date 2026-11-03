@@ -1,4 +1,4 @@
-import { social } from './site';
+import { studio } from './studio';
 
 export interface AppDocumentation {
   slug: string;
@@ -7,10 +7,7 @@ export interface AppDocumentation {
   description: string;
 }
 
-const emailContact = social.find((contact) => contact.label === 'Email');
-if (!emailContact) throw new Error('App documentation requires the site Email contact.');
-
-export const supportEmail = emailContact.href.replace(/^mailto:/, '');
+export const supportEmail = studio.supportEmail;
 export const stampShift: AppDocumentation = {
   slug: 'stamp-shift',
   name: 'Stamp Shift',

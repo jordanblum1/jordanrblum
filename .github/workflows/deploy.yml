@@ -70,6 +70,9 @@ jobs:
       - name: Test isolated launch journeys
         run: pnpm test:launch-qa
 
+      - name: Build and test studio journeys
+        run: pnpm test:studio
+
       - name: Preserve launch QA evidence locally
         if: always()
         shell: bash
@@ -185,3 +188,26 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id "$DISTRIBUTION_ID" \
             --paths "/*"
+
+  deploy-studio:
+    needs: test
+    if: github.event_name != 'pull_request' && inputs.validate_only != true && vars.BLUM_STUDIOS_PROJECT_ID != ''
+    runs-on: [self-hosted, macOS, ARM64, personal-mac]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with: { version: 10 }
+      - uses: actions/setup-node@v7
+        with: { node-version: 22 }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:studio
+      - run: pnpm prepare:studio-deploy
+      # Existing owner CLI authentication on the private Mac; no token in source.
+      - name: Publish prebuilt studio site
+        env:
+          STUDIO_PROJECT: ${{ vars.BLUM_STUDIOS_PROJECT_ID }}
+        run: vercel deploy --prebuilt --prod --yes --project "$STUDIO_PROJECT" --scope jordanblum1s-projects
