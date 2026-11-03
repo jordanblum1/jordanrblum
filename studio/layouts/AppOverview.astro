@@ -1,0 +1,78 @@
+---
+import StudioLayout from './StudioLayout.astro';
+import { studio } from '../../src/data/studio';
+interface Props {
+  name: string;
+  description: string;
+  path: string;
+  appStoreUrl: string;
+  website: string;
+  supportEmail: string;
+  privacyUrl?: string;
+}
+const { name, description, path, appStoreUrl, website, supportEmail, privacyUrl } = Astro.props;
+const supportUrl = `mailto:${supportEmail}?subject=${encodeURIComponent(`${name} support`)}`;
+const hasArtwork = Astro.slots.has('artwork');
+---
+<StudioLayout title={`${name} — ${studio.name}`} description={description} path={path}>
+  <header class="overview-header overview-width">
+    <a href="/">{studio.name}</a>
+    <a href="/apps">All apps <span aria-hidden="true">↗</span></a>
+  </header>
+  <main id="main-content" tabindex="-1" class="overview-main overview-width">
+    <section class:list={['overview-hero', { 'overview-with-art': hasArtwork }]} aria-labelledby="app-title">
+      <div class="overview-copy">
+        <h1 id="app-title">{name}</h1>
+        <p class="overview-description">{description}</p>
+        <a class="overview-download" href={appStoreUrl}>Download on the App Store <span aria-hidden="true">↗</span></a>
+        <a class="overview-website" href={website}>Visit the official website <span aria-hidden="true">↗</span></a>
+      </div>
+      {hasArtwork && <div class="overview-artwork"><slot name="artwork" /></div>}
+    </section>
+    <section class="overview-help" aria-labelledby="help-title">
+      <h2 id="help-title">Need a hand?</h2>
+      <div>
+        <a href={supportUrl}>Email support <span aria-hidden="true">↗</span></a>
+        {privacyUrl && <a href={privacyUrl}>Privacy policy <span aria-hidden="true">↗</span></a>}
+      </div>
+    </section>
+  </main>
+  <footer class="overview-footer overview-width"><a href="/">{studio.name}</a><a href="/apps">Browse all apps <span aria-hidden="true">↗</span></a></footer>
+</StudioLayout>
+<style>
+  .overview-width { width: min(100% - 5rem, 77rem); margin-inline: auto; }
+  .overview-header, .overview-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 100px; }
+  .overview-header a, .overview-footer a, .overview-help a, .overview-website { display: inline-flex; align-items: center; gap: .75rem; min-height: 44px; }
+  .overview-header a, .overview-footer a { text-decoration: none; }
+  .overview-header a:first-child { font-weight: 500; }
+  .overview-main { padding-block: 3rem 4rem; }
+  .overview-hero { padding-block: 2rem 5rem; }
+  .overview-with-art { display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; gap: 5rem; }
+  .overview-copy h1 { color: var(--studio-accent); font: 600 clamp(3.5rem, 7.5vw, 7rem)/1.05 Chillax, Switzer, sans-serif; letter-spacing: -.055em; }
+  .overview-description { max-width: 27ch; margin-top: 1.5rem; font-size: clamp(1.25rem, 2.1vw, 1.75rem); line-height: 1.4; }
+  .overview-download { display: flex; align-items: center; justify-content: space-between; gap: 2rem; width: fit-content; min-height: 60px; margin-top: 2rem; padding: 1rem 1.5rem; color: var(--studio-paper); background: var(--studio-accent); text-decoration: none; }
+  .overview-download:hover { background: var(--studio-ink); }
+  .overview-website { margin-top: .75rem; }
+  .overview-header a:hover, .overview-footer a:hover, .overview-help a:hover, .overview-website:hover { color: var(--studio-accent); }
+  .overview-artwork { display: flex; justify-content: center; max-height: 560px; overflow: hidden; padding: 2.5rem 2rem 0; background: #dfe6db; }
+  .overview-artwork :global(img) { width: min(100%, 260px); height: auto; align-self: start; border: 4px solid var(--studio-ink); border-radius: 28px; }
+  .overview-help { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-block: 1.5rem; border-block: 1px solid var(--studio-line); }
+  .overview-help h2 { font-size: 1.25rem; font-weight: 500; }
+  .overview-help > div { display: flex; flex-wrap: wrap; column-gap: 2rem; }
+  .overview-footer { color: var(--studio-muted); font-size: .875rem; }
+  @media (max-width: 800px) {
+    .overview-width { width: calc(100% - 3rem); }
+    .overview-header, .overview-footer { min-height: 88px; }
+    .overview-main { padding-block: 1.5rem 2rem; }
+    .overview-with-art { grid-template-columns: 1fr; gap: 3rem; }
+    .overview-hero { padding-block: 1.5rem 3rem; }
+    .overview-artwork { max-height: 450px; }
+  }
+  @media (max-width: 540px) {
+    .overview-width { width: calc(100% - 2.5rem); }
+    .overview-copy h1 { font-size: 3.5rem; }
+    .overview-help { align-items: start; flex-direction: column; gap: .5rem; }
+    .overview-download { width: 100%; gap: 1rem; padding-inline: 1rem; }
+    .overview-artwork { max-height: 380px; }
+  }
+</style>

@@ -6,7 +6,7 @@ for (const width of [1440, 375]) {
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['/', '/apps', '/apps/stamp-shift', '/apps/stamp-shift/support', '/apps/stamp-shift/privacy']) {
+    for (const path of ['/', '/apps', '/apps/alive-still', '/apps/birthday', '/apps/stamp-shift', '/apps/stamp-shift/support', '/apps/stamp-shift/privacy']) {
       expect((await page.goto(path))?.status()).toBe(200);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const canonical = path === '/' ? '/' : path;
@@ -52,7 +52,7 @@ test('contact and help work with JavaScript disabled and keyboard navigation', a
   const inquiry = page.locator('a[href^="mailto:"]');
   expect(await inquiry.count()).toBeGreaterThan(0);
   const contact = new URL((await inquiry.first().getAttribute('href'))!);
-  expect(contact.pathname).toBe('jordanblum16@gmail.com');
+  expect(contact.pathname).toBe('hello@buildwithblum.com');
   expect(contact.searchParams.get('subject')).toContain('Project inquiry');
   await page.goto('/apps/stamp-shift/support');
   await page.getByText('What does Extra Routes include?', { exact: true }).focus();
@@ -65,4 +65,18 @@ test('a missing studio page offers recovery with a real 404', async ({ page }) =
   expect((await page.goto('/missing-page'))?.status()).toBe(404);
   await page.getByRole('link', { name: 'Back to Blum Studios' }).click();
   await expect(page).toHaveURL(/\/$/);
+});
+
+test('every app has a central overview with its verified store and service destinations', async ({ page }) => {
+  for (const [route, store, website, privacy] of [
+    ['/apps/alive-still', 'https://apps.apple.com/us/app/alive-still/id6757885591', 'https://alivestill.app', 'https://alivestill.app/privacy'],
+    ['/apps/birthday', 'https://apps.apple.com/us/app/id6809536251', 'https://trybirthday.com', 'https://trybirthday.com/privacy.html'],
+  ]) {
+    await page.goto('/apps');
+    await page.locator(`a[href="${route}"]`).click();
+    await expect(page.getByRole('link', { name: 'Download on the App Store' })).toHaveAttribute('href', store);
+    await expect(page.getByRole('link', { name: 'Visit the official website' })).toHaveAttribute('href', website);
+    await expect(page.getByRole('link', { name: 'Email support' })).toHaveAttribute('href', /^mailto:support@buildwithblum\.com\?subject=/);
+    await expect(page.getByRole('link', { name: 'Privacy policy' })).toHaveAttribute('href', privacy);
+  }
 });

@@ -4,7 +4,7 @@ import '../styles/stamp-shift-landing.css';
 import { studio } from '../data/studio';
 interface Props { title: string; description: string }
 const { title, description } = Astro.props;
-const canonical = new URL('/apps/stamp-shift', Astro.site ?? Astro.url.origin);
+const canonical = new URL('/apps/stamp-shift', studio.origin);
 ---
 <!doctype html>
 <html lang="en" class="stamp-shift-page">
@@ -30,7 +30,7 @@ const canonical = new URL('/apps/stamp-shift', Astro.site ?? Astro.url.origin);
     <a class="skip-link" href="#main-content">Skip to content</a>
     <slot />
     <footer class="game-footer game-width">
-      <a href={Astro.site?.origin === studio.origin ? '/' : '/apps'}>{studio.name}</a>
+      <a href={studio.origin}>{studio.name}</a>
       <nav aria-label="Help and privacy"><a href="/apps/stamp-shift/support">Support</a><a href="/apps/stamp-shift/privacy">Privacy</a></nav>
     </footer>
   </body>
