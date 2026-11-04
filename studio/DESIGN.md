@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Blum Studios
-description: A warm editorial creative studio with expressive lettering and real product evidence.
+description: A quiet creative studio with centered lettering, soft pill actions and an in-place contact morph.
 colors:
   primary: "#9C4037"
   secondary: "#746960"
@@ -12,7 +12,7 @@ colors:
 typography:
   h1:
     fontFamily: Chillax
-    fontSize: 9.5rem
+    fontSize: 3.12rem
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "-0.065em"
@@ -28,8 +28,9 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
 rounded:
-  sm: 0px
+  sm: 99px
   device: 26px
+  panel: 28px
 spacing:
   sm: 8px
   md: 16px
@@ -45,7 +46,6 @@ components:
   contact-link:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.neutral}"
-    padding: 16px
     rounded: "{rounded.sm}"
   contact-link-hover:
     backgroundColor: "{colors.text}"
@@ -54,44 +54,48 @@ components:
 
 ## Overview
 
-Blum Studios is Jordan Blum’s independent umbrella for apps, design and art, with a direct route for freelance inquiries. The homepage is an **Explore** surface with contact as the secondary job. The design uses the existing owned product system: the expressive BLUM wordmark, warm paper, oxblood, local Switzer and Chillax. Source context: the root [brand book](../docs/brand.md), [design contract](../DESIGN.md), and the owned `blumblumblum` local site. No external reference, new font, generated artwork or dependency was introduced.
+Blum Studios is Jordan Blum’s independent umbrella for apps, design and art. The homepage is a **Decide/Learn** surface: compact centered identity, a one-line statement and vertical Contact, Links and Portfolio actions. Contact expands from its own button into an in-place native dialog. Background illustration and motion are owned separately by CityBackdrop.
 
-This contract applies only to the isolated `studio` build at `https://buildwithblum.com`. It does not change the personal portfolio or Stamp Shift’s own game identity. Source of truth: [studio.css](styles/studio.css), [StudioLayout.astro](layouts/StudioLayout.astro) and [index.astro](pages/index.astro).
+The owned BLUM mark, warm paper, oxblood, Switzer and Chillax remain authoritative. The requested [Daniel D. reference](https://www.danield.design/) informed quiet type, soft pills and an expressive ambient background. The requested [shape-morph study](https://x.com/twoclipping/status/2103273003555402193), read through Firecrawl, informed continuity of shape, radius and color with a separate short content reveal. These principles are adapted into an original site; reference grids, video staging, effects and content are not copied.
+
+This contract applies to the isolated `studio` build at `https://buildwithblum.com`. App support routes retain their existing contracts. Sources: [studio.css](styles/studio.css), [CityBackdrop.astro](components/CityBackdrop.astro), [index.astro](pages/index.astro), [contact-dialog.ts](scripts/contact-dialog.ts), [ContactForm.astro](components/ContactForm.astro) and [contact.ts](scripts/contact.ts).
 
 ## Colors
 
-Map tokens to the corresponding `--studio-*` properties. Paper is the light-only canvas; ink is the default text; muted ink is secondary copy; oxblood is identity, contact and keyboard focus. Hairlines divide editorial sections and never carry information alone. Project sage belongs only behind the actual Alive Still screenshot. Stamp Shift’s art supplies its own colors without becoming the studio chrome.
-
-Approved contrasts inherited from the established palette: ink/paper 13.67:1, muted/paper 4.83:1, oxblood/paper 5.93:1. Contact text uses paper on oxblood. There are no synthetic status colors because this page has no status UI.
+Existing `--studio-*` tokens define paper, ink, muted ink, the divider and oxblood. Oxblood carries identity, the primary action and keyboard focus. The morph starts with the button’s actual computed color and becomes the warm paper form surface. Background art must leave the foreground readable. Privacy/help surfaces use ink over paper when needed. Base contrasts remain ink/paper 13.67:1, muted/paper 4.83:1 and oxblood/paper 5.93:1. Status is expressed through text, not color alone.
 
 ## Typography
 
-Use local Switzer 400/500 for text and navigation; local Chillax 600 for short destination/project titles and the Studios half of the identity. The original BLUM SVG remains a mark, with its aspect ratio intact. It is decorative beside the accessible text name. No second monogram appears.
-
-Desktop identity type scales with viewport width to a 9.5rem cap; at 540px and below the mark stacks above Studios, preserving a legible full name. Contact heading scales from 2.2rem to 4rem. Body text is 1rem/1.5; small footer/navigation text is at least .875rem. No all-caps eyebrow labels or ornamental captions.
+Use local Switzer 400/500 for interface text and Chillax 600 for Studios and Contact. Preserve the original BLUM SVG proportions and accessible name. The homepage mark occupies about 320px; Studios caps at 3.12rem. The statement is 1.125rem, actions and labels .875rem, and necessary email help .8125rem. The dialog heading is 2rem. No eyebrow labels, extra headings or name subcopy.
 
 ## Layout
 
-A 77rem maximum canvas uses 40px desktop side gutters, 24px tablet gutters and 20px mobile gutters. The introductory identity is followed by a two-column statement/contact arrangement. Selected projects form a 1.5:1 offset composition, with Alive Still starting 112px below Stamp Shift. Images have distinct proportions; they are work evidence rather than feature cards. Birthday is an editorial row.
+The home fills at least 100svh and centers a compact composition within the open sky above the bridge. A shrinking flex spacer below the composition provides up to128px of wide-layout art clearance and24px on phones. It collapses before enlarged browser text can move above the viewport; no negative content transform is used. Its three actions form a vertical stack, switching to a compact row only on short landscape screens. Contact opens on the same page; Links goes to `https://blumblumblum.com`; Portfolio goes to `https://jordanblum.com`. There is no Resume action, showcase, app promotion, footer or policy copy.
 
-At 800px the introduction and contact section stack; at 540px projects become a single column and the wordmark stacks. DOM order remains reading order. Content must fit 375px without horizontal overflow. App directory pages may reuse the static layout while using their own scoped editorial styles.
+The modal panel is at most 32rem wide with 32px desktop and 24px mobile content padding. Its form retains a two-field name/email row and full-width message. The panel is centered inside the actual visual viewport, including keyboard resize/scroll; excess content scrolls within its height and fits 375px without horizontal overflow. The closed homepage remains in place behind the native modal’s inert background. No custom focus-trap implementation is used.
+
+Opening sets `#contact`; incoming `/#contact` opens the same dialog. `/contact` is a compatibility redirect to `/#contact`, with a no-JavaScript email fallback. The homepage also exposes its no-JavaScript Contact email only inside `noscript`, while its enhanced button is revealed after initialization. Closing restores focus to the trigger. Browser Back, Escape, close button and backdrop dismissal close the dialog.
 
 ## Elevation & Depth
 
-The shell is flat. A modest device shadow belongs only to actual app screenshots. No raised navigation island, glass, gradients, floating widgets, artificial badges or extra texture overlays. Product artwork carries the visual variety.
+The foreground is flat. The form is a warm rounded surface with a fine divider-colored stroke and a light warm scrim, without a decorative shadow, glow, gradient, glass effect or bounce. Background composition is independent of the foreground and has its own accessible motion control.
 
 ## Shapes
 
-Project art frames are rectangular. Screenshot corners (16–26px) suggest physical devices; they are not a general card radius. The contact action is a straightforward rectangular button-like link.
+Actions are fully rounded pills with at least 44px targets. The form surface has a 28px radius. Field boundaries are visible flat hairlines. The morph preserves one surface from the actual Contact button rectangle to the form rectangle; text never scales with that surface.
 
 ## Components
 
-All navigation and contact controls are native links with at least 44px hit targets. The primary contact link uses the verified `studio.contactEmail` with the subject `Blum Studios — Project inquiry`. There is no form, signup, chat, analytics or JavaScript behavior. Footer links open Jordan’s portfolio and the studio’s Instagram in the current tab.
+Contact includes a small envelope SVG; its flap lifts on hover. Native CSS hover/press feedback uses restrained 160ms transitions and is suppressed for reduced motion.
 
-The layout supplies a visible-on-focus skip link to a focusable main landmark, canonical and Open Graph/Twitter metadata for the studio domain, a studio favicon, and a local social-preview PNG derived from the existing wordmark. Pages supply accurate title, description and optional canonical path.
+The native dialog supplies top-layer placement, inert background and keyboard containment. Opening first expands the empty shape for 360ms, then reveals content with a 140ms opacity/6px movement/2px blur transition. Closing removes content in 90ms before reversing the surface to the trigger in 280ms. Web Animations drives the FLIP transform, radius and color without a dependency. Reduced motion opens and closes immediately; interruption by Escape leaves no stuck overlay or inert content.
 
-Keyboard focus has a 3px oxblood outline with generous offset. Hover changes link color or the contact fill. Screenshot hover rotations are 220ms and apply only with a hover-capable pointer and `prefers-reduced-motion: no-preference`; reduced motion has no transforms added by interaction. No looping, scroll or entrance animations.
+ContactForm retains visible name/email/message labels, required/email/length checks, a ten-code-point message minimum and server validation. A hidden honeypot is excluded from keyboard navigation. The live status region announces pending, error and success. Submission locks the fields before asynchronous signing, blocks duplicates, times out after 15 seconds and restores fields. Failures retain draft and idempotency key; changed drafts get a new UUID. JSON bodies are limited to 8KiB. The form posts to `https://jordanblum.com/api/studio/contact`, including the exact serialized body’s lowercase-hex SHA-256 in `x-amz-content-sha256` for the existing CloudFront/Lambda contract.
+
+Closing and reopening preserves the draft and status. The form’s email help remains available for server failure. No marketing signup, privacy checkbox or explanatory footer copy is added. The standalone privacy route remains available.
+
+The page retains accurate metadata, skip link and focusable main landmark. Keyboard focus uses clear oxblood outlines. CityBackdrop owns decorative imagery, reduced-motion handling and its accessible motion toggle independently. Photo-referenced flat2D illustrations distinguish Williamsburg’s grey lattice suspension towers, Wells Street’s burgundy double-deck bascule truss and Golden Gate’s orange portal towers. Pre-rendered direct structural transformations carry separately composited train/car passes in alternating directions; the previous map-flight study is not the final design. Separate landscape/portrait compositions keep the center quiet. Phone exports extend the quiet sky above the unchanged portrait composition to720×1600, retaining both bridge towers on tall screens without distorting the art. On viewports wider than16:9, media anchors at the top so cover-cropping does not raise the bridge into the controls. Poster and video use the same framing.
 
 ## Do's and Don'ts
 
-Keep apps, design and art visible in the studio identity; do not narrow it to an app publisher. Use actual product images and verified routes. Preserve each app’s separate support and policy pages. Keep copy specific and short, with no invented services, team, testimonials, metrics or claims. Do not add a generic feature grid or decorative text to fill space. Keep studio CSS isolated from personal and game layouts.
+Keep the homepage centered, brief and useful. Preserve the reviewed contact protocol, pending locks and idempotency behavior. Do not add app/project links, Resume, social copy, cards, promotional text, emojis, decorative labels, modal-routing frameworks, generic template effects or invented claims. Preserve independent app support/privacy layouts and keep studio styles isolated.

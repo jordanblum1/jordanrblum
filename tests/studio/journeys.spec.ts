@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { createHash } from 'node:crypto';
 
 for (const width of [1440, 375]) {
   test(`studio and app journeys fit ${width}px without runtime errors`, async ({ page }) => {
@@ -11,7 +12,8 @@ for (const width of [1440, 375]) {
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const canonical = path === '/' ? '/' : path;
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://buildwithblum.com${canonical}`);
-      await expect(page.locator('[data-chat-widget], [data-chat-trigger], form')).toHaveCount(0);
+      await expect(page.locator('[data-chat-widget], [data-chat-trigger]')).toHaveCount(0);
+      await expect(page.locator('form')).toHaveCount(path === '/' ? 1 : 0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await expect.poll(() => page.locator('img').evaluateAll(images => images.every(image => {
         const bounds = image.getBoundingClientRect();
@@ -49,6 +51,8 @@ test('contact and help work with JavaScript disabled and keyboard navigation', a
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
+  await expect(page.locator('[data-city-video]')).not.toHaveAttribute('src');
+  expect(await page.locator('[data-city-video]').evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
   const inquiry = page.locator('a[href^="mailto:"]');
   expect(await inquiry.count()).toBeGreaterThan(0);
   const contact = new URL((await inquiry.first().getAttribute('href'))!);
@@ -79,4 +83,267 @@ test('every app has a central overview with its verified store and service desti
     await expect(page.getByRole('link', { name: 'Email support' })).toHaveAttribute('href', /^mailto:support@buildwithblum\.com\?subject=/);
     await expect(page.getByRole('link', { name: 'Privacy policy' })).toHaveAttribute('href', privacy);
   }
+});
+
+const contactEndpoint = 'https://jordanblum.com/api/studio/contact';
+async function fillContact(page: Page) {
+  await page.getByLabel('Name', { exact: true }).fill('Jordan Visitor');
+  await page.getByLabel('Email', { exact: true }).fill('visitor@example.com');
+  await page.getByLabel('Message', { exact: true }).fill('Hello, I have a project in mind.');
+}
+
+async function openContact(page: Page): Promise<void> {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+}
+
+test('minimal homepage keeps vertical destinations and morphs contact in place', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: 'Links', exact: true })).toHaveAttribute('href', 'https://blumblumblum.com');
+  await expect(page.getByRole('link', { name: 'Portfolio', exact: true })).toHaveAttribute('href', 'https://jordanblum.com');
+  await expect(page.locator('a[href^="/apps"], a[href$="resume.pdf"], a[href="/privacy"]')).toHaveCount(0);
+  const actions = await page.locator('.studio-home-actions > button, .studio-home-actions > a').evaluateAll(elements => elements.map(element => { const bounds = element.getBoundingClientRect(); return { top: bounds.top, left: bounds.left }; }));
+  expect(actions).toHaveLength(3);
+  expect(actions[0].top).toBeLessThan(actions[1].top);
+  expect(actions[1].top).toBeLessThan(actions[2].top);
+  expect(new Set(actions.map(action => action.left)).size).toBe(1);
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page).toHaveURL(/\/#contact$/);
+  await expect(page.getByRole('dialog', { name: 'Contact', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await page.getByLabel('Name', { exact: true }).fill('Visitor');
+  await page.getByLabel('Email', { exact: true }).fill('invalid-email');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByLabel('Email', { exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Close contact form' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeFocused();
+});
+
+test('home actions fit a rotated phone without page scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 375 });
+  await page.goto('/');
+  for (const label of ['Contact', 'Links', 'Portfolio']) {
+    await expect(page.getByRole(label === 'Contact' ? 'button' : 'link', { name: label, exact: true })).toBeInViewport();
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+});
+
+test('enlarged browser fonts keep the wordmark and actions reachable', async ({ playwright, baseURL }) => {
+  if (!baseURL) throw new Error('Studio test base URL is required');
+  for (const [fontSize, height] of [[24, 700], [32, 900]]) {
+    const browser = await playwright.chromium.launch({ args: [`--blink-settings=defaultFontSize=${fontSize}`] });
+    try {
+      const page = await browser.newPage({ viewport: { width: 1440, height } });
+      await page.goto(baseURL);
+      await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
+      for (const label of ['Contact', 'Links', 'Portfolio']) {
+        await expect(page.getByRole(label === 'Contact' ? 'button' : 'link', { name: label, exact: true })).toBeInViewport({ ratio: 1 });
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    } finally {
+      await browser.close();
+    }
+  }
+});
+
+test('contact prevents duplicate sends and shows success', async ({ page }) => {
+  let sends = 0;
+  let release: () => void = () => {};
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route(contactEndpoint, async route => {
+    sends += 1;
+    expect(route.request().postDataJSON()).toEqual({ name: 'Jordan Visitor', email: 'visitor@example.com', message: 'Hello, I have a project in mind.', website: '' });
+    expect(route.request().headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
+    expect(route.request().headers()['x-amz-content-sha256']).toBe(createHash('sha256').update(route.request().postData() ?? '').digest('hex'));
+    await held;
+    await route.fulfill({ status: 201, json: { success: true }, headers: { 'Access-Control-Allow-Origin': '*' } });
+  });
+  await openContact(page);
+  await fillContact(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('button', { name: 'Send message' })).toBeDisabled();
+  for (const label of ['Name', 'Email', 'Message']) await expect(page.getByLabel(label, { exact: true })).toBeDisabled();
+  await page.getByLabel('Message', { exact: true }).focus();
+  await page.keyboard.type('Unsent revision');
+  await expect(page.getByLabel('Message', { exact: true })).toHaveValue('Hello, I have a project in mind.');
+  await page.locator('form').evaluate(form => { form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
+  release();
+  await expect(page.getByRole('status')).toHaveText('Message sent. Thank you.');
+  for (const label of ['Name', 'Email', 'Message']) await expect(page.getByLabel(label, { exact: true })).toBeEnabled();
+  await expect(page.getByLabel('Message', { exact: true })).toHaveValue('Hello, I have a project in mind.');
+  expect(sends).toBe(1);
+});
+
+test('contact preserves a failed draft and retry key; edits get a new key', async ({ page }) => {
+  const keys: string[] = [];
+  await page.route(contactEndpoint, async route => {
+    keys.push(route.request().headers()['idempotency-key']);
+    await route.fulfill({ status: keys.length === 1 ? 503 : 200, json: keys.length === 1 ? { error: 'unavailable' } : { success: true }, headers: { 'Access-Control-Allow-Origin': '*' } });
+  });
+  await openContact(page);
+  await fillContact(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('status')).toContainText('temporarily unavailable');
+  await page.getByRole('button', { name: 'Close contact form' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await expect(page.getByRole('status')).toContainText('temporarily unavailable');
+  await expect(page.getByLabel('Message', { exact: true })).toHaveValue('Hello, I have a project in mind.');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('status')).toContainText('Message sent');
+  expect(keys[1]).toBe(keys[0]);
+  await page.getByLabel('Message', { exact: true }).fill('A changed project inquiry for the studio.');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('status')).toContainText('Message sent');
+  expect(keys[2]).not.toBe(keys[0]);
+});
+
+test('reduced motion leaves the city poster without downloading video', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', request => { if (request.url().endsWith('.mp4')) requests.push(request.url()); });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await expect(page.locator('[data-city-background]')).toHaveAttribute('data-video-state', 'poster');
+  await expect(page.locator('[data-city-video]')).not.toHaveAttribute('src');
+  await expect(page.locator('[data-city-motion-toggle]')).toBeHidden();
+  expect(requests).toEqual([]);
+});
+
+test('city video plays, pauses by keyboard and pointer, and preserves pause on portrait swap', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', request => { if (request.url().endsWith('.mp4')) requests.push(request.url()); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const video = page.locator('[data-city-video]');
+  const pause = page.getByRole('button', { name: 'Pause city animation' });
+  await expect(pause).toBeVisible();
+  await expect(video).toHaveAttribute('src', '/assets/blum-studios/journey-landscape.mp4');
+  expect(requests.every(url => url.endsWith('journey-landscape.mp4'))).toBe(true);
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.muted && element.loop && element.playsInline)).toBe(true);
+  const started = await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime : 0);
+  await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime : 0)).toBeGreaterThan(started);
+  await pause.focus();
+  await page.keyboard.press('Space');
+  const play = page.getByRole('button', { name: 'Play city animation' });
+  await expect(play).toBeFocused();
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
+  await page.keyboard.press('Enter');
+  await expect(pause).toBeVisible();
+  await pause.click();
+  await expect(play).toBeVisible();
+  const progress = await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime / element.duration : 0);
+  await page.setViewportSize({ width: 375, height: 900 });
+  await expect(video).toHaveAttribute('src', '/assets/blum-studios/journey-portrait.mp4');
+  await expect(play).toBeVisible();
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime / element.duration : 0)).toBeCloseTo(progress, 2);
+  await play.click();
+  await expect(pause).toBeVisible();
+  await expect(page.locator('[data-city-background]')).toHaveAttribute('data-video-state', 'playing');
+});
+
+test('dialog pauses city motion and resumes new motion preference without overriding a manual pause', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openContact(page);
+  const video = page.locator('[data-city-video]');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement && element.readyState >= 3)).toBe(true);
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
+  await page.getByRole('button', { name: 'Close contact form' }).click();
+  await expect(page.getByRole('button', { name: 'Pause city animation' })).toBeVisible();
+  await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement && !element.paused)).toBe(true);
+  await page.getByRole('button', { name: 'Pause city animation' }).click();
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Close contact form' }).click();
+  await expect(page.getByRole('button', { name: 'Play city animation' })).toBeVisible();
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
+});
+
+test('contact hashes and the compatibility route open the same native dialog', async ({ page }) => {
+  for (const path of ['/#contact', '/contact']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/#contact$/);
+    await expect(page.getByRole('dialog', { name: 'Contact', exact: true })).toBeVisible();
+    await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  }
+});
+
+test('dialog traps keyboard focus, closes with Escape, and follows browser Back', async ({ page }) => {
+  await openContact(page);
+  expect(await page.locator('dialog').evaluate(dialog => dialog.matches(':modal'))).toBe(true);
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
+  await page.locator('a[href="https://jordanblum.com"]').evaluate(link => { if (link instanceof HTMLElement) link.focus(); });
+  await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeFocused();
+});
+
+test('Forward during the closing morph restores the contact dialog', async ({ page }) => {
+  await openContact(page);
+  await page.evaluate(() => history.back());
+  await expect(page).not.toHaveURL(/#contact$/);
+  await page.waitForTimeout(100);
+  await page.evaluate(() => history.forward());
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('reduced motion opens immediately and small keyboard-sized viewports stay within bounds', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 375, height: 420 });
+  await openContact(page);
+  expect(await page.locator('dialog').evaluate(dialog => dialog.getAnimations({ subtree: true }).length)).toBe(0);
+  const bounds = await page.locator('dialog').boundingBox();
+  expect(bounds).not.toBeNull();
+  if (!bounds) throw new Error('missing dialog bounds');
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.y).toBeGreaterThanOrEqual(0);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(375);
+  expect(bounds.y + bounds.height).toBeLessThanOrEqual(420);
+  expect(await page.locator('dialog').evaluate(dialog => dialog.scrollWidth <= dialog.clientWidth)).toBe(true);
+  await page.getByLabel('Message', { exact: true }).fill('A message in a keyboard-sized viewport.');
+  await page.getByRole('button', { name: 'Send message' }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button', { name: 'Send message' })).toBeInViewport();
+  await page.getByRole('button', { name: 'Close contact form' }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button', { name: 'Close contact form' })).toBeInViewport();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+});
+
+test('short Unicode messages are rejected before sending', async ({ page }) => {
+  let sends = 0;
+  await page.route(contactEndpoint, async route => { sends += 1; await route.fulfill({ status: 201, json: { success: true } }); });
+  await openContact(page);
+  await fillContact(page);
+  await page.getByLabel('Message', { exact: true }).fill('Hello \u{1F44B}\u{1F44B}');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('status')).toContainText('at least 10 characters');
+  expect(sends).toBe(0);
+});
+
+
+test('Escape during expansion leaves the trigger ready to reopen', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
 });

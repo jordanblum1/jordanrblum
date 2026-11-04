@@ -1,0 +1,18 @@
+---
+import '../styles/city.css';
+---
+<div class="city-background" data-city-background data-video-state="poster" data-paused="true" aria-hidden="true">
+  <picture class="city-poster">
+    <source media="(max-aspect-ratio: 1/1)" srcset="/assets/blum-studios/journey-poster-portrait.webp" />
+    <img src="/assets/blum-studios/journey-poster-landscape.webp" alt="" width="1920" height="1080" fetchpriority="high" decoding="async" />
+  </picture>
+  <video class="city-video" data-city-video data-landscape-src="/assets/blum-studios/journey-landscape.mp4" data-portrait-src="/assets/blum-studios/journey-portrait.mp4" muted loop playsinline preload="none" tabindex="-1"></video>
+</div>
+<button class="city-motion-toggle" type="button" data-city-motion-toggle data-paused="false" aria-label="Pause city animation" title="Pause city animation" hidden>
+  <svg class="city-pause-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M6.5 4.5v11m7-11v11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+  <svg class="city-play-icon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="m7 4 9 6-9 6Z" fill="currentColor" /></svg>
+</button>
+<script>
+  import { initCityVideo } from '../scripts/city-video';
+  initCityVideo();
+</script>

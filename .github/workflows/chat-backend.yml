@@ -16,6 +16,7 @@ on:
     branches: [master]
     paths:
       - 'server/**'
+      - '.github/workflows/chat-backend.yml'
 
 env:
   AWS_REGION: us-east-1
@@ -30,8 +31,10 @@ env:
   # behavior is deliberately NOT redirected — a browser holding a cached page
   # from the old domain still POSTs to blumjordan.com/api/chat with that Origin.
   # The other retired domains (jordanrblum.com, blumj.com) 301 at the edge and
-  # therefore never serve the widget, so they are not valid origins.
-  ALLOWED_ORIGINS: '["https://jordanblum.com","https://www.jordanblum.com","https://blumjordan.com","http://localhost:4321"]'
+  # therefore never serve the widget, so they are not valid origins. Function
+  # URL CORS is provider-global across /api/*; the contact handler separately
+  # enforces its exact two studio origins on contact POSTs.
+  ALLOWED_ORIGINS: '["https://jordanblum.com","https://www.jordanblum.com","https://blumjordan.com","http://localhost:4321","https://buildwithblum.com","https://www.buildwithblum.com"]'
 
 jobs:
   # Idempotent, re-runnable provisioning: Lambda function + Function URL,
@@ -176,10 +179,21 @@ jobs:
         working-directory: server
         env:
           CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          CONTACT_DATABASE_URL: ${{ secrets.CONTACT_DATABASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CHAT_MODEL_INPUT: ${{ github.event.inputs.chat_model }}
         run: |
           set -euo pipefail
+          umask 077
+          lambda_env_dir=$(mktemp -d "${RUNNER_TEMP:-/tmp}/studio-lambda-env.XXXXXX")
+          lambda_env_current="$lambda_env_dir/current.json"
+          lambda_env_updated="$lambda_env_dir/updated.json"
+          lambda_env_error="$lambda_env_dir/read.err"
+          cleanup_lambda_env() {
+            find "$lambda_env_dir" -type f -delete
+            rmdir "$lambda_env_dir"
+          }
+          trap cleanup_lambda_env EXIT
 
           if [ -z "${CONTACT_EMAIL:-}" ]; then
             echo "::error::Secret CONTACT_EMAIL is not set — the reveal_email tool has nothing to reveal without it."
@@ -189,13 +203,30 @@ jobs:
             echo "::error::Secret ANTHROPIC_API_KEY is not set."
             exit 1
           fi
+          if aws lambda get-function-configuration \
+            --function-name "$FUNCTION_NAME" \
+            --query 'Environment' --output json \
+            > "$lambda_env_current" \
+            2>"$lambda_env_error"; then
+            :
+          elif grep -q 'ResourceNotFoundException' "$lambda_env_error"; then
+            echo '{"Variables":{}}' > "$lambda_env_current"
+          else
+            echo '::error::Failed to read the existing Lambda environment; refusing to replace it.'
+            cat "$lambda_env_error" >&2
+            exit 1
+          fi
+          if ! jq -e 'type == "object" and (.Variables | type == "object") and (.Error == null)' \
+            "$lambda_env_current" >/dev/null; then
+            echo '::error::Existing Lambda environment is unavailable or invalid; refusing to replace it.'
+            exit 1
+          fi
+
           # Preserve an intentional custom CHAT_MODEL, but migrate the old
           # Sonnet default to Haiku unless this run explicitly overrides it.
-          EXISTING_MODEL=$(aws lambda get-function-configuration \
-            --function-name "$FUNCTION_NAME" \
-            --query 'Environment.Variables.CHAT_MODEL' --output text 2>/dev/null || echo "None")
+          EXISTING_MODEL=$(jq -r '.Variables.CHAT_MODEL // ""' "$lambda_env_current")
           CURRENT_CHAT_MODEL="$DEFAULT_CHAT_MODEL"
-          if [ "$EXISTING_MODEL" != "None" ] && [ -n "$EXISTING_MODEL" ] && [ "$EXISTING_MODEL" != "$LEGACY_CHAT_MODEL" ]; then
+          if [ -n "$EXISTING_MODEL" ] && [ "$EXISTING_MODEL" != "$LEGACY_CHAT_MODEL" ]; then
             CURRENT_CHAT_MODEL="$EXISTING_MODEL"
           fi
           if [ -n "${CHAT_MODEL_INPUT:-}" ]; then
@@ -203,7 +234,23 @@ jobs:
           fi
           echo "Deploying with CHAT_MODEL=${CURRENT_CHAT_MODEL}"
 
-          ENV_VARS="Variables={CHAT_MODEL=${CURRENT_CHAT_MODEL},CONTACT_EMAIL=${CONTACT_EMAIL},TRANSCRIPTS_BUCKET=${BUCKET_NAME},RATE_TABLE=${TABLE_NAME},ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}}"
+          jq \
+            --arg model "$CURRENT_CHAT_MODEL" \
+            --arg email "$CONTACT_EMAIL" \
+            --arg bucket "$BUCKET_NAME" \
+            --arg table "$TABLE_NAME" \
+            --arg anthropic "$ANTHROPIC_API_KEY" \
+            --arg contactDatabase "${CONTACT_DATABASE_URL:-}" \
+            '.Variables
+              | .CHAT_MODEL = $model
+              | .CONTACT_EMAIL = $email
+              | .TRANSCRIPTS_BUCKET = $bucket
+              | .RATE_TABLE = $table
+              | .ANTHROPIC_API_KEY = $anthropic
+              | if $contactDatabase != "" then .CONTACT_DATABASE_URL = $contactDatabase else . end
+              | {Variables: .}' \
+            "$lambda_env_current" \
+            > "$lambda_env_updated"
 
           create_function() {
             aws lambda create-function \
@@ -214,7 +261,7 @@ jobs:
               --zip-file fileb://lambda.zip \
               --timeout 30 \
               --memory-size 512 \
-              --environment "$ENV_VARS"
+              --environment "file://$lambda_env_updated"
           }
 
           if create_function 2>/tmp/fn.err; then
@@ -236,7 +283,7 @@ jobs:
               --role "$ROLE_ARN" \
               --timeout 30 \
               --memory-size 512 \
-              --environment "$ENV_VARS"
+              --environment "file://$lambda_env_updated"
             aws lambda wait function-updated --function-name "$FUNCTION_NAME"
           else
             echo "::error::Failed to create/update Lambda function $FUNCTION_NAME"
@@ -252,7 +299,7 @@ jobs:
           # AuthType AWS_IAM — the Function URL is invoked only via the
           # CloudFront origin below (signed with an Origin Access Control),
           # never called directly by browsers.
-          CORS_JSON="{\"AllowOrigins\":${ALLOWED_ORIGINS},\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\",\"x-amz-content-sha256\"],\"MaxAge\":600}"
+          CORS_JSON="{\"AllowOrigins\":${ALLOWED_ORIGINS},\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\",\"idempotency-key\",\"x-amz-content-sha256\"],\"MaxAge\":600}"
 
           if FUNCTION_URL=$(aws lambda create-function-url-config \
             --function-name "$FUNCTION_NAME" \
@@ -388,8 +435,19 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy code to the existing Lambda function
+        env:
+          CONTACT_DATABASE_URL: ${{ secrets.CONTACT_DATABASE_URL }}
         run: |
           set -euo pipefail
+          umask 077
+          lambda_env_dir=$(mktemp -d "${RUNNER_TEMP:-/tmp}/studio-lambda-env.XXXXXX")
+          lambda_env_current="$lambda_env_dir/current.json"
+          lambda_env_updated="$lambda_env_dir/updated.json"
+          cleanup_lambda_env() {
+            find "$lambda_env_dir" -type f -delete
+            rmdir "$lambda_env_dir"
+          }
+          trap cleanup_lambda_env EXIT
           if ! aws lambda get-function --function-name "$FUNCTION_NAME" >/dev/null 2>/tmp/fn.err; then
             echo "::error::Lambda function $FUNCTION_NAME does not exist yet — run the 'provision' job (workflow_dispatch) first."
             cat /tmp/fn.err >&2
@@ -401,32 +459,49 @@ jobs:
             >/dev/null
           aws lambda wait function-updated --function-name "$FUNCTION_NAME"
 
-          CURRENT_CHAT_MODEL=$(aws lambda get-function-configuration \
+          aws lambda get-function-configuration \
             --function-name "$FUNCTION_NAME" \
-            --query 'Environment.Variables.CHAT_MODEL' --output text)
+            --query 'Environment' --output json \
+            > "$lambda_env_current"
+          if ! jq -e 'type == "object" and (.Variables | type == "object") and (.Error == null)' \
+            "$lambda_env_current" >/dev/null; then
+            echo '::error::Existing Lambda environment is unavailable or invalid; refusing to replace it.'
+            exit 1
+          fi
+          CURRENT_CHAT_MODEL=$(jq -r '.Variables.CHAT_MODEL // ""' "$lambda_env_current")
 
-          if [ "$CURRENT_CHAT_MODEL" = "None" ] || [ -z "$CURRENT_CHAT_MODEL" ] || [ "$CURRENT_CHAT_MODEL" = "$LEGACY_CHAT_MODEL" ]; then
-            # Lambda configuration updates replace the entire environment map.
-            # Read it into a runner-local file and change only CHAT_MODEL so
-            # credentials and the other existing values remain untouched.
-            aws lambda get-function-configuration \
-              --function-name "$FUNCTION_NAME" \
-              --query 'Environment.Variables' --output json \
-              > /tmp/lambda-environment-current.json
-            jq --arg model "$DEFAULT_CHAT_MODEL" \
-              '(. // {}) | .CHAT_MODEL = $model | {Variables: .}' \
-              /tmp/lambda-environment-current.json \
-              > /tmp/lambda-environment-updated.json
+          TARGET_CHAT_MODEL="$CURRENT_CHAT_MODEL"
+          if [ -z "$TARGET_CHAT_MODEL" ] || [ "$TARGET_CHAT_MODEL" = "$LEGACY_CHAT_MODEL" ]; then
+            TARGET_CHAT_MODEL="$DEFAULT_CHAT_MODEL"
+          fi
+          jq \
+            --arg model "$TARGET_CHAT_MODEL" \
+            --arg contactDatabase "${CONTACT_DATABASE_URL:-}" \
+            '.Variables
+              | .CHAT_MODEL = $model
+              | if $contactDatabase != "" then .CONTACT_DATABASE_URL = $contactDatabase else . end
+              | {Variables: .}' \
+            "$lambda_env_current" \
+            > "$lambda_env_updated"
 
+          if [ "$TARGET_CHAT_MODEL" != "$CURRENT_CHAT_MODEL" ] || [ -n "${CONTACT_DATABASE_URL:-}" ]; then
             aws lambda update-function-configuration \
               --function-name "$FUNCTION_NAME" \
-              --environment file:///tmp/lambda-environment-updated.json \
+              --environment "file://$lambda_env_updated" \
               >/dev/null
             aws lambda wait function-updated --function-name "$FUNCTION_NAME"
-            echo "Migrated CHAT_MODEL from the legacy Sonnet default to ${DEFAULT_CHAT_MODEL}"
+            echo "Updated the Lambda environment while preserving existing variables"
           else
             echo "Preserving custom CHAT_MODEL=${CURRENT_CHAT_MODEL}"
           fi
+
+          CORS_JSON="{\"AllowOrigins\":${ALLOWED_ORIGINS},\"AllowMethods\":[\"POST\"],\"AllowHeaders\":[\"content-type\",\"idempotency-key\",\"x-amz-content-sha256\"],\"MaxAge\":600}"
+          aws lambda update-function-url-config \
+            --function-name "$FUNCTION_NAME" \
+            --auth-type AWS_IAM \
+            --invoke-mode RESPONSE_STREAM \
+            --cors "$CORS_JSON" \
+            >/dev/null
 
   # Read-only diagnostics for the live chat auth chain (Function URL auth,
   # Lambda resource policy, CloudFront OAC + /api/* behavior wiring). Makes

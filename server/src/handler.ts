@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type { Context } from 'aws-lambda';
 import { runAgentTurn, DEFAULT_MODEL } from './lib/agent.js';
 import { clientIp, rateLimitBucket } from './lib/clientIp.js';
+import { handleContactRequest } from './lib/contact.js';
 import { hashIp } from './lib/ipHash.js';
 import { checkRateLimit } from './lib/rateLimit.js';
 import { formatSseEvent } from './lib/sse.js';
@@ -171,6 +172,12 @@ async function handleChat(event: LambdaFunctionUrlEvent, responseStream: NodeJS.
 export const handler = awslambda.streamifyResponse(async (event, responseStream) => {
   const method = event.requestContext?.http?.method ?? 'POST';
   const path = event.rawPath ?? '/api/chat';
+
+  if (path === '/api/studio/contact') {
+    const result = await handleContactRequest(event);
+    respond(responseStream, result.statusCode, result.body, result.headers);
+    return;
+  }
 
   if (method !== 'POST') {
     respondJson(responseStream, 405, { ok: false, error: 'method_not_allowed' });

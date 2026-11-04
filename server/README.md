@@ -32,6 +32,37 @@ The PDF is bundled with the Lambda rather than placed in the static site's
 `public/` directory. Visitors who ask Jordy for the resume can download it
 immediately without submitting personal information.
 
+Blum Studios project inquiries use the same Lambda and existing DynamoDB
+counter, but remain separate from chat transcripts and the dormant waitlist:
+
+```
+buildwithblum.com
+  └─ POST https://jordanblum.com/api/studio/contact
+       ├─ exact-origin, body, UUID and payload-SHA validation
+       ├─ DynamoDB 5/hour limit on CONTACT#hour#hashed-network
+       └─ restricted CONTACT_DATABASE_URL → blum_studio_contact.messages
+```
+
+The contact body is JSON no larger than 8192 bytes with exact fields
+`{ name, email, message, website? }`. `website` is a honeypot and is never
+stored. Every draft uses one UUID `Idempotency-Key`; retries of the same
+normalized content return 200 without another row, while changed content with
+the same key returns 409. New messages return 201. Validation, size, media
+type, rate-limit and unavailable-storage failures return 400/413/415/429/503.
+The application rejects contact POSTs unless `Origin` is exactly
+`https://buildwithblum.com` or `https://www.buildwithblum.com`. A submission
+is private correspondence only: it does not create an account or subscribe
+the sender to marketing.
+
+CloudFront OAC requires `X-Amz-Content-Sha256`, the lowercase SHA-256 of the
+exact request body bytes. The Lambda Function URL is the sole CORS response
+owner because AWS adds its configured headers to every response; the handler
+must not emit a second `Access-Control-Allow-Origin`. Its provider-global
+preflight allowlist includes `Content-Type`, `Idempotency-Key`, and
+`X-Amz-Content-Sha256` for existing chat plus contact traffic. The application
+still enforces the narrower studio-origin rule on every contact POST. The body
+digest is an origin-signing transport requirement, not an authentication token.
+
 Request contract: `POST` body `{ conversationId: string, messages: [{ role: 'user' | 'assistant', content: string }, ...] }`.
 Response is `text/event-stream`, one JSON object per `data:` line:
 
@@ -84,6 +115,7 @@ detail.
 | `CHAT_MODEL` | no | `claude-haiku-4-5-20251001` | Model used for chat turns |
 | `CHAT_MAX_TOKENS` | no | `1200` | `max_tokens` per turn |
 | `CONTACT_EMAIL` | yes (for reveal to work) | — | The only source of the email address the model may share |
+| `CONTACT_DATABASE_URL` | yes (for studio contact) | — | Restricted Neon login for `blum_studio_contact.messages` only |
 | `TRANSCRIPTS_BUCKET` | yes | — | S3 bucket transcripts are written to |
 | `RATE_TABLE` | yes | — | DynamoDB table used for both per-IP rate limiting and the global reveal cap |
 
@@ -126,9 +158,8 @@ pnpm install
 pnpm test:unit
 ```
 
-Anthropic and AWS SDK clients are mocked (`aws-sdk-client-mock`, a fake
-`@anthropic-ai/sdk` module) — no network access or credentials required to
-run the suite.
+Anthropic, Neon and AWS boundaries are mocked or dependency-injected, so no
+network access or credentials are required to run the suite.
 
 ## Building
 
@@ -152,6 +183,10 @@ Provisioning and deploys run entirely through
   transcripts S3 bucket, the DynamoDB rate/reveal table, the IAM role, and the
   CloudFront `/api/*` behavior on distribution `E2S9S3SPS1S2DW`.
 - **`deploy`**: on pushes to `master` touching `server/**`, builds and
-  uploads the new Lambda code.
+  uploads the new Lambda code. When the repository secret
+  `CONTACT_DATABASE_URL` is nonempty, it is merged into the existing Lambda
+  environment without replacing unrelated chat/email settings. The workflow
+  also converges Function URL CORS for the two studio origins and three
+  required contact request headers.
 
 See that workflow file for the exact resource names and required secrets.
