@@ -1,0 +1,76 @@
+{
+  "version": 2,
+  "checked": "2026-11-04",
+  "scope": "Blum Studios portrait homepage background",
+  "references": [
+    {
+      "city": "New York",
+      "title": "New York City skyline with Empire State Building visible",
+      "creator": "Ansaf A",
+      "page": "https://unsplash.com/photos/new-york-city-skyline-with-empire-state-building-visible-89RQe4zhV9s",
+      "download": "https://images.unsplash.com/photo-1758940235917-5c4ab5547401?auto=format&fit=crop&fm=jpg&q=60&w=1800",
+      "license": "Unsplash License; free commercial use and modification, attribution optional",
+      "licenseSource": "https://unsplash.com/license",
+      "sha256": "999280a2d830ec8870ec012ad26969748a8774788ed2982d592cb6f4d79aadae"
+    },
+    {
+      "city": "Chicago",
+      "title": "Willis Tower and Chicago skyline",
+      "creator": "Anatoliy Gromov",
+      "page": "https://unsplash.com/photos/willis-tower-and-chicago-skyline-tUKYJsqQA8E",
+      "download": "https://images.unsplash.com/photo-1788429984208-6973ca2758d2?auto=format&fit=crop&fm=jpg&q=60&w=1800",
+      "license": "Unsplash License; free commercial use and modification, attribution optional",
+      "licenseSource": "https://unsplash.com/license",
+      "sha256": "11af0b4e13077fea9f53ae1f7aee9b11e8efc0b7dcb1bea68153659078f2ded0"
+    },
+    {
+      "city": "San Francisco",
+      "title": "San Francisco skyline with Transamerica Pyramid and Salesforce towers",
+      "creator": "Alban",
+      "page": "https://unsplash.com/photos/san-francisco-skyline-with-transamerica-pyramid-and-salesforce-towers-Mba_9plEpvo",
+      "download": "https://images.unsplash.com/photo-1772546392100-9fdc8d9a47a4?auto=format&fit=crop&fm=jpg&q=60&w=1800",
+      "license": "Unsplash License; free commercial use and modification, attribution optional",
+      "licenseSource": "https://unsplash.com/license",
+      "sha256": "89d03087a97c72b6b837bc6477dcf64aa8471e4bfbb387b791c4f8829107929d"
+    }
+  ],
+  "illustration": {
+    "method": "Three original 9:16 hand-inked skyline plates use the licensed photographs only as geometry references and the approved desktop illustration as the style reference; source photographs do not appear in the website media.",
+    "styleReferenceJob": "ccf70b9c-c236-40ec-9ce5-e718e9fd319c",
+    "plateJobs": {
+      "newYork": "bd857f85",
+      "chicago": "51ff69c2",
+      "sanFrancisco": "fd58f616"
+    },
+    "morphJobs": {
+      "newYorkToChicago": "a02204de-5d30-4f37-b5c6-af77a6f4a768",
+      "chicagoToSanFrancisco": "871eb82e-90ff-4937-a69d-bcd7670b694a",
+      "sanFranciscoToNewYork": "d3b9f028-2c3b-4d22-b426-90c030a8721a"
+    },
+    "generationCredits": 39.75,
+    "creditAccounting": "8.25 credits for three plates plus 31.5 credits for three silent six-second structural morphs; the recovered New York-to-Chicago pilot is counted once."
+  },
+  "render": {
+    "tools": "Local FFmpeg 8.0.1 and cwebp; two FFmpeg threads, no new dependency",
+    "recipe": "External journey-media/mobile-skyline/render-illustrated-loop.sh",
+    "composition": "Each state is normalized to a 720x1280 content field with 320 pixels of mirrored quiet-paper texture above it. The closed loop holds each city for four seconds and structurally morphs for six seconds in New York, Chicago, San Francisco order.",
+    "video": {
+      "path": "public/assets/blum-studios/journey-portrait.mp4",
+      "dimensions": "720x1600",
+      "durationSeconds": 30,
+      "fps": 24,
+      "frames": 720,
+      "codec": "H.264 yuv420p, silent, faststart",
+      "sha256": "1c67ca71448622ce9b591ee9e523336660863dc0557ee8e7574d3c2af5186a14"
+    },
+    "poster": {
+      "path": "public/assets/blum-studios/journey-poster-portrait.webp",
+      "dimensions": "720x1600",
+      "sha256": "1ce04c00dbe7e2397d463b566b00f31b5bd9f8d8736652fb2ab8d98a8ab5c475"
+    },
+    "desktopUnchanged": {
+      "path": "public/assets/blum-studios/journey-landscape.mp4",
+      "sha256": "8d211616a2cd0d7378e3b779f23decfe4a390cb2cf0209c2cadcdf2c890f9598"
+    }
+  }
+}
