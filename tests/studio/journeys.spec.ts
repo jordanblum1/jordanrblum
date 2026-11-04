@@ -101,7 +101,7 @@ async function openContact(page: Page): Promise<void> {
 test('minimal homepage keeps vertical destinations and morphs contact in place', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Links', exact: true })).toHaveAttribute('href', 'https://blumblumblum.com');
-  await expect(page.getByRole('link', { name: 'Portfolio', exact: true })).toHaveAttribute('href', 'https://jordanblum.com');
+  await expect(page.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('href', '/work');
   await expect(page.locator('a[href^="/apps"], a[href$="resume.pdf"], a[href="/privacy"]')).toHaveCount(0);
   const actions = await page.locator('.studio-home-actions > button, .studio-home-actions > a').evaluateAll(elements => elements.map(element => { const bounds = element.getBoundingClientRect(); return { top: bounds.top, left: bounds.left }; }));
   expect(actions).toHaveLength(3);
@@ -126,7 +126,7 @@ test('minimal homepage keeps vertical destinations and morphs contact in place',
 test('home actions fit a rotated phone without page scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 844, height: 375 });
   await page.goto('/');
-  for (const label of ['Contact', 'Links', 'Portfolio']) {
+  for (const label of ['Contact', 'Links', 'Work']) {
     await expect(page.getByRole(label === 'Contact' ? 'button' : 'link', { name: label, exact: true })).toBeInViewport();
   }
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
@@ -140,7 +140,7 @@ test('enlarged browser fonts keep the wordmark and actions reachable', async ({ 
       const page = await browser.newPage({ viewport: { width: 1440, height } });
       await page.goto(baseURL);
       await expect(page.getByRole('heading', { level: 1 })).toBeInViewport({ ratio: 1 });
-      for (const label of ['Contact', 'Links', 'Portfolio']) {
+      for (const label of ['Contact', 'Links', 'Work']) {
         await expect(page.getByRole(label === 'Contact' ? 'button' : 'link', { name: label, exact: true })).toBeInViewport({ ratio: 1 });
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -279,7 +279,7 @@ test('dialog traps keyboard focus, closes with Escape, and follows browser Back'
   expect(await page.locator('dialog').evaluate(dialog => dialog.matches(':modal'))).toBe(true);
   await page.keyboard.press('Shift+Tab');
   await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
-  await page.locator('a[href="https://jordanblum.com"]').evaluate(link => { if (link instanceof HTMLElement) link.focus(); });
+  await page.locator('a[href="/work"]').evaluate(link => { if (link instanceof HTMLElement) link.focus(); });
   await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
@@ -346,4 +346,144 @@ test('Escape during expansion leaves the trigger ready to reopen', async ({ page
   await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeFocused();
   await page.getByRole('button', { name: 'Contact', exact: true }).click();
   await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+});
+
+
+test('work rail browses real products, design and photos and reaches contact', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Work', exact: true }).click();
+  await expect(page).toHaveURL(/\/work\/?$/);
+  const collection = page.locator('[data-work-collection]:visible');
+  await expect(collection).toHaveCount(1);
+  await expect(collection.getByRole('heading')).toHaveText(['Stamp Shift', 'Alive Still', 'Birthday', 'Chicks of NYC', 'Citi Bike Wrapped']);
+  await expect(page.getByRole('button', { name: 'Previous project' })).toBeDisabled();
+  const rail = page.getByRole('group', { name: 'Products gallery', exact: true });
+  await rail.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => rail.evaluate(element => element.scrollLeft)).toBeGreaterThan(200);
+  await page.keyboard.press('End');
+  await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Previous project' }).click();
+  await expect(page.getByRole('button', { name: 'Next project' })).toBeEnabled();
+  for (const [category, title] of [['Design', 'Blum'], ['Photos', 'Cape Town'], ['Products', 'Stamp Shift']]) {
+    await page.getByRole('button', { name: category, exact: true }).click();
+    await expect(page.getByRole('button', { name: category, exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(collection.getByRole('heading').first()).toHaveText(title);
+    await expect.poll(() => collection.locator('img').first().evaluate(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0)).toBe(true);
+    await expect(page.getByRole('button', { name: 'Previous project' })).toBeDisabled();
+  }
+  await expect(page.getByRole('link', { name: 'Full portfolio' })).toHaveAttribute('href', 'https://jordanblum.com');
+  await expect(page.getByRole('link', { name: 'Procore', exact: true })).toHaveAttribute('href', 'https://jordanblum.com/about#procore');
+  await expect(page.getByRole('link', { name: 'Workday', exact: true })).toHaveAttribute('href', 'https://jordanblum.com/about#workday');
+  await expect(page.locator('main')).not.toContainText(/Roam|harness|testimonial|↗/i);
+  await page.getByRole('link', { name: 'Contact', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Contact', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  expect(errors).toEqual([]);
+});
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 320, height: 812 }, { width: 375, height: 844 }, { width: 844, height: 375 }]) {
+  test(`work rail fits ${viewport.width}px with usable controls and adjacent card peek`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/work');
+    await expect(page.locator('.studio-work-pill svg')).toHaveCount(0);
+    if (viewport.width === 1440) await expect(page.getByRole('link', { name: 'Explore Stamp Shift', exact: true })).toBeInViewport({ ratio: 1 });
+    const cards = page.locator('[data-work-collection="products"] [data-work-example]');
+    const first = await cards.nth(0).boundingBox();
+    const second = await cards.nth(1).boundingBox();
+    expect(first?.x).toBeGreaterThanOrEqual(16);
+    expect(second?.x).toBeLessThan(viewport.width);
+    expect((first?.width ?? 0) + (first?.x ?? 0)).toBeLessThan(viewport.width);
+    await page.getByRole('button', { name: 'Photos', exact: true }).click();
+    await page.getByRole('button', { name: 'Next project' }).click();
+    const rail = page.locator('[data-work-collection="photos"] [data-work-rail]');
+    await expect.poll(() => rail.evaluate(element => element.scrollLeft)).toBeGreaterThan(100);
+    await expect(page.locator('[data-work-collection="photos"] [data-work-example] h2')).toHaveText(['Cape Town', 'Deadvlei', 'Rome']);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    for (const name of ['Photos', 'Previous project', 'Next project']) {
+      const bounds = await page.getByRole('button', { name, exact: true }).boundingBox();
+      expect(bounds?.height).toBeGreaterThanOrEqual(44);
+      expect(bounds?.width).toBeGreaterThanOrEqual(44);
+    }
+    await page.getByRole('link', { name: 'Back to Blum Studios' }).click();
+    await expect(page.getByRole('link', { name: 'Work', exact: true })).toBeVisible();
+  });
+}
+
+test('work remains browsable without JavaScript', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: { width: 375, height: 844 } });
+  try {
+    const page = await context.newPage();
+    await page.goto('/work');
+    await expect(page.locator('[data-work-collection]:visible')).toHaveCount(3);
+    await expect(page.getByRole('heading', { name: 'Birthday', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Deadvlei', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Next project' })).toBeHidden();
+    await page.getByRole('link', { name: 'Explore Birthday', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Birthday');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  } finally { await context.close(); }
+});
+
+for (const width of [320, 375]) {
+  test(`work filters and actions reflow at ${width}px with 32px browser fonts`, async ({ playwright, baseURL }) => {
+    if (!baseURL) throw new Error('Studio test base URL is required');
+    const browser = await playwright.chromium.launch({ args: ['--blink-settings=defaultFontSize=32'] });
+    try {
+      const page = await browser.newPage({ viewport: { width, height: 844 } });
+      await page.goto(`${baseURL}/work`);
+      for (const name of ['Products', 'Design', 'Photos']) {
+        await page.getByRole('button', { name, exact: true }).click();
+        await expect(page.getByRole('button', { name, exact: true })).toBeInViewport({ ratio: 1 });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      }
+      const action = page.locator('[data-work-collection]:visible .studio-work-project-action').first();
+      expect(await action.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+      await page.getByRole('link', { name: 'Back to Blum Studios' }).click();
+      await expect(page.getByRole('link', { name: 'Work', exact: true })).toBeVisible();
+    } finally { await browser.close(); }
+  });
+}
+
+test('product phone images keep the full composite aspect ratio and route to real overviews', async ({ page }) => {
+  await page.goto('/work');
+  const cards = page.locator('[data-work-collection="products"] [data-treatment="phone"]');
+  await expect(cards).toHaveCount(3);
+  for (const [index, path] of ['/apps/stamp-shift', '/apps/alive-still', '/apps/birthday'].entries()) {
+    const card = cards.nth(index);
+    const image = card.locator('img');
+    await expect.poll(() => image.evaluate(element => element instanceof HTMLImageElement && element.complete && element.naturalWidth > 0)).toBe(true);
+    const dimensions = await image.evaluate(element => {
+      if (!(element instanceof HTMLImageElement)) throw new Error('Missing phone image');
+      const bounds = element.getBoundingClientRect();
+      return { rendered: bounds.width / bounds.height, native: element.naturalWidth / element.naturalHeight, fit: getComputedStyle(element).objectFit };
+    });
+    expect(dimensions.native).toBeCloseTo(778 / 1600, 2);
+    expect(dimensions.rendered).toBeCloseTo(dimensions.native, 2);
+    expect(dimensions.fit).toBe('contain');
+    await expect(card.getByRole('link')).toHaveAttribute('href', path);
+  }
+});
+
+test('reduced motion rail supports keyboard boundaries and focus follows visible links', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/work');
+  const rail = page.locator('[data-work-collection="products"] [data-work-rail]');
+  await rail.focus();
+  await page.keyboard.press('End');
+  await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
+  await expect(page.locator('[data-work-position]')).toContainText('of 5');
+  await page.keyboard.press('Home');
+  await expect(page.getByRole('button', { name: 'Previous project' })).toBeDisabled();
+  await expect(page.locator('[data-work-position]')).toContainText('Products · 1');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Explore Stamp Shift', exact: true })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Explore Alive Still', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Design', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'Explore Alive Still', exact: true })).toBeHidden();
+  expect(await page.locator('[data-work-gallery]').evaluate(element => element.getAnimations({ subtree: true }).length)).toBe(0);
 });
