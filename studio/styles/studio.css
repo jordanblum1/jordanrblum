@@ -54,8 +54,9 @@ html { background: var(--studio-paper); scroll-padding-top: 2rem; }
 .studio-pill-primary:hover { border-color: var(--studio-accent); background: var(--studio-accent); }
 .studio-pill { font-family: inherit; letter-spacing: inherit; cursor: pointer; }
 .studio-pill[hidden] { display: none; }
+[data-contact-trigger] { -webkit-tap-highlight-color: transparent; }
 .studio-pill:focus-visible { outline: 3px solid var(--studio-accent); outline-offset: 6px; }
-.studio-contact-dialog { position: fixed; inset: auto 0 auto; top: calc(var(--contact-viewport-top, 0px) + var(--contact-viewport-height, 100dvh) / 2); translate: 0 -50%; width: min(32rem, calc(100% - 2rem)); max-height: calc(var(--contact-viewport-height, 100dvh) - 2rem); margin: 0 auto; padding: 0; overflow: visible; border: 0; border-radius: 28px; color: var(--studio-ink); background: transparent; }
+.studio-contact-dialog { position: fixed; inset: auto 0 auto; top: calc(var(--contact-viewport-top, 0px) + var(--contact-viewport-height, 100dvh) / 2); translate: 0 -50%; width: min(32rem, calc(100% - 2rem)); max-height: calc(var(--contact-viewport-height, 100dvh) - 2rem); margin: 0 auto; padding: 0; overflow: visible; border: 0; border-radius: 28px; outline: none; -webkit-tap-highlight-color: transparent; color: var(--studio-ink); background: transparent; }
 .studio-contact-dialog::backdrop { background: #f7f3ed99; }
 .studio-contact-dialog[data-contact-phase="closing"]::backdrop { background: #f7f3ed00; }
 body.studio-site:has([data-contact-dialog][data-contact-phase="closing"]) .city-background { opacity: 1; }
