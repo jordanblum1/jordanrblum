@@ -9,6 +9,10 @@ colors:
   text: "#2B2521"
   border: "#DDD5CB"
   project-sage: "#DFE6DB"
+  work-stamp: "#E9E5DA"
+  work-alive: "#E8E5ED"
+  work-birthday: "#E3E9DF"
+  work-caption: "#625950"
 typography:
   h1:
     fontFamily: Chillax
@@ -31,6 +35,7 @@ rounded:
   sm: 99px
   device: 26px
   panel: 28px
+  showcase: 26px
 spacing:
   sm: 8px
   md: 16px
@@ -54,7 +59,7 @@ components:
 
 ## Overview
 
-Blum Studios is Jordan Blum’s independent umbrella for apps, design and art. The homepage is a **Decide/Learn** surface: compact centered identity, a one-line statement and vertical Contact, Links and Portfolio actions. Contact expands from its own button into an in-place native dialog. Background illustration and motion are owned separately by CityBackdrop.
+Blum Studios is Jordan Blum’s independent umbrella for apps, design and art. The homepage is a **Decide/Learn** surface: compact centered identity, a one-line statement and vertical Contact, Links and Work actions. Contact expands from its own button into an in-place native dialog. Background illustration and motion are owned separately by CityBackdrop.
 
 The owned BLUM mark, warm paper, oxblood, Switzer and Chillax remain authoritative. The requested [Daniel D. reference](https://www.danield.design/) informed quiet type, soft pills and an expressive ambient background. The requested [shape-morph study](https://x.com/twoclipping/status/2103273003555402193), read through Firecrawl, informed continuity of shape, radius and color with a separate short content reveal. These principles are adapted into an original site; reference grids, video staging, effects and content are not copied.
 
@@ -70,7 +75,7 @@ Use local Switzer 400/500 for interface text and Chillax 600 for Studios and Con
 
 ## Layout
 
-The home fills at least 100svh and centers a compact composition within the open sky above the bridge. A shrinking flex spacer below the composition provides up to128px of wide-layout art clearance and24px on phones. It collapses before enlarged browser text can move above the viewport; no negative content transform is used. Its three actions form a vertical stack, switching to a compact row only on short landscape screens. Contact opens on the same page; Links goes to `https://blumblumblum.com`; Portfolio goes to `https://jordanblum.com`. There is no Resume action, showcase, app promotion, footer or policy copy.
+The home fills at least 100svh and centers a compact composition within the open sky above the bridge. A shrinking flex spacer below the composition provides up to128px of wide-layout art clearance and24px on phones. It collapses before enlarged browser text can move above the viewport; no negative content transform is used. Its three actions form a vertical stack, switching to a compact row only on short landscape screens. Contact opens on the same page; Links goes to `https://blumblumblum.com`; Work opens `/work`. Full portfolio remains available inside Work at `https://jordanblum.com`. There is no Resume action, showcase, app promotion, footer or policy copy on the homepage.
 
 The modal panel is at most 32rem wide with 32px desktop and 24px mobile content padding. Its form retains a two-field name/email row and full-width message. The panel is centered inside the actual visual viewport, including keyboard resize/scroll; excess content scrolls within its height and fits 375px without horizontal overflow. The closed homepage remains in place behind the native modal’s inert background. No custom focus-trap implementation is used.
 
@@ -96,6 +101,18 @@ Closing and reopening preserves the draft and status. The form’s email help re
 
 The page retains accurate metadata, skip link and focusable main landmark. Keyboard focus uses clear oxblood outlines. CityBackdrop owns decorative imagery, reduced-motion handling and its accessible motion toggle independently. Photo-referenced flat2D illustrations distinguish Williamsburg’s grey lattice suspension towers, Wells Street’s burgundy double-deck bascule truss and Golden Gate’s orange portal towers. Pre-rendered direct structural transformations carry separately composited train/car passes in alternating directions; the previous map-flight study is not the final design. Separate landscape/portrait compositions keep the center quiet. Phone exports extend the quiet sky above the unchanged portrait composition to720×1600, retaining both bridge towers on tall screens without distorting the art. On viewports wider than16:9, media anchors at the top so cover-cropping does not raise the bridge into the controls. Poster and video use the same framing.
 
+Work is an **Explore** surface: browse a horizontal product showcase, switch collections, and open a specific project. It uses an open editorial page with the existing small BLUM/Studios home link and Contact pill, a single Work heading, category pills, and a scroll rail. There is no outer modal panel or decorative backdrop. The homepage bridge scene and Contact morph remain independent and unchanged.
+
+The rail uses generous solid-color product fields, left-aligned titles and one useful description. The first three product cards are 440px wide on desktop, with 376px-high actual iPhone composites; web projects use 560px cards and Photos uses 740px cards. Phone cards are viewport width minus62px on narrow screens, leaving an adjacent-card peek. All media is contained at its native aspect ratio. No UI crops, synthetic device shells, photo crops, altered watermarks or placeholder screens are permitted. Quiet pastels distinguish projects; card captions use #625950 for contrast. Project links are plain oxblood pills; circular previous/next controls alone use chevron SVGs. No arrows on link pills or underlined link collections.
+
+Products, Design and Photos are pressed-state filter buttons with44px minimum targets and wrapping labels. JavaScript shows one collection, resets its rail on category change and synchronizes navigation with actual scroll position. Native horizontal scrolling, mandatory scroll snap and adjacent-card peeks support touch/trackpads; a focusable rail adds ArrowLeft/ArrowRight, Home and End. Previous/next circular44px SVG controls stop at boundaries. A polite position status reflects the active collection. Focused project links naturally scroll into view. Reduced motion uses immediate programmatic scrolling and suppresses transitions. Without JavaScript, all three collections remain accessible in ordinary horizontal rails. Narrow320px, rotated phone and32px browser-font layouts must retain page bounds and usable controls.
+
+Reference provenance: [Apple Store](https://www.apple.com/store), checked November3,2026, and the installed community analysis at `~/.agents/skills/popular-web-designs/templates/apple.md` informed five borrowed principles: product imagery carries the story; short left-aligned headings establish hierarchy; solid fields keep product silhouettes readable; horizontal rails expose the next item; simple pills and circular chevrons make actions clear. The template is a community analysis, not Apple's official specification. Blum's paper, oxblood, Switzer and Chillax remain authoritative; no Apple branding, proprietary type or product images are copied.
+
+Work content uses publicly presented products, owned identity assets and three visibly watermarked Jordan Blum photographs: photo0020.jpg (Cape Town), photo0030.jpg (Deadvlei), photo0040.jpg (Rome). The full image and watermark are preserved. sunset-beach.jpeg is excluded because its embedded copyright identifies Michael L. Baird; chicago-skyline-night.jpg is excluded because ownership was not confirmed. Published Procore/Workday role descriptions are quiet footer pills. Roam, harness work, confidential work, invented testimonials and metrics are excluded. Products appear in this order: Stamp Shift, Alive Still, Birthday, Chicks of NYC, Citi Bike Wrapped.
+
+The three phone images flatten genuine native captures under the existing licensed Webmobilefirst iPhone17Pro transparent frame. Source hash, frame geometry, license URLs, exact screen inputs and output hashes live in the external work-media provenance manifest. The raw389×800 vendor frame never enters Git. The full native screen is uniformly contained in the355×772 opening, masked at50px corner radius, then overlaid with the authentic frame. Outputs are778×1600; this doubles the low-resolution frame without claiming higher-resolution hardware photography. Birthday uses a fictional-contact fixture. See [Work media and verification](../docs/studio-work.md).
+
 ## Do's and Don'ts
 
-Keep the homepage centered, brief and useful. Preserve the reviewed contact protocol, pending locks and idempotency behavior. Do not add app/project links, Resume, social copy, cards, promotional text, emojis, decorative labels, modal-routing frameworks, generic template effects or invented claims. Preserve independent app support/privacy layouts and keep studio styles isolated.
+Keep the homepage centered, brief and useful. Preserve the reviewed contact protocol, pending locks and idempotency behavior. Keep project examples inside Work; do not add them to the homepage. Do not add Resume, social copy, promotional cards, emojis, decorative labels, modal-routing frameworks, generic template effects or invented claims/testimonials. Preserve independent app support/privacy layouts and keep studio styles isolated.

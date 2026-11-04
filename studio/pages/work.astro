@@ -1,0 +1,46 @@
+---
+import { Image } from 'astro:assets';
+import StudioLayout from '../layouts/StudioLayout.astro';
+import { workCollections } from '../data/work';
+import blumMark from '../../src/assets/identity/blum-mark.svg?raw';
+import '../styles/work.css';
+---
+<StudioLayout title="Work — Blum Studios" description="Selected products, design and photography by Jordan Blum." path="/work">
+  <main id="main-content" tabindex="-1" class="studio-work-page" data-work-gallery>
+    <header class="studio-work-header studio-work-width">
+      <a class="studio-work-home" href="/" aria-label="Back to Blum Studios"><span class="studio-work-mark" set:html={blumMark} /><span>Studios</span></a>
+      <nav aria-label="Studio"><a class="studio-work-pill" href="/#contact">Contact</a></nav>
+    </header>
+    <div class="studio-work-intro studio-work-width">
+      <h1>Work</h1>
+      <div class="studio-work-filters" data-work-filters role="group" aria-label="Work categories" hidden>
+        {workCollections.map((collection, index) => <button type="button" data-work-category={collection.id} aria-pressed={index === 0} aria-controls={`work-${collection.id}`}>{collection.label}</button>)}
+      </div>
+    </div>
+    {workCollections.map(collection => <section id={`work-${collection.id}`} data-work-collection={collection.id} aria-label={collection.label}>
+      <h2 class="studio-work-category-title studio-work-width">{collection.label}</h2>
+      <div class="studio-work-rail" data-work-rail role="group" tabindex="0" aria-label={`${collection.label} gallery`}>
+        {collection.examples.map((example, index) => <article class="studio-work-example" data-work-example data-treatment={example.treatment} data-tone={example.tone} aria-label={example.title}>
+          <div class="studio-work-caption"><h2>{example.title}</h2><p>{example.description}</p></div>
+          <figure class="studio-work-image"><Image src={example.image} alt={example.alt} widths={example.treatment === 'phone' ? [389, 778] : [640, 1280]} sizes={example.treatment === 'phone' ? '(max-width: 600px) 190px, 225px' : '(max-width: 600px) 85vw, 700px'} format="webp" quality={90} loading={collection.id === 'products' && index < 3 ? 'eager' : 'lazy'} /></figure>
+          <a class="studio-work-pill studio-work-project-action" href={example.href}>{example.action}</a>
+        </article>)}
+      </div>
+    </section>)}
+    <div class="studio-work-pagination studio-work-width" data-work-pagination hidden>
+      <p data-work-position role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="studio-work-arrows">
+        <button type="button" data-work-previous aria-label="Previous project"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5-7 7 7 7" /></svg></button>
+        <button type="button" data-work-next aria-label="Next project"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 5 7 7-7 7" /></svg></button>
+      </div>
+    </div>
+    <footer class="studio-work-footer studio-work-width">
+      <nav class="studio-work-experience" aria-label="Product engineering experience"><span>Product experience</span><a class="studio-work-pill" href="https://jordanblum.com/about#procore">Procore</a><a class="studio-work-pill" href="https://jordanblum.com/about#workday">Workday</a></nav>
+      <a class="studio-work-pill studio-work-portfolio" href="https://jordanblum.com">Full portfolio</a>
+    </footer>
+  </main>
+</StudioLayout>
+<script>
+  import { initWorkGallery } from '../scripts/work-gallery';
+  initWorkGallery();
+</script>
