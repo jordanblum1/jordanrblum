@@ -172,7 +172,7 @@ function contactDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
 }
 
 async function runContactQuery(text: string, values: unknown[]): Promise<unknown[]> {
-  const sql = neon(contactDatabaseUrl(), { fetchOptions: { signal: AbortSignal.timeout(5000) } });
+  const sql = neon(contactDatabaseUrl(), { fetchOptions: { signal: AbortSignal.timeout(10_000) } });
   return sql.query(text, values);
 }
 
