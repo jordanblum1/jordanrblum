@@ -146,6 +146,7 @@ export async function releaseContactEmailLease(reference: string, token: string,
 export async function sendContactEmail(input: ContactNotificationInput, reference: string): Promise<void> {
   await getSesClient().send(new SendEmailCommand({
     FromEmailAddress: FROM_ADDRESS,
+    FromEmailAddressIdentityArn: 'arn:aws:ses:us-east-1:868796843372:identity/jordanblum.com',
     Destination: { ToAddresses: [TO_ADDRESS] },
     ReplyToAddresses: [input.email],
     Content: {

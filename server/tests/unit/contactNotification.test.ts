@@ -182,6 +182,7 @@ describe('contact email delivery', () => {
     const command = sesMock.commandCalls(SendEmailCommand)[0]?.args[0].input;
     expect(command).toMatchObject({
       FromEmailAddress: 'Blum Studios <hi@jordanblum.com>',
+      FromEmailAddressIdentityArn: 'arn:aws:ses:us-east-1:868796843372:identity/jordanblum.com',
       Destination: { ToAddresses: ['hi@jordanblum.com'] },
       ReplyToAddresses: ['hello@example.test'],
       Content: { Simple: { Subject: { Data: 'New Blum Studios project inquiry' } } },
