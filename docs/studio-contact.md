@@ -22,7 +22,7 @@ The dedicated `blum_studio_contact` runtime login owns no objects. It has schema
 
 `CONTACT_DATABASE_URL` is a GitHub repository secret merged into the existing Lambda environment by the trusted self-hosted Chat backend workflow. Missing optional secret preserves the existing value. An unreadable existing environment must abort deployment rather than replace unrelated settings. No connection string belongs in logs, screenshots, PR text or command arguments.
 
-Notification uses the Lambda's existing AWS credentials, not an OAuth token or API secret. The deploy workflow converges a separate scoped mail policy: SES `SendEmail` is limited to the verified `jordanblum.com` identity and the fixed sender/recipient, and Dynamo `GetItem` is limited to the `CONTACT_EMAIL#*` receipt prefix. Existing `UpdateItem` permission covers leases, receipts and counters. Verify the SES domain identity and DKIM before enabling delivery.
+Notification uses the Lambda's existing AWS credentials, not an OAuth token or API secret. The deploy workflow converges a separate scoped mail policy: SES `SendEmail` is limited to the verified `jordanblum.com` domain and `hi@jordanblum.com` mailbox identities with the same fixed sender/recipient, and Dynamo `GetItem` is limited to the `CONTACT_EMAIL#*` receipt prefix. Existing `UpdateItem` permission covers leases, receipts and counters. Verify the SES domain identity and DKIM before enabling delivery.
 
 ## Release verification
 
