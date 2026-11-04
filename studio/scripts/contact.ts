@@ -1,26 +1,51 @@
 const errorMessages: Record<number, string> = {
   400: 'Check your name, email and message, then try again.',
   409: 'This message changed during sending. Edit it and try again.',
-  429: 'Too many attempts. Try again in up to an hour, or email below.',
-  503: 'Messages are temporarily unavailable. Try again or email below.',
+  429: 'Too many attempts. Try again in up to an hour.',
+  503: 'Messages are temporarily unavailable. Try again.',
 };
 
 export function initContactForm(root: ParentNode = document): void {
   const form = root.querySelector<HTMLFormElement>('[data-contact-form]');
-  const status = form?.querySelector<HTMLElement>('[data-contact-status]');
+  const status = root.querySelector<HTMLElement>('[data-contact-status]');
+  const error = form?.querySelector<HTMLElement>('[data-contact-error]');
+  const email = form?.querySelector<HTMLElement>('[data-contact-error-email]');
+  const confirmation = root.querySelector<HTMLElement>('[data-contact-sent]');
+  const label = form?.querySelector<HTMLElement>('[data-contact-button-label]');
+  const compose = form?.closest<HTMLElement>('[data-contact-compose]');
+  const dialog = form?.closest('dialog');
   const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
   if (!form || !status || !button) return;
   const fields = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input[name="name"], input[name="email"], textarea[name="message"]');
   form.hidden = false;
   let pending = false;
+  let sent = false;
   let draft = '';
   let key = '';
+  const showError = (message: string) => {
+    status.textContent = message;
+    if (error) { error.textContent = message; error.hidden = !message; }
+    if (email) email.hidden = !message;
+  };
+  dialog?.addEventListener('contact:open', () => {
+    if (!sent) return;
+    sent = false;
+    form.reset();
+    form.hidden = false;
+    compose?.style.removeProperty('--contact-compose-height');
+    button.disabled = false;
+    fields.forEach(field => { field.disabled = false; });
+    if (confirmation) confirmation.hidden = true;
+    draft = '';
+    key = '';
+    showError('');
+  });
   form.addEventListener('input', () => {
-    if (!pending) status.textContent = '';
+    if (!pending && !sent) showError('');
   });
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (pending || !form.reportValidity()) return;
+    if (pending || sent || !form.reportValidity()) return;
     const data = new FormData(form);
     const body = JSON.stringify({
       name: String(data.get('name') ?? '').trim(),
@@ -30,18 +55,20 @@ export function initContactForm(root: ParentNode = document): void {
     });
     const message = String(data.get('message') ?? '').trim();
     if (!String(data.get('name') ?? '').trim() || Array.from(message).length < 10) {
-      status.textContent = 'Enter your name and a message of at least 10 characters.';
+      showError('Enter your name and a message of at least 10 characters.');
       return;
     }
     if (new TextEncoder().encode(body).byteLength > 8192) {
-      status.textContent = 'Your message is too long. Please shorten it and try again.';
+      showError('Your message is too long. Please shorten it and try again.');
       return;
     }
     pending = true;
     button.disabled = true;
     fields.forEach(field => { field.disabled = true; });
     form.setAttribute('aria-busy', 'true');
+    showError('');
     status.textContent = 'Sending…';
+    if (label) label.textContent = 'Sending…';
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20_000);
     try {
@@ -60,19 +87,27 @@ export function initContactForm(root: ParentNode = document): void {
       });
       const result: unknown = await response.json().catch(() => null);
       if (response.ok && typeof result === 'object' && result !== null && 'success' in result && result.success === true) {
-        status.textContent = 'Message sent. Thank you.';
+        sent = true;
+        status.textContent = 'Message sent';
+        compose?.style.setProperty('--contact-compose-height', `${form.getBoundingClientRect().height}px`);
+        form.hidden = true;
+        if (confirmation) {
+          confirmation.hidden = false;
+          if (dialog?.open && !form.closest('[inert]')) confirmation.querySelector<HTMLElement>('[data-contact-confirmation]')?.focus({ preventScroll: true });
+        }
       } else {
-        status.textContent = errorMessages[response.status] ?? 'Your message could not be sent. Try again or email below.';
+        showError(errorMessages[response.status] ?? 'Your message could not be sent. Try again.');
       }
     } catch {
-      status.textContent = controller.signal.aborted
-        ? 'Sending timed out. Try again or email below.'
-        : 'Your message could not be sent. Try again or email below.';
+      showError(controller.signal.aborted
+        ? 'Sending timed out. Try again.'
+        : 'Your message could not be sent. Try again.');
     } finally {
       clearTimeout(timeout);
       pending = false;
-      button.disabled = false;
-      fields.forEach(field => { field.disabled = false; });
+      button.disabled = sent;
+      fields.forEach(field => { field.disabled = sent; });
+      if (label) label.textContent = 'Send message';
       form.removeAttribute('aria-busy');
     }
   });
