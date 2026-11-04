@@ -43,11 +43,12 @@ test('campaign links preserve the approved Apple tokens on the new host', async 
   }
 });
 
-test('contact and help work with JavaScript disabled and keyboard navigation', async ({ browser, baseURL }) => {
+test('contact and help work with JavaScript disabled and keyboard navigation', async ({ browser, baseURL, browserName }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, baseURL, viewport: { width: 375, height: 812 } });
   const page = await context.newPage();
   await page.goto('/');
-  await page.keyboard.press('Tab');
+  // Safari uses Option-Tab to include links and controls in keyboard navigation.
+  await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
@@ -269,14 +270,14 @@ test('contact hashes and the compatibility route open the same native dialog', a
   }
 });
 
-test('dialog traps keyboard focus, closes with Escape, and follows browser Back', async ({ page }) => {
+test('dialog traps keyboard focus, closes with Escape, and follows browser Back', async ({ page, browserName }) => {
   await openContact(page);
   expect(await page.locator('dialog').evaluate(dialog => dialog.matches(':modal'))).toBe(true);
-  await page.keyboard.press('Shift+Tab');
+  await page.keyboard.press(browserName === 'webkit' ? 'Alt+Shift+Tab' : 'Shift+Tab');
   await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
   await page.locator('a[href="/work"]').evaluate(link => { if (link instanceof HTMLElement) link.focus(); });
   await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
-  await page.keyboard.press('Tab');
+  await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
   await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toBeHidden();
@@ -463,7 +464,7 @@ test('product phone images keep the full composite aspect ratio and route to rea
   }
 });
 
-test('reduced motion rail supports keyboard boundaries and focus follows visible links', async ({ page }) => {
+test('reduced motion rail supports keyboard boundaries and focus follows visible links', async ({ page, browserName }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/work');
   const rail = page.locator('[data-work-collection="products"] [data-work-rail]');
@@ -474,9 +475,9 @@ test('reduced motion rail supports keyboard boundaries and focus follows visible
   await page.keyboard.press('Home');
   await expect(page.getByRole('button', { name: 'Previous project' })).toBeDisabled();
   await expect(page.locator('[data-work-position]')).toContainText('Products · 1');
-  await page.keyboard.press('Tab');
+  await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
   await expect(page.getByRole('link', { name: 'Explore Stamp Shift', exact: true })).toBeFocused();
-  await page.keyboard.press('Tab');
+  await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
   await expect(page.getByRole('link', { name: 'Explore Alive Still', exact: true })).toBeFocused();
   await page.getByRole('button', { name: 'Design', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Explore Alive Still', exact: true })).toBeHidden();
