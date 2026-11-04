@@ -236,7 +236,7 @@ test('clicking a starter chip sends it as a user message and follow-up chips app
 });
 
 test('the footer CTA opens the same widget panel and both triggers mirror the state', async ({ page }) => {
-  await expect(page.getByRole('link', { name: 'Want to work with me?' })).toHaveAttribute('href', 'https://buildwithblum.com/contact');
+  await expect(page.getByRole('link', { name: 'Want to work with me?' })).toHaveAttribute('href', 'https://buildwithblum.com/#contact');
   const cta = page.locator('[data-footer-chat-cta]');
   await expect(cta).toBeVisible();
   await expect(cta).toHaveAttribute('aria-expanded', 'false');

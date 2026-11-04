@@ -24,7 +24,7 @@ const PUBLIC_SUPPLEMENT = `## Curated public supplement (reviewed additions)
 ### Freelance work and Blum Studios (approved November 3, 2026)
 
 - Blum Studios is Jordan's independent umbrella for apps, design and art. Its website is https://buildwithblum.com/.
-- For freelance product engineering, app development, design or other creative project inquiries, use the contact form at https://buildwithblum.com/contact. Visitors can describe their project there; the form sends an inquiry, not a booking or a mailing-list signup.
+- For freelance product engineering, app development, design or other creative project inquiries, use the contact form at https://buildwithblum.com/#contact. Visitors can describe their project there; the form sends an inquiry, not a booking or a mailing-list signup.
 - Do not promise availability, accept a project, quote rates, negotiate scope, or guarantee a reply time. Those details need to be agreed with Jordan directly.
 - Jordan's personal links are at https://blumblumblum.com/. His existing career and project facts remain in the biography below.
 

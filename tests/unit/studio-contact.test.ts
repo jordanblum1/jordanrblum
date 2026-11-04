@@ -3,13 +3,13 @@ import { beforeEach, afterEach, expect, test, vi } from 'vitest';
 import { initContactForm } from '../../studio/scripts/contact';
 
 beforeEach(() => {
-  document.body.innerHTML = `<form data-contact-form action="https://www.chicksofnyc.com/api/studio/contact" hidden>
+  document.body.innerHTML = `<form data-contact-form action="https://jordanblum.com/api/studio/contact" hidden>
     <input name="name" value="Visitor"><input name="email" value="visitor@example.com">
     <textarea name="message">A real project inquiry.</textarea><input name="website" value="">
     <button type="submit">Send message</button><p data-contact-status></p></form>`;
   initContactForm();
 });
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); });
 function submit() {
   document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
 }
@@ -35,12 +35,13 @@ test('a timed-out send is aborted and can be retried', async () => {
   submit();
   expect(document.querySelector('button')?.disabled).toBe(true);
   expect(document.querySelector('textarea')?.disabled).toBe(true);
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
   await vi.advanceTimersByTimeAsync(15_000);
   expect(document.querySelector('[data-contact-status]')?.textContent).toContain('timed out');
   expect(document.querySelector('button')?.disabled).toBe(false);
   expect(document.querySelector('textarea')?.disabled).toBe(false);
   submit();
-  expect(fetch).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
   await vi.advanceTimersByTimeAsync(15_000);
 });
 
@@ -71,4 +72,32 @@ test('rate limiting explains the actual hourly retry window', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 429 })));
   submit();
   await vi.waitFor(() => expect(document.querySelector('[data-contact-status]')?.textContent).toBe('Too many attempts. Try again in up to an hour, or email below.'));
+});
+
+
+test('duplicate submits stay locked while the signed payload digest is pending', async () => {
+  const actualDigest = crypto.subtle.digest.bind(crypto.subtle);
+  let release: () => void = () => {};
+  const held = new Promise<void>(resolve => { release = resolve; });
+  vi.spyOn(crypto.subtle, 'digest').mockImplementation(async (...args) => { await held; return actualDigest(...args); });
+  const fetch = vi.fn().mockResolvedValue(new Response('{"success":true}', { status: 201 }));
+  vi.stubGlobal('fetch', fetch);
+  submit();
+  submit();
+  expect(document.querySelector('textarea')?.disabled).toBe(true);
+  expect(fetch).not.toHaveBeenCalled();
+  release();
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  await vi.waitFor(() => expect(document.querySelector('textarea')?.disabled).toBe(false));
+});
+
+test('unavailable browser crypto preserves the draft and offers the email fallback', async () => {
+  const fetch = vi.fn();
+  vi.stubGlobal('fetch', fetch);
+  vi.spyOn(crypto, 'randomUUID').mockImplementation(() => { throw new Error('Secure context required'); });
+  submit();
+  await vi.waitFor(() => expect(document.querySelector('[data-contact-status]')?.textContent).toContain('email below'));
+  expect(fetch).not.toHaveBeenCalled();
+  expect(document.querySelector('button')?.disabled).toBe(false);
+  expect(document.querySelector('textarea')?.value).toBe('A real project inquiry.');
 });

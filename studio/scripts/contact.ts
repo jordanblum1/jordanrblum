@@ -37,10 +37,6 @@ export function initContactForm(root: ParentNode = document): void {
       status.textContent = 'Your message is too long. Please shorten it and try again.';
       return;
     }
-    if (draft !== body) {
-      draft = body;
-      key = crypto.randomUUID();
-    }
     pending = true;
     button.disabled = true;
     fields.forEach(field => { field.disabled = true; });
@@ -49,9 +45,15 @@ export function initContactForm(root: ParentNode = document): void {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15_000);
     try {
+      if (draft !== body || !key) {
+        key = crypto.randomUUID();
+        draft = body;
+      }
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body));
+      const payloadHash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
       const response = await fetch(form.action, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key, 'x-amz-content-sha256': payloadHash },
         body,
         signal: controller.signal,
         credentials: 'omit',

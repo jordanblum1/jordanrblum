@@ -3,6 +3,8 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type StreamHandler = (
   event: {
+    body?: string;
+    headers?: Record<string, string>;
     rawPath?: string;
     requestContext?: { http?: { method?: string } };
   },
@@ -11,6 +13,12 @@ type StreamHandler = (
 
 let streamHandler: StreamHandler;
 let responseMetadata: { statusCode?: number; headers?: Record<string, string> } | undefined;
+
+const contact = vi.hoisted(() => ({ handle: vi.fn() }));
+
+vi.mock('../../src/lib/contact.js', () => ({
+  handleContactRequest: contact.handle,
+}));
 
 vi.mock('node:fs', () => ({
   readFileSync: vi.fn(() => Buffer.from('%PDF-1.4\nreviewed resume')),
@@ -37,6 +45,12 @@ beforeAll(async () => {
 
 beforeEach(() => {
   responseMetadata = undefined;
+  contact.handle.mockReset();
+  contact.handle.mockResolvedValue({
+    statusCode: 201,
+    headers: { 'Content-Type': 'application/json' },
+    body: '{"success":true}',
+  });
 });
 
 async function invoke(path: string, method = 'POST'): Promise<Buffer> {
@@ -71,5 +85,18 @@ describe('resume download route', () => {
 
     expect(responseMetadata?.statusCode).toBe(405);
     expect(JSON.parse(body.toString())).toEqual({ ok: false, error: 'method_not_allowed' });
+  });
+});
+
+describe('studio contact route', () => {
+  it('delegates to the contact boundary and preserves its status, body, and CORS headers', async () => {
+    const body = await invoke('/api/studio/contact');
+
+    expect(contact.handle).toHaveBeenCalledOnce();
+    expect(responseMetadata).toEqual({
+      statusCode: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(body.toString()).toBe('{"success":true}');
   });
 });

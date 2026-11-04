@@ -7,7 +7,7 @@ const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 describe('buildSystemPrompt', () => {
   it('routes freelance inquiries to the approved form without inventing commitments', () => {
     const prompt = buildSystemPrompt();
-    expect(prompt).toContain('https://buildwithblum.com/contact');
+    expect(prompt).toContain('https://buildwithblum.com/#contact');
     expect(prompt).toContain('no email reveal is needed unless they explicitly ask');
     expect(prompt).toContain('Never quote prices, promise availability, accept work');
     expect(prompt).toContain('not a booking or a mailing-list signup');

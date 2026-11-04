@@ -1,6 +1,8 @@
 ---
 import StudioLayout from '../layouts/StudioLayout.astro';
 import CityBackdrop from '../components/CityBackdrop.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { studio } from '../../src/data/studio';
 import blumMark from '../../src/assets/identity/blum-mark.svg?raw';
 ---
 <StudioLayout title="Blum Studios — Apps, design & art" description="Apps, design and art by Jordan Blum. Get in touch." path="/">
@@ -13,16 +15,29 @@ import blumMark from '../../src/assets/identity/blum-mark.svg?raw';
       </h1>
       <p class="studio-home-line">Apps, design & art.</p>
       <nav class="studio-home-actions" aria-label="Blum Studios">
-        <a class="studio-pill studio-pill-primary" href="/contact">
+        <button class="studio-pill studio-pill-primary" type="button" data-contact-trigger aria-haspopup="dialog" aria-controls="studio-contact-dialog" hidden>
           <svg class="studio-envelope" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path class="studio-envelope-flap" d="m4 7 8 6 8-6" /></svg>
           Contact
-        </a>
+        </button>
+        <noscript><a class="studio-pill studio-pill-primary" href={`mailto:${studio.contactEmail}?subject=Project%20inquiry`}>Contact</a></noscript>
         <a class="studio-pill" href="https://blumblumblum.com">Links</a>
-        <a class="studio-pill" href="/assets/blum-studios/resume.pdf">Resume</a>
+        <a class="studio-pill" href="https://jordanblum.com">Portfolio</a>
       </nav>
     </div>
   </main>
+  <dialog id="studio-contact-dialog" class="studio-contact-dialog" aria-labelledby="contact-title" data-contact-dialog>
+    <div class="studio-dialog-content" data-contact-dialog-content>
+      <header class="studio-dialog-header">
+        <h2 id="contact-title">Contact</h2>
+        <button class="studio-dialog-close" type="button" data-contact-close aria-label="Close contact form"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>
+      </header>
+      <ContactForm />
+    </div>
+  </dialog>
 </StudioLayout>
 <script>
-  if (location.hash === '#contact') location.replace('/contact');
+  import { initContactForm } from '../scripts/contact';
+  import { initContactDialog } from '../scripts/contact-dialog';
+  initContactForm();
+  initContactDialog();
 </script>

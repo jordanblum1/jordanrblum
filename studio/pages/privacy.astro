@@ -7,7 +7,7 @@ import { studio } from '../../src/data/studio';
     <a href="/contact">Back to contact</a>
     <h1>Contact privacy</h1>
     <p>Jordan Blum runs Blum Studios. The contact form collects your name, email address and message so he can respond to your inquiry. Sending a message does not subscribe you to marketing.</p>
-    <p>Messages are stored in a separate private table in the existing Chicks of NYC database, hosted by Neon. Vercel handles the website and form service. The service uses a temporary keyed hash of your network address to limit spam; it does not save your raw address with your message.</p>
+    <p>Messages are stored in a separate private table in the existing Chicks of NYC database, hosted by Neon. Vercel hosts the studio website, and AWS handles the contact form service. The service uses a temporary hash of your network address to limit spam; it does not save your raw address with your message.</p>
     <p>Inquiries are kept as needed to handle the conversation. To request access or deletion, email <a href={`mailto:${studio.contactEmail}`}>{studio.contactEmail}</a>. Email sent to this address is forwarded through Squarespace to Jordan’s Gmail inbox.</p>
     <p>This form does not sell your information, enroll you in another app or send your message to advertising platforms.</p>
   </main>

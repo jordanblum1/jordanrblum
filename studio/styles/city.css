@@ -1,5 +1,4 @@
 .city-background {
-  --city-cycle: 90s;
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -7,17 +6,21 @@
   pointer-events: none;
   background: var(--studio-paper, #f7f3ed);
 }
-.city-art { width: 100%; height: 100%; max-width: none !important; }
-.city-scene { opacity: 0; animation: city-chicago var(--city-cycle) linear infinite; }
-.city-chicago { opacity: 1; }
-.city-background:not([data-motion-enabled]) * { animation: none !important; }
-.city-san-francisco { animation-name: city-san-francisco; }
-.city-new-york { animation-name: city-new-york; }
-.city-clouds { animation: city-cloud-drift 45s ease-in-out infinite alternate; }
-.city-water-lines { animation: city-water-drift 14s ease-in-out infinite alternate; }
-.city-boat { animation: city-boat-drift 34s ease-in-out infinite alternate; }
-.city-train { animation: city-train-travel 24s linear infinite; }
-.city-taxi { animation: city-taxi-travel 32s linear infinite; }
+.city-poster, .city-poster img, .city-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  object-fit: cover;
+  object-position: center bottom;
+}
+.city-video { opacity: 0; }
+@media (min-aspect-ratio: 16/9) {
+  .city-poster img, .city-video { object-position: center top; }
+}
+.city-background[data-video-state="playing"] .city-video,
+.city-background[data-video-state="paused"] .city-video { opacity: 1; }
 .city-motion-toggle {
   position: fixed;
   right: max(1.25rem, env(safe-area-inset-right));
@@ -39,27 +42,13 @@
 .city-motion-toggle[hidden], .city-motion-toggle .city-play-icon { display: none; }
 .city-motion-toggle:hover { border-color: var(--studio-ink, #2b2521); }
 .city-motion-toggle:focus-visible { outline: 3px solid var(--studio-accent, #9c4037); outline-offset: 5px; }
-.city-background[data-paused="true"] * { animation-play-state: paused; }
 .city-motion-toggle[data-paused="true"] .city-pause-icon { display: none; }
 .city-motion-toggle[data-paused="true"] .city-play-icon { display: block; }
-@keyframes city-chicago { 0%, 29%, 100% { opacity: 1; } 34%, 95% { opacity: 0; } }
-@keyframes city-san-francisco { 0%, 29%, 67%, 100% { opacity: 0; } 34%, 62% { opacity: 1; } }
-@keyframes city-new-york { 0%, 62%, 100% { opacity: 0; } 67%, 95% { opacity: 1; } }
-@keyframes city-cloud-drift { from { transform: translateX(-12px); } to { transform: translateX(18px); } }
-@keyframes city-water-drift { from { transform: translateX(-7px); opacity: .65; } to { transform: translateX(7px); opacity: 1; } }
-@keyframes city-boat-drift { from { transform: translateX(-35px); } to { transform: translateX(35px); } }
-@keyframes city-train-travel { 0%, 10% { transform: translateX(-100px); } 90%, 100% { transform: translateX(620px); } }
-@keyframes city-taxi-travel { 0%, 8% { transform: translateX(-150px); } 92%, 100% { transform: translateX(450px); } }
-.studio-contact-page .city-art { opacity: .24; }
+.studio-contact-page .city-background,
+body:has([data-contact-dialog][open]) .city-background { opacity: .24; }
 @media (max-width: 700px) {
-  .city-panorama { transform: translateY(25px) scale(.55); transform-origin: 720px 1000px; }
-  .city-left { transform: translateX(365px); }
-  .city-right { transform: translateX(-365px); }
   .city-motion-toggle { right: max(.875rem, env(safe-area-inset-right)); bottom: max(.875rem, env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .city-background * { animation: none !important; }
-  .city-scene { opacity: 0; }
-  .city-chicago { opacity: 1; }
-  .city-motion-toggle { display: none; }
+  .city-video, .city-motion-toggle { display: none; }
 }
