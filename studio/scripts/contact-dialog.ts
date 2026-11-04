@@ -1,90 +1,102 @@
 export function initContactDialog(root: ParentNode = document): void {
   const trigger = root.querySelector<HTMLButtonElement>('[data-contact-trigger]');
   const dialog = root.querySelector<HTMLDialogElement>('[data-contact-dialog]');
-  const content = root.querySelector<HTMLElement>('[data-contact-dialog-content]');
-  const dismiss = root.querySelector<HTMLButtonElement>('[data-contact-close]');
-  if (!trigger || !dialog || !content || !dismiss) return;
+  const surface = dialog?.querySelector<HTMLElement>('[data-contact-surface]');
+  const content = dialog?.querySelector<HTMLElement>('[data-contact-dialog-content]');
+  if (!trigger || !dialog || !surface || !content) return;
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
-  const paper = getComputedStyle(dialog).backgroundColor;
-  const border = getComputedStyle(dialog).borderTopColor;
   let phase: 'closed' | 'opening' | 'open' | 'closing' = 'closed';
   let shape: Animation | undefined;
+  let reveal: Animation | undefined;
+  let operation = 0;
   const viewport = () => {
+    if (phase === 'closing') return;
     dialog.style.setProperty('--contact-viewport-height', `${visualViewport?.height ?? innerHeight}px`);
     dialog.style.setProperty('--contact-viewport-top', `${visualViewport?.offsetTop ?? 0}px`);
   };
+  const triggerShape = (): Keyframe => {
+    const from = dialog.getBoundingClientRect();
+    const to = trigger.getBoundingClientRect();
+    const scaleX = to.width / from.width;
+    return {
+      transform: `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(${scaleX}, ${to.height / from.height})`,
+      borderRadius: `${to.height / 2 / scaleX}px / ${from.height / 2}px`,
+      backgroundColor: getComputedStyle(trigger).backgroundColor,
+      borderColor: getComputedStyle(trigger).borderTopColor,
+    };
+  };
+  const paperShape: Keyframe = { transform: 'none', borderRadius: '28px', backgroundColor: getComputedStyle(surface).backgroundColor, borderColor: getComputedStyle(surface).borderTopColor };
   const finishClose = () => {
-    content.getAnimations().forEach(animation => animation.cancel());
+    shape?.cancel();
+    reveal?.cancel();
+    content.scrollTop = 0;
     dialog.close();
     dialog.style.height = '';
     trigger.style.visibility = '';
     content.style.opacity = '';
     content.inert = false;
     phase = 'closed';
+    delete dialog.dataset.contactPhase;
     trigger.focus({ preventScroll: true });
     if (location.hash === '#contact') queueMicrotask(() => { void open(false); });
   };
   const close = async (updateHash = true) => {
     if (phase === 'closed' || phase === 'closing') return;
+    const current = ++operation;
     if (updateHash && location.hash === '#contact') history.replaceState(null, '', location.pathname + location.search);
-    content.inert = true;
-    if (phase === 'opening') {
-      phase = 'closing';
-      shape?.cancel();
-      finishClose();
-      return;
-    }
+    const style = getComputedStyle(surface);
+    const from: Keyframe = { transform: style.transform, borderRadius: style.borderRadius, backgroundColor: style.backgroundColor, borderColor: style.borderTopColor };
+    const contentStyle = getComputedStyle(content);
+    const appearance: Keyframe = { opacity: contentStyle.opacity, transform: contentStyle.transform };
     phase = 'closing';
+    dialog.dataset.contactPhase = 'closing';
+    content.inert = true;
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    shape?.cancel();
+    reveal?.cancel();
     if (!preference.matches) {
-      await content.animate([{ opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(2px)' }], { duration: 90, easing: 'ease-out', fill: 'forwards' }).finished.catch(() => {});
-      content.style.opacity = '0';
-      const from = dialog.getBoundingClientRect();
-      dialog.style.height = `${from.height}px`;
-      const to = trigger.getBoundingClientRect();
-      shape = dialog.animate([
-        { transform: 'none', borderRadius: '28px', backgroundColor: paper, borderColor: border },
-        { transform: `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(${to.width / from.width}, ${to.height / from.height})`, borderRadius: `${to.height / 2 / (to.width / from.width)}px / ${from.height / 2}px`, backgroundColor: getComputedStyle(trigger).backgroundColor, borderColor: getComputedStyle(trigger).borderTopColor },
-      ], { duration: 280, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' });
+      dialog.style.height = `${dialog.getBoundingClientRect().height}px`;
+      reveal = content.animate([appearance, { ...appearance, opacity: 0 }], { duration: 100, easing: 'ease-out', fill: 'forwards' });
+      shape = surface.animate([from, triggerShape()], { duration: 260, easing: 'cubic-bezier(.32, 0, .2, 1)', fill: 'forwards' });
       await shape.finished.catch(() => {});
     }
-    finishClose();
-    shape?.cancel();
-    content.getAnimations().forEach(animation => animation.cancel());
+    if (current === operation) finishClose();
   };
   const open = async (updateHash = true) => {
     if (phase !== 'closed') return;
+    const current = ++operation;
     phase = 'opening';
+    dialog.dataset.contactPhase = 'opening';
     viewport();
-    const from = trigger.getBoundingClientRect();
-    const fromColor = getComputedStyle(trigger).backgroundColor;
+    dialog.dispatchEvent(new Event('contact:open'));
     content.inert = true;
     content.style.opacity = '0';
     dialog.showModal();
+    content.scrollTop = 0;
     trigger.style.visibility = 'hidden';
     if (updateHash && location.hash !== '#contact') history.pushState(null, '', `${location.pathname}${location.search}#contact`);
     if (!preference.matches) {
-      const to = dialog.getBoundingClientRect();
-      dialog.style.height = `${to.height}px`;
-      shape = dialog.animate([
-        { transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`, borderRadius: `${from.height / 2 / (from.width / to.width)}px / ${to.height / 2}px`, backgroundColor: fromColor, borderColor: getComputedStyle(trigger).borderTopColor },
-        { transform: 'none', borderRadius: '28px', backgroundColor: paper, borderColor: border },
-      ], { duration: 360, easing: 'cubic-bezier(.22, .75, .2, 1)' });
+      dialog.style.height = `${dialog.getBoundingClientRect().height}px`;
+      shape = surface.animate([triggerShape(), paperShape], { duration: 360, easing: 'cubic-bezier(.22, .75, .2, 1)', fill: 'forwards' });
       await shape.finished.catch(() => {});
     }
-    if (phase !== 'opening') return;
+    if (current !== operation) return;
+    shape?.cancel();
     dialog.style.height = '';
     content.style.opacity = '1';
     if (!preference.matches) {
-      await content.animate([{ opacity: 0, transform: 'translateY(6px)', filter: 'blur(2px)' }, { opacity: 1, transform: 'none', filter: 'blur(0px)' }], { duration: 140, easing: 'ease-out' }).finished.catch(() => {});
+      reveal = content.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 140, easing: 'ease-out' });
+      await reveal.finished.catch(() => {});
     }
-    if (phase !== 'opening') return;
+    if (current !== operation) return;
     content.inert = false;
     phase = 'open';
-    dialog.querySelector<HTMLInputElement>('input[name="name"]')?.focus({ preventScroll: true });
+    dialog.dataset.contactPhase = 'open';
+    (dialog.querySelector<HTMLElement>('[data-contact-sent]:not([hidden]) [data-contact-confirmation]') ?? dialog.querySelector<HTMLInputElement>('input[name="name"]:enabled') ?? dialog.querySelector<HTMLButtonElement>('[data-contact-close]'))?.focus({ preventScroll: true });
   };
   trigger.hidden = false;
   trigger.addEventListener('click', () => { void open(); });
-  dismiss.addEventListener('click', () => { void close(); });
+  dialog.querySelectorAll('[data-contact-close]').forEach(button => button.addEventListener('click', () => { void close(); }));
   dialog.addEventListener('cancel', event => { event.preventDefault(); void close(); });
   dialog.addEventListener('click', event => {
     if (event.target !== dialog) return;
@@ -99,6 +111,10 @@ export function initContactDialog(root: ParentNode = document): void {
   addEventListener('hashchange', syncHash);
   visualViewport?.addEventListener('resize', viewport);
   visualViewport?.addEventListener('scroll', viewport);
-  preference.addEventListener('change', () => { if (preference.matches) dialog.getAnimations({ subtree: true }).forEach(animation => animation.finish()); });
+  preference.addEventListener('change', () => {
+    if (preference.matches) [shape, reveal].forEach(animation => {
+      if (animation?.playState === 'running' || animation?.playState === 'paused') animation.finish();
+    });
+  });
   syncHash();
 }

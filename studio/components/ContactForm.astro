@@ -2,13 +2,29 @@
 import { studio } from '../../src/data/studio';
 const inquiry = `mailto:${studio.contactEmail}?subject=Blum%20Studios%20%E2%80%94%20Project%20inquiry`;
 ---
-<form class="studio-contact-form" data-contact-form hidden aria-label="Contact Jordan" action="https://jordanblum.com/api/studio/contact" method="post">
-  <div class="studio-contact-fields">
-    <div><label for="contact-name">Name</label><input id="contact-name" name="name" autocomplete="name" required maxlength="100" /></div>
-    <div><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254" /></div>
+<div class="studio-contact-compose" data-contact-compose>
+  <form class="studio-contact-form" data-contact-form hidden aria-label="Contact Jordan" action="https://jordanblum.com/api/studio/contact" method="post">
+    <div class="studio-contact-fields">
+      <div><label for="contact-name">Name</label><input id="contact-name" name="name" autocomplete="name" required maxlength="100" /></div>
+      <div><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254" /></div>
+      <div class="studio-message-field"><label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="3" required minlength="10" maxlength="4000"></textarea></div>
+    </div>
+    <div class="studio-contact-trap" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off" /></div>
+    <div class="studio-contact-submit"><button type="submit"><span data-contact-button-label>Send message</span><svg class="studio-send-mark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" /></svg></button></div>
+    <p class="studio-form-error" data-contact-error hidden></p>
+    <a class="studio-error-email" data-contact-error-email href={inquiry} hidden>Email instead</a>
+  </form>
+  <div class="studio-contact-sent" data-contact-sent hidden>
+    <svg class="studio-sent-envelope" width="120" height="96" viewBox="0 0 120 96" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">
+      <path class="studio-sent-letter" d="M32 52V12h56v40" fill="var(--studio-paper)" />
+      <path d="M26 34h68v46H26z" fill="var(--studio-paper)" />
+      <path d="m26 80 34-26 34 26" />
+      <path class="studio-sent-flap" d="m26 34 34 27 34-27" fill="var(--studio-paper)" />
+      <circle class="studio-sent-seal" cx="60" cy="57" r="6" fill="currentColor" stroke="none" />
+    </svg>
+    <h3 tabindex="-1" data-contact-confirmation>Message sent</h3>
+    <button class="studio-pill" type="button" data-contact-close>Done</button>
   </div>
-  <div class="studio-message-field"><label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="3" required minlength="10" maxlength="4000"></textarea></div>
-  <div class="studio-contact-trap" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off" /></div>
-  <div class="studio-contact-submit"><button type="submit">Send message</button><p class="studio-form-status" data-contact-status role="status" aria-live="polite" aria-atomic="true"></p></div>
-</form>
-<p class="studio-email-fallback" data-email-fallback>Email <a href={inquiry}>{studio.contactEmail}</a></p>
+  <p class="studio-sr-only" data-contact-status role="status" aria-live="polite" aria-atomic="true"></p>
+</div>
+<noscript><a href={inquiry}>Email</a></noscript>
