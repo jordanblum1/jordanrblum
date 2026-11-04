@@ -47,13 +47,27 @@ test('a timed-out send is aborted and can be retried', async () => {
 
 test('a provider response after the former five-second deadline can still finish', async () => {
   vi.useFakeTimers();
-  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => {
-    setTimeout(() => resolve(new Response('{"success":true}', { status: 201 })), 16_000);
-  })));
+  const fetch = vi.fn((_url: string, options: RequestInit) => new Promise<Response>((resolve, reject) => {
+    const responseTimer = setTimeout(() => resolve(new Response('{"success":true}', { status: 201 })), 16_000);
+    options.signal?.addEventListener('abort', () => {
+      clearTimeout(responseTimer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    });
+  }));
+  vi.stubGlobal('fetch', fetch);
   submit();
-  await vi.advanceTimersByTimeAsync(16_000);
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+  await vi.advanceTimersByTimeAsync(15_500);
+  expect(document.querySelector('[data-contact-status]')?.textContent).toBe('Sending…');
+  expect(document.querySelector('form')?.getAttribute('aria-busy')).toBe('true');
+  expect(document.querySelector('button')?.disabled).toBe(true);
+  expect(document.querySelector('textarea')?.disabled).toBe(true);
+  expect(fetch.mock.calls[0]?.[1].signal?.aborted).toBe(false);
+  await vi.advanceTimersByTimeAsync(500);
   expect(document.querySelector('[data-contact-status]')?.textContent).toBe('Message sent. Thank you.');
+  expect(document.querySelector('form')?.hasAttribute('aria-busy')).toBe(false);
   expect(document.querySelector('button')?.disabled).toBe(false);
+  expect(document.querySelector('textarea')?.disabled).toBe(false);
 });
 
 test('whitespace-only contact details never reach the server', () => {
