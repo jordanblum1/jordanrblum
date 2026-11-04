@@ -47,6 +47,25 @@ function dependencies(saveResult: 'created' | 'duplicate' | 'conflict' = 'create
 }
 
 describe('Blum Studios contact Lambda boundary', () => {
+  it('logs only a bounded failure stage and known error name, never inquiry or provider details', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const deps = dependencies();
+      const failure = new Error('private provider data and inquiry content');
+      failure.name = 'AccessDeniedException';
+      deps.notify.mockRejectedValueOnce(failure);
+      expect((await handleContactRequest(event(), deps)).statusCode).toBe(503);
+      expect(log).toHaveBeenLastCalledWith('studio_contact_unavailable', { stage: 'notify', code: 'AccessDeniedException' });
+      failure.name = 'private unexpected name';
+      deps.save.mockRejectedValueOnce(failure);
+      expect((await handleContactRequest(event(), deps)).statusCode).toBe(503);
+      expect(log).toHaveBeenLastCalledWith('studio_contact_unavailable', { stage: 'save', code: 'Error' });
+      expect(JSON.stringify(log.mock.calls)).not.toContain('private');
+    } finally {
+      log.mockRestore();
+    }
+  });
+
   it('normalizes valid input and returns created, duplicate, and conflict outcomes', async () => {
     const created = dependencies('created');
     const createdResponse = await handleContactRequest(event(), created);
