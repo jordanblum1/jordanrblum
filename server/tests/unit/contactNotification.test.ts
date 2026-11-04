@@ -91,6 +91,42 @@ describe('contact email delivery', () => {
     expect(deps.send).not.toHaveBeenCalled();
   });
 
+  it('keeps a retry busy while the first invocation waits 16 seconds on its daily counter', async () => {
+    let state: 'free' | 'leased' | 'sent' = 'free';
+    let leaseExpiresAt = 0;
+    let releaseCounter!: (allowed: boolean) => void;
+    const increment = vi.fn(() => new Promise<boolean>((resolve) => { releaseCounter = resolve; }));
+    const send = vi.fn(async () => undefined);
+    const firstNow = now;
+    const retryNow = new Date(now.getTime() + 16_000);
+    const deps = dependencies({
+      now: vi.fn()
+        .mockReturnValueOnce(firstNow)
+        .mockReturnValueOnce(retryNow),
+      acquire: vi.fn(async (_reference, _token, attemptNow): Promise<'acquired' | 'sent' | 'busy'> => {
+        const attemptSeconds = Math.floor(attemptNow.getTime() / 1000);
+        if (state === 'sent') return 'sent';
+        if (state === 'leased' && leaseExpiresAt > attemptSeconds) return 'busy';
+        state = 'leased';
+        leaseExpiresAt = attemptSeconds + 60;
+        return 'acquired';
+      }),
+      increment,
+      send,
+      markSent: vi.fn(async () => { state = 'sent'; }),
+      release: vi.fn(async () => { state = 'free'; }),
+    });
+
+    const firstAttempt = notifyContact(input, reference, deps);
+    await vi.waitFor(() => expect(increment).toHaveBeenCalledOnce());
+    await expect(notifyContact(input, reference, deps)).rejects.toThrow('already in progress');
+    releaseCounter(true);
+    await firstAttempt;
+
+    expect(send).toHaveBeenCalledOnce();
+    expect(deps.markSent).toHaveBeenCalledOnce();
+  });
+
   it('releases its lease without sending when the daily attempt cap is full', async () => {
     const deps = dependencies({ increment: vi.fn(async () => false) });
 
@@ -109,7 +145,7 @@ describe('contact email delivery', () => {
     expect(command?.ConditionExpression).toContain('#lease <= :now');
     expect(command?.ExpressionAttributeValues).toMatchObject({
       ':now': 1793738700,
-      ':lease': 1793738715,
+      ':lease': 1793738760,
     });
     expect(ddbMock.commandCalls(GetCommand)).toHaveLength(0);
   });
@@ -117,7 +153,7 @@ describe('contact email delivery', () => {
   it('distinguishes an active concurrent lease from an already-sent receipt after a conditional loss', async () => {
     ddbMock.on(UpdateCommand).rejects(new ConditionalCheckFailedException());
     ddbMock.on(GetCommand)
-      .resolvesOnce({ Item: { status: 'sending', leaseExpiresAt: 1793738715 } })
+      .resolvesOnce({ Item: { status: 'sending', leaseExpiresAt: 1793738760 } })
       .resolvesOnce({ Item: { status: 'sent' } });
 
     await expect(acquireContactEmailLease(reference, token, now)).resolves.toBe('busy');
@@ -135,6 +171,7 @@ describe('contact email delivery', () => {
     expect(sent?.ConditionExpression).toBe('#status = :sending AND #token = :token');
     expect(sent?.ExpressionAttributeValues?.[':ttl']).toBe(1796330700);
     expect(released?.ConditionExpression).toBe('#status = :sending AND #token = :token');
+    expect(released?.ExpressionAttributeValues?.[':ttl']).toBe(1793738760);
   });
 
   it('sends only the fixed envelope with the visitor address as Reply-To', async () => {

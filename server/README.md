@@ -59,11 +59,12 @@ Contact notification runs only after a valid created or duplicate database
 save. SES sends a fixed plain-text message from and to `hi@jordanblum.com`,
 with the normalized visitor email as Reply-To. A failed send returns 503 while
 the database row survives, so the same idempotency key can retry delivery.
-The DynamoDB rate table also holds a conditional `CONTACT_EMAIL#<UUID>` lease
+The DynamoDB rate table also holds a 60-second conditional `CONTACT_EMAIL#<UUID>` lease
 and 30-day sent receipt: concurrent retries are rejected, completed deliveries
 are skipped, and failed sends release their own lease. A separate atomic
 counter permits at most 50 SES send attempts per UTC day. No submitted body or
-contact data is logged.
+contact data is logged. The lease must stay longer than the deployed Lambda's
+30-second timeout so one invocation owns delivery for its entire lifetime.
 
 The SES client makes one bounded attempt. Provider-level exactly-once delivery
 is not possible: if SES accepts a message but its acknowledgement or the sent

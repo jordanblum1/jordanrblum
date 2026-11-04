@@ -7,7 +7,8 @@ import { atomicIncrementWithLimit } from './dynamo.js';
 const FROM_ADDRESS = 'Blum Studios <hi@jordanblum.com>';
 const TO_ADDRESS = 'hi@jordanblum.com';
 const SUBJECT = 'New Blum Studios project inquiry';
-const LEASE_SECONDS = 15;
+// Keep this above the deployed Lambda's 30-second timeout so one invocation owns delivery until it exits.
+const LEASE_SECONDS = 60;
 const SENT_RECEIPT_SECONDS = 30 * 24 * 60 * 60;
 const ATTEMPT_LIMIT = 50;
 const ATTEMPT_TTL_SECONDS = 2 * 24 * 60 * 60;
