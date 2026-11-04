@@ -217,8 +217,10 @@ export async function handleContactRequest(
   const idempotencyKey = header(event, 'idempotency-key')?.trim().toLowerCase() ?? '';
   if (!IDEMPOTENCY_KEY.test(idempotencyKey)) return jsonResponse(400, { error: 'Invalid contact request' });
 
+  let stage: 'validate' | 'rate-limit' | 'save' | 'notify' = 'validate';
   try {
     const parsed = parseBody(event);
+    stage = 'rate-limit';
     const hour = dependencies.now().toISOString().slice(0, 13);
     const networkHash = hashIp(rateLimitBucket(clientIp(event)));
     const allowed = await dependencies.increment(`CONTACT#${hour}#${networkHash}`, CONTACT_LIMIT, CONTACT_TTL_SECONDS);
@@ -226,16 +228,21 @@ export async function handleContactRequest(
     if (parsed.honeypot) return jsonResponse(201, { success: true });
 
     const fingerprint = createHash('sha256').update(JSON.stringify(parsed.input)).digest('hex');
+    stage = 'save';
     const saved = await dependencies.save(parsed.input, dependencies.id(), idempotencyKey, fingerprint);
     if (saved === 'conflict') {
       return jsonResponse(409, { error: 'Idempotency key was already used for a different message.' });
     }
+    stage = 'notify';
     await dependencies.notify(parsed.input, idempotencyKey);
     return jsonResponse(saved === 'created' ? 201 : 200, { success: true });
   } catch (error) {
     if (error instanceof ContactRequestError) {
       return jsonResponse(error.statusCode, { error: error.publicMessage });
     }
+    const knownErrors = ['AccessDeniedException', 'MessageRejected', 'ValidationException', 'ResourceNotFoundException', 'ConditionalCheckFailedException', 'TimeoutError', 'AbortError', 'NeonDbError'];
+    const code = error instanceof Error && knownErrors.includes(error.name) ? error.name : 'Error';
+    console.error('studio_contact_unavailable', { stage, code });
     return jsonResponse(503, { error: 'Contact is temporarily unavailable. Please try again later.' });
   }
 }
