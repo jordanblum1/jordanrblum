@@ -40,7 +40,8 @@ buildwithblum.com
   └─ POST https://jordanblum.com/api/studio/contact
        ├─ exact-origin, body, UUID and payload-SHA validation
        ├─ DynamoDB 5/hour limit on CONTACT#hour#hashed-network
-       └─ restricted CONTACT_DATABASE_URL → blum_studio_contact.messages
+       ├─ restricted CONTACT_DATABASE_URL → blum_studio_contact.messages
+       └─ save-first SES notification → hi@jordanblum.com
 ```
 
 The contact body is JSON no larger than 8192 bytes with exact fields
@@ -48,11 +49,25 @@ The contact body is JSON no larger than 8192 bytes with exact fields
 stored. Every draft uses one UUID `Idempotency-Key`; retries of the same
 normalized content return 200 without another row, while changed content with
 the same key returns 409. New messages return 201. Validation, size, media
-type, rate-limit and unavailable-storage failures return 400/413/415/429/503.
+type, rate-limit and unavailable-storage or notification failures return 400/413/415/429/503.
 The application rejects contact POSTs unless `Origin` is exactly
 `https://buildwithblum.com` or `https://www.buildwithblum.com`. A submission
 is private correspondence only: it does not create an account or subscribe
 the sender to marketing.
+
+Contact notification runs only after a valid created or duplicate database
+save. SES sends a fixed plain-text message from and to `hi@jordanblum.com`,
+with the normalized visitor email as Reply-To. A failed send returns 503 while
+the database row survives, so the same idempotency key can retry delivery.
+The DynamoDB rate table also holds a conditional `CONTACT_EMAIL#<UUID>` lease
+and 30-day sent receipt: concurrent retries are rejected, completed deliveries
+are skipped, and failed sends release their own lease. A separate atomic
+counter permits at most 50 SES send attempts per UTC day. No submitted body or
+contact data is logged.
+
+The SES client makes one bounded attempt. Provider-level exactly-once delivery
+is not possible: if SES accepts a message but its acknowledgement or the sent
+receipt write is lost, a later retry can rarely deliver a duplicate.
 
 CloudFront OAC requires `X-Amz-Content-Sha256`, the lowercase SHA-256 of the
 exact request body bytes. The Lambda Function URL is the sole CORS response
@@ -117,7 +132,7 @@ detail.
 | `CONTACT_EMAIL` | yes (for reveal to work) | — | The only source of the email address the model may share |
 | `CONTACT_DATABASE_URL` | yes (for studio contact) | — | Restricted Neon login for `blum_studio_contact.messages` only |
 | `TRANSCRIPTS_BUCKET` | yes | — | S3 bucket transcripts are written to |
-| `RATE_TABLE` | yes | — | DynamoDB table used for both per-IP rate limiting and the global reveal cap |
+| `RATE_TABLE` | yes | — | DynamoDB table used for rate limits, reveal cap and contact-email delivery receipts |
 
 ## Model choice and response examples
 
@@ -187,6 +202,10 @@ Provisioning and deploys run entirely through
   `CONTACT_DATABASE_URL` is nonempty, it is merged into the existing Lambda
   environment without replacing unrelated chat/email settings. The workflow
   also converges Function URL CORS for the two studio origins and three
-  required contact request headers.
+  required contact request headers. Both jobs converge a separate contact-mail
+  IAM policy: SES send is restricted to the verified `jordanblum.com` identity
+  and fixed sender/recipient, while DynamoDB reads are restricted to the
+  `CONTACT_EMAIL#*` receipt prefix. Existing table updates cover the lease,
+  sent receipt and daily attempt counter.
 
 See that workflow file for the exact resource names and required secrets.

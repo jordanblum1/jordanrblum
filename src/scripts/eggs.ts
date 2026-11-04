@@ -28,4 +28,4 @@ portrait?.addEventListener('click', (e) => {
 });
 
 console.log('%cthere is still a little film grain down here — try typing "grain", or "develop"', 'font-family: monospace; color: #9C4037;');
-console.log('%cjordanblum16@gmail.com', 'font-family: monospace; color: #888;');
+console.log('%chi@jordanblum.com', 'font-family: monospace; color: #888;');

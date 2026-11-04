@@ -56,7 +56,7 @@ test('contact and help work with JavaScript disabled and keyboard navigation', a
   const inquiry = page.locator('a[href^="mailto:"]');
   expect(await inquiry.count()).toBeGreaterThan(0);
   const contact = new URL((await inquiry.first().getAttribute('href'))!);
-  expect(contact.pathname).toBe('hello@buildwithblum.com');
+  expect(contact.pathname).toBe('hi@jordanblum.com');
   expect(contact.searchParams.get('subject')).toContain('Project inquiry');
   await page.goto('/apps/stamp-shift/support');
   await page.getByText('What does Extra Routes include?', { exact: true }).focus();

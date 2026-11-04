@@ -166,7 +166,7 @@ test('banned, stale, and tech-bro claims are absent', () => {
 test('public resume facts stay aligned with the canonical resume', () => {
   expect(src).toContain('Studio Art minor');
   expect(src).not.toContain('two majors');
-  expect(src).toContain('mailto:jordanblum16@gmail.com');
+  expect(src).toContain('mailto:hi@jordanblum.com');
   expect(src.toLowerCase()).toContain('eight years');
 });
 
@@ -179,6 +179,7 @@ test('llms.txt publishes a detailed resume with explicit team attribution', () =
   expect(llmsSource).toContain('more than 300 engineers');
   expect(llmsSource).toContain('Reduced release timelines by 50%');
   expect(llmsSource).toContain('https://jordanblum.com/about');
+  expect(llmsSource).toContain('mailto:hi@jordanblum.com');
 });
 
 test('llms.txt presents Savvy as current and Roam as past, without inventing Savvy results', () => {

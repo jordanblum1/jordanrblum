@@ -322,7 +322,7 @@ export const about = {
 };
 
 export const social = [
-  { label: 'Email', href: 'mailto:jordanblum16@gmail.com' },
+  { label: 'Email', href: 'mailto:hi@jordanblum.com' },
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/jordanblum1' },
   { label: 'GitHub', href: 'https://github.com/jordanblum1' },
   { label: 'blumblumblum', href: 'https://blumblumblum.com' },

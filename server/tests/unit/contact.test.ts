@@ -40,6 +40,7 @@ function dependencies(saveResult: 'created' | 'duplicate' | 'conflict' = 'create
   return {
     increment: vi.fn(async () => true),
     save: vi.fn(async () => saveResult),
+    notify: vi.fn(async () => undefined),
     id: () => id,
     now: () => new Date('2026-11-03T20:45:00.000Z'),
   };
@@ -57,9 +58,17 @@ describe('Blum Studios contact Lambda boundary', () => {
       idempotencyKey,
       expect.stringMatching(/^[a-f0-9]{64}$/),
     );
+    expect(created.notify).toHaveBeenCalledWith(
+      { name: 'Jordan Blum', email: 'hello@example.test', message: 'I need help building a small app.' },
+      idempotencyKey,
+    );
 
-    expect((await handleContactRequest(event(), dependencies('duplicate'))).statusCode).toBe(200);
-    expect((await handleContactRequest(event(), dependencies('conflict'))).statusCode).toBe(409);
+    const duplicate = dependencies('duplicate');
+    expect((await handleContactRequest(event(), duplicate)).statusCode).toBe(200);
+    expect(duplicate.notify).toHaveBeenCalledOnce();
+    const conflict = dependencies('conflict');
+    expect((await handleContactRequest(event(), conflict)).statusCode).toBe(409);
+    expect(conflict.notify).not.toHaveBeenCalled();
 
     const raw = JSON.stringify(validInput);
     const encoded = event(validInput, { body: Buffer.from(raw).toString('base64'), isBase64Encoded: true });
@@ -128,6 +137,12 @@ describe('Blum Studios contact Lambda boundary', () => {
     const databaseFailure = dependencies();
     databaseFailure.save.mockRejectedValue(new Error('Database unavailable'));
     expect((await handleContactRequest(event(), databaseFailure)).statusCode).toBe(503);
+    expect(databaseFailure.notify).not.toHaveBeenCalled();
+
+    const notificationFailure = dependencies();
+    notificationFailure.notify.mockRejectedValue(new Error('SES unavailable'));
+    expect((await handleContactRequest(event(), notificationFailure)).statusCode).toBe(503);
+    expect(notificationFailure.save).toHaveBeenCalledOnce();
   });
 
   it('accepts honeypot spam without storing contact data', async () => {
@@ -136,6 +151,7 @@ describe('Blum Studios contact Lambda boundary', () => {
     expect(result.statusCode).toBe(201);
     expect(deps.increment).toHaveBeenCalledOnce();
     expect(deps.save).not.toHaveBeenCalled();
+    expect(deps.notify).not.toHaveBeenCalled();
   });
 
   it('classifies atomic SQL insert, duplicate, and changed-content conflict results', async () => {
