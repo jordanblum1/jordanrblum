@@ -242,7 +242,9 @@ export async function handleContactRequest(
     }
     const knownErrors = ['AccessDeniedException', 'MessageRejected', 'ValidationException', 'ResourceNotFoundException', 'ConditionalCheckFailedException', 'TimeoutError', 'AbortError', 'NeonDbError'];
     const code = error instanceof Error && knownErrors.includes(error.name) ? error.name : 'Error';
-    console.error('studio_contact_unavailable', { stage, code });
+    const action = ['ses:SendEmail', 'ses:SendRawEmail', 'dynamodb:GetItem', 'dynamodb:UpdateItem']
+      .find(candidate => error instanceof Error && error.message.includes(candidate)) ?? 'unknown';
+    console.error('studio_contact_unavailable', { stage, code, action });
     return jsonResponse(503, { error: 'Contact is temporarily unavailable. Please try again later.' });
   }
 }

@@ -51,15 +51,16 @@ describe('Blum Studios contact Lambda boundary', () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       const deps = dependencies();
-      const failure = new Error('private provider data and inquiry content');
+      const failure = new Error('private provider data and inquiry content; not authorized to perform ses:SendRawEmail');
       failure.name = 'AccessDeniedException';
       deps.notify.mockRejectedValueOnce(failure);
       expect((await handleContactRequest(event(), deps)).statusCode).toBe(503);
-      expect(log).toHaveBeenLastCalledWith('studio_contact_unavailable', { stage: 'notify', code: 'AccessDeniedException' });
+      expect(log).toHaveBeenLastCalledWith('studio_contact_unavailable', { stage: 'notify', code: 'AccessDeniedException', action: 'ses:SendRawEmail' });
       failure.name = 'private unexpected name';
+      failure.message = 'private unexpected details';
       deps.save.mockRejectedValueOnce(failure);
       expect((await handleContactRequest(event(), deps)).statusCode).toBe(503);
-      expect(log).toHaveBeenLastCalledWith('studio_contact_unavailable', { stage: 'save', code: 'Error' });
+      expect(log).toHaveBeenLastCalledWith('studio_contact_unavailable', { stage: 'save', code: 'Error', action: 'unknown' });
       expect(JSON.stringify(log.mock.calls)).not.toContain('private');
     } finally {
       log.mockRestore();
