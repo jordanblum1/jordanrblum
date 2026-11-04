@@ -638,3 +638,57 @@ test('enabling reduced motion after dismissal does not revive a cancelled morph'
   expect(await page.locator('[data-contact-surface]').evaluate(surface => getComputedStyle(surface).transform)).toBe('none');
   expect(await page.locator('dialog').evaluate(dialog => dialog.getAnimations({ subtree: true }).length)).toBe(0);
 });
+
+
+test('reopening a scrolled error draft brings the focused Name field back into view', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 420 });
+  await page.route(contactEndpoint, route => route.fulfill({ status: 200, json: { success: false } }));
+  await openContact(page);
+  await fillContact(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await page.getByRole('link', { name: 'Email instead' }).scrollIntoViewIfNeeded();
+  const content = page.locator('[data-contact-dialog-content]');
+  expect(await content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  const name = page.getByLabel('Name', { exact: true });
+  await expect(name).toBeFocused();
+  await expect(name).toBeInViewport({ ratio: 1 });
+  expect(await content.evaluate(element => element.scrollTop)).toBe(0);
+  const fieldBounds = await name.boundingBox();
+  const contentBounds = await content.boundingBox();
+  if (!fieldBounds || !contentBounds) throw new Error('missing contact bounds');
+  expect(fieldBounds.y).toBeGreaterThanOrEqual(contentBounds.y);
+  expect(fieldBounds.y + fieldBounds.height).toBeLessThanOrEqual(contentBounds.y + contentBounds.height);
+  await expect(page.getByLabel('Message', { exact: true })).toHaveValue('Hello, I have a project in mind.');
+  await expect(page.locator('[data-contact-error]')).toContainText('Try again');
+});
+
+test('reopening a scrolled pending draft shows its focused close control without changing the send', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 375, height: 420 });
+  let release: () => void = () => {};
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let sends = 0;
+  await page.route(contactEndpoint, async route => { sends += 1; await held; await route.fulfill({ status: 200, json: { success: false } }); });
+  await openContact(page);
+  await fillContact(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+  const content = page.locator('[data-contact-dialog-content]');
+  await content.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  expect(await content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('button', { name: 'Contact', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Close contact form' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Close contact form' })).toBeInViewport({ ratio: 1 });
+  await expect(page.getByLabel('Name', { exact: true })).toBeInViewport({ ratio: 1 });
+  expect(await content.evaluate(element => element.scrollTop)).toBe(0);
+  await expect(page.getByLabel('Message', { exact: true })).toBeDisabled();
+  await expect(page.getByLabel('Message', { exact: true })).toHaveValue('Hello, I have a project in mind.');
+  release();
+  await expect(page.locator('[data-contact-error]')).toContainText('Try again');
+  expect(sends).toBe(1);
+});

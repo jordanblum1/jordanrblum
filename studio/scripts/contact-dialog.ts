@@ -29,9 +29,9 @@ export function initContactDialog(root: ParentNode = document): void {
   const finishClose = () => {
     shape?.cancel();
     reveal?.cancel();
+    content.scrollTop = 0;
     dialog.close();
     dialog.style.height = '';
-    dialog.scrollTop = 0;
     trigger.style.visibility = '';
     content.style.opacity = '';
     content.inert = false;
@@ -72,6 +72,7 @@ export function initContactDialog(root: ParentNode = document): void {
     content.inert = true;
     content.style.opacity = '0';
     dialog.showModal();
+    content.scrollTop = 0;
     trigger.style.visibility = 'hidden';
     if (updateHash && location.hash !== '#contact') history.pushState(null, '', `${location.pathname}${location.search}#contact`);
     if (!preference.matches) {
