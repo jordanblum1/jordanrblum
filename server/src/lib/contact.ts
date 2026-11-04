@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { neon } from '@neondatabase/serverless';
 import { clientIp, rateLimitBucket, type ClientIpEvent } from './clientIp.js';
+import { notifyContact } from './contactNotification.js';
 import { atomicIncrementWithLimit } from './dynamo.js';
 import { hashIp } from './ipHash.js';
 
@@ -41,6 +42,7 @@ type ContactQuery = (text: string, values: unknown[]) => Promise<unknown[]>;
 interface ContactDependencies {
   increment: (key: string, limit: number, ttlSeconds: number) => Promise<boolean>;
   save: (input: ContactInput, id: string, idempotencyKey: string, fingerprint: string) => Promise<ContactSaveResult>;
+  notify: (input: ContactInput, idempotencyKey: string) => Promise<void>;
   id: () => string;
   now: () => Date;
 }
@@ -48,6 +50,7 @@ interface ContactDependencies {
 const defaultDependencies: ContactDependencies = {
   increment: atomicIncrementWithLimit,
   save: saveContact,
+  notify: notifyContact,
   id: randomUUID,
   now: () => new Date(),
 };
@@ -227,6 +230,7 @@ export async function handleContactRequest(
     if (saved === 'conflict') {
       return jsonResponse(409, { error: 'Idempotency key was already used for a different message.' });
     }
+    await dependencies.notify(parsed.input, idempotencyKey);
     return jsonResponse(saved === 'created' ? 201 : 200, { success: true });
   } catch (error) {
     if (error instanceof ContactRequestError) {

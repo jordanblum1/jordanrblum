@@ -1,4 +1,8 @@
+import { social } from '../data/site';
 import { waitlistSource } from '../data/waitlist';
+
+const contactHref = social.find((entry) => entry.href.startsWith('mailto:'))!.href;
+
 export function setupWaitlist(element: Element): void {
   if (!(element instanceof HTMLFormElement)) return;
   const fieldset = element.querySelector('fieldset');
@@ -29,7 +33,7 @@ export function setupWaitlist(element: Element): void {
     } catch {
       status.textContent = 'Your signup could not be saved. Try again or ';
       const contact = document.createElement('a');
-      contact.href = element.dataset.contact ?? 'mailto:jordanblum16@gmail.com';
+      contact.href = element.dataset.contact ?? contactHref;
       contact.textContent = 'contact support';
       status.append(contact,'.');
       status.setAttribute('data-error','true');

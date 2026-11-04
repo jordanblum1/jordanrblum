@@ -376,7 +376,7 @@ test('shows the rate-limit notice when the backend streams an error event', asyn
   const errorBubble = page.locator('[data-chat-log] .chat-bubble.role-system').last();
   await expect(errorBubble).toContainText('getting a lot of messages');
   // The rate-limit notice keeps the email reachable inline.
-  const mailto = errorBubble.locator('a[href="mailto:jordanblum16@gmail.com"]');
+  const mailto = errorBubble.locator('a[href="mailto:hi@jordanblum.com"]');
   await expect(mailto).toBeVisible();
   await expect(mailto).toHaveText('email Jordan directly');
 });
@@ -395,7 +395,7 @@ test('an unreachable backend shows an error bubble with a working mailto escape 
 
   // The inline mailto is the only remaining email surface when the backend is
   // down — it must be a real, visible anchor with the site's contact address.
-  const mailto = errorBubble.locator('a[href="mailto:jordanblum16@gmail.com"]');
+  const mailto = errorBubble.locator('a[href="mailto:hi@jordanblum.com"]');
   await expect(mailto).toBeVisible();
   await expect(mailto).toHaveText('email Jordan directly');
 });

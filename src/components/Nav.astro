@@ -2,10 +2,12 @@
 import { Image } from 'astro:assets';
 import jrbBlue from '../assets/identity/jrb-logo-blue.png';
 import jrbRed from '../assets/identity/jrb-logo-red.png';
+import { social } from '../data/site';
 
 const onHome = Astro.url.pathname === '/';
 const onAbout = Astro.url.pathname.startsWith('/about');
 const workHref = onHome ? '#work' : '/#work';
+const emailHref = social.find((entry) => entry.href.startsWith('mailto:'))!.href;
 ---
 
 <nav class="nav-shell" aria-label="Primary">
@@ -58,7 +60,7 @@ const workHref = onHome ? '#work' : '/#work';
         </span>
         <span class="nav-label">Chat</span>
       </button>
-      <a class="nav-email" href="mailto:jordanblum16@gmail.com">
+      <a class="nav-email" href={emailHref}>
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 20 20" fill="none">
             <rect x="2.75" y="4.5" width="14.5" height="11" rx="2.5" stroke="currentColor" stroke-width="1.5" />

@@ -1,0 +1,32 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "dynamodb:GetItem",
+      "Resource": "arn:aws:dynamodb:us-east-1:868796843372:table/jordanrblum-chat-rate-limit",
+      "Condition": {
+        "ForAllValues:StringLike": {
+          "dynamodb:LeadingKeys": [
+            "CONTACT_EMAIL#*"
+          ]
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": "ses:SendEmail",
+      "Resource": "arn:aws:ses:us-east-1:868796843372:identity/jordanblum.com",
+      "Condition": {
+        "StringEquals": {
+          "ses:FromAddress": "hi@jordanblum.com"
+        },
+        "ForAllValues:StringEquals": {
+          "ses:Recipients": [
+            "hi@jordanblum.com"
+          ]
+        }
+      }
+    }
+  ]
+}

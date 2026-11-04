@@ -120,6 +120,13 @@ jobs:
             --policy-name "${ROLE_NAME}-policy" \
             --policy-document "$POLICY_DOC"
 
+          # Keep contact mail permissions in their own converged inline policy
+          # so this workflow never replaces unrelated role policies.
+          aws iam put-role-policy \
+            --role-name "$ROLE_NAME" \
+            --policy-name "${ROLE_NAME}-contact-mail" \
+            --policy-document file://infra/contact-email-policy.json
+
           if [ "$NEW_ROLE" = "true" ]; then
             echo "Waiting for IAM role propagation..."
             sleep 10
@@ -434,8 +441,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Converge contact mail IAM policy
+        working-directory: server
+        run: |
+          set -euo pipefail
+          aws iam put-role-policy \
+            --role-name "$ROLE_NAME" \
+            --policy-name "${ROLE_NAME}-contact-mail" \
+            --policy-document file://infra/contact-email-policy.json
+
       - name: Deploy code to the existing Lambda function
         env:
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
           CONTACT_DATABASE_URL: ${{ secrets.CONTACT_DATABASE_URL }}
         run: |
           set -euo pipefail
@@ -448,6 +465,10 @@ jobs:
             rmdir "$lambda_env_dir"
           }
           trap cleanup_lambda_env EXIT
+          if [ -z "${CONTACT_EMAIL:-}" ]; then
+            echo "::error::Secret CONTACT_EMAIL is not set — refusing to deploy a stale reveal address."
+            exit 1
+          fi
           if ! aws lambda get-function --function-name "$FUNCTION_NAME" >/dev/null 2>/tmp/fn.err; then
             echo "::error::Lambda function $FUNCTION_NAME does not exist yet — run the 'provision' job (workflow_dispatch) first."
             cat /tmp/fn.err >&2
@@ -469,6 +490,7 @@ jobs:
             exit 1
           fi
           CURRENT_CHAT_MODEL=$(jq -r '.Variables.CHAT_MODEL // ""' "$lambda_env_current")
+          CURRENT_CONTACT_EMAIL=$(jq -r '.Variables.CONTACT_EMAIL // ""' "$lambda_env_current")
 
           TARGET_CHAT_MODEL="$CURRENT_CHAT_MODEL"
           if [ -z "$TARGET_CHAT_MODEL" ] || [ "$TARGET_CHAT_MODEL" = "$LEGACY_CHAT_MODEL" ]; then
@@ -476,15 +498,17 @@ jobs:
           fi
           jq \
             --arg model "$TARGET_CHAT_MODEL" \
+            --arg email "$CONTACT_EMAIL" \
             --arg contactDatabase "${CONTACT_DATABASE_URL:-}" \
             '.Variables
               | .CHAT_MODEL = $model
+              | .CONTACT_EMAIL = $email
               | if $contactDatabase != "" then .CONTACT_DATABASE_URL = $contactDatabase else . end
               | {Variables: .}' \
             "$lambda_env_current" \
             > "$lambda_env_updated"
 
-          if [ "$TARGET_CHAT_MODEL" != "$CURRENT_CHAT_MODEL" ] || [ -n "${CONTACT_DATABASE_URL:-}" ]; then
+          if [ "$TARGET_CHAT_MODEL" != "$CURRENT_CHAT_MODEL" ] || [ "$CONTACT_EMAIL" != "$CURRENT_CONTACT_EMAIL" ] || [ -n "${CONTACT_DATABASE_URL:-}" ]; then
             aws lambda update-function-configuration \
               --function-name "$FUNCTION_NAME" \
               --environment "file://$lambda_env_updated" \

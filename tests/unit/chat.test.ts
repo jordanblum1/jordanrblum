@@ -329,7 +329,7 @@ test('LIMIT_NOTICE carries the approved conversation-full copy', () => {
 });
 
 test('CONTACT_EMAIL_HREF resolves to the site mailto', () => {
-  expect(CONTACT_EMAIL_HREF).toBe('mailto:jordanblum16@gmail.com');
+  expect(CONTACT_EMAIL_HREF).toBe('mailto:hi@jordanblum.com');
 });
 
 // The panel has no persistent mailto anymore — error/limit notices are the
@@ -340,7 +340,7 @@ test('renderNoticeInto turns the email phrase into a real mailto anchor', () => 
 
   const link = el.querySelector('a');
   expect(link).not.toBeNull();
-  expect(link!.getAttribute('href')).toBe('mailto:jordanblum16@gmail.com');
+  expect(link!.getAttribute('href')).toBe('mailto:hi@jordanblum.com');
   expect(link!.textContent).toBe('email Jordan directly');
   expect(el.textContent).toBe(LIMIT_NOTICE);
   // Built with createElement, never innerHTML: exactly one element, the anchor.
