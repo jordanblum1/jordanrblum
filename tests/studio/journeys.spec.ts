@@ -210,44 +210,32 @@ test('reduced motion leaves the city poster without downloading video', async ({
   await page.goto('/');
   await expect(page.locator('[data-city-background]')).toHaveAttribute('data-video-state', 'poster');
   await expect(page.locator('[data-city-video]')).not.toHaveAttribute('src');
-  await expect(page.locator('[data-city-motion-toggle]')).toBeHidden();
+  await expect(page.locator('[data-city-motion-toggle]')).toHaveCount(0);
   expect(requests).toEqual([]);
 });
 
-test('city video plays, pauses by keyboard and pointer, and preserves pause on portrait swap', async ({ page }) => {
+test('city video autoplays the responsive film and preserves progress on portrait swap', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', request => { if (request.url().endsWith('.mp4')) requests.push(request.url()); });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const video = page.locator('[data-city-video]');
-  const pause = page.getByRole('button', { name: 'Pause city animation' });
-  await expect(pause).toBeVisible();
+  await expect(page.locator('[data-city-motion-toggle]')).toHaveCount(0);
   await expect(video).toHaveAttribute('src', '/assets/blum-studios/journey-landscape.mp4');
   expect(requests.every(url => url.endsWith('journey-landscape.mp4'))).toBe(true);
   expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.muted && element.loop && element.playsInline)).toBe(true);
   const started = await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime : 0);
   await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime : 0)).toBeGreaterThan(started);
-  await pause.focus();
-  await page.keyboard.press('Space');
-  const play = page.getByRole('button', { name: 'Play city animation' });
-  await expect(play).toBeFocused();
-  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
-  await page.keyboard.press('Enter');
-  await expect(pause).toBeVisible();
-  await pause.click();
-  await expect(play).toBeVisible();
   const progress = await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime / element.duration : 0);
   await page.setViewportSize({ width: 375, height: 900 });
   await expect(video).toHaveAttribute('src', '/assets/blum-studios/journey-portrait.mp4');
-  await expect(play).toBeVisible();
-  expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
-  expect(await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime / element.duration : 0)).toBeCloseTo(progress, 2);
-  await play.click();
-  await expect(pause).toBeVisible();
+  await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement ? element.duration : 0)).toBe(30);
+  await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement && !element.paused)).toBe(true);
+  expect(await video.evaluate(element => element instanceof HTMLVideoElement ? element.currentTime / element.duration : 0)).toBeCloseTo(progress, 1);
   await expect(page.locator('[data-city-background]')).toHaveAttribute('data-video-state', 'playing');
 });
 
-test('dialog pauses city motion and resumes new motion preference without overriding a manual pause', async ({ page }) => {
+test('dialog pauses city motion and resumes when motion is allowed', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openContact(page);
   const video = page.locator('[data-city-video]');
@@ -255,14 +243,12 @@ test('dialog pauses city motion and resumes new motion preference without overri
   await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement && element.readyState >= 3)).toBe(true);
   expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
   await page.getByRole('button', { name: 'Close contact form' }).click();
-  await expect(page.getByRole('button', { name: 'Pause city animation' })).toBeVisible();
   await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement && !element.paused)).toBe(true);
-  await page.getByRole('button', { name: 'Pause city animation' }).click();
   await page.getByRole('button', { name: 'Contact', exact: true }).click();
   await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
-  await page.getByRole('button', { name: 'Close contact form' }).click();
-  await expect(page.getByRole('button', { name: 'Play city animation' })).toBeVisible();
   expect(await video.evaluate(element => element instanceof HTMLVideoElement && element.paused)).toBe(true);
+  await page.getByRole('button', { name: 'Close contact form' }).click();
+  await expect.poll(() => video.evaluate(element => element instanceof HTMLVideoElement && !element.paused)).toBe(true);
 });
 
 test('contact hashes and the compatibility route open the same native dialog', async ({ page }) => {
