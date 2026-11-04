@@ -43,7 +43,7 @@ export function initContactForm(root: ParentNode = document): void {
     form.setAttribute('aria-busy', 'true');
     status.textContent = 'Sending…';
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15_000);
+    const timeout = setTimeout(() => controller.abort(), 20_000);
     try {
       if (draft !== body || !key) {
         key = crypto.randomUUID();
