@@ -16,7 +16,10 @@
     {
       "Effect": "Allow",
       "Action": "ses:SendEmail",
-      "Resource": "arn:aws:ses:us-east-1:868796843372:identity/jordanblum.com",
+      "Resource": [
+        "arn:aws:ses:us-east-1:868796843372:identity/jordanblum.com",
+        "arn:aws:ses:us-east-1:868796843372:identity/hi@jordanblum.com"
+      ],
       "Condition": {
         "StringEquals": {
           "ses:FromAddress": "hi@jordanblum.com"
