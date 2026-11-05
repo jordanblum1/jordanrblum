@@ -1,36 +1,39 @@
-# Blum Studios cursor-to-build ident
+# Blum Studios canvas-to-3D ident
 
-A three-second story about making digital things. The cursor grabs a logo handle and flattens the terracotta BLUM mark into a draft. It then clicks **Build**: the letters rise in sequence as the button fills, confirms completion and clears to **Studios**. The cursor causes the animation; it is not an idle decorative pointer. No service subtitle, architectural windows, pasted letter symbols or tiny dashboards.
+A fresh three-second illustration of making a logo on a creative canvas. The cursor snaps the M into the flat BLUM mark, then grabs the grouped selection and lifts every letter into a solid terracotta shape. All four letters reach full depth at frame47 and remain complete through frame89: a 43-frame/1.43-second hold. No Build button, service subtitle or architectural windows.
 
-## Direction and sources
+## Why this source changed
 
-[How Figma evolved its visual language](https://www.figma.com/blog/figma-on-figma-evolving-our-visual-language/) describes actions such as selection, activation, manipulation and revealing underlying structure. [Figma Motion](https://www.figma.com/motion/) describes controlled keyframes and reusable motion. Both first-party pages were read through Savvy Firecrawl on November 5, 2026. The causal drag → build → result sequence is our design interpretation, not a copied Figma asset or measured conversion claim.
+The earlier generated motion left the M looking unfinished. This version constructs real extruded geometry from all four original `src/assets/identity/blum-mark.svg` paths. The M's complete outline and depth are controlled directly, with one shared lift value for every letter. `motion.js` owns placement/lift timing; regression checks guard the complete-result hold and exact path inputs. Beveled edges, matte grain, warm material and soft shadows retain the sculptural style.
 
-Owned `src/assets/identity/blum-mark.svg` and the original vector concept guided the generated source. Existing licensed `src/assets/fonts/chillax-600.woff2` supplies native type. No third-party graphics or people are generation inputs. The sculptural interpretation is not a pixel-exact SVG projection.
+[Figma’s visual-language case study](https://www.figma.com/blog/figma-on-figma-evolving-our-visual-language/) and [Figma Motion](https://www.figma.com/motion/) informed the selection/manipulation story. Both first-party pages were read through Savvy Firecrawl on November5,2026. This is an original studio identity illustration, not a Figma recording, integration or copied interface.
 
-1. Higgsfield GPT Image2.5 high 2K refined one still: `329bd006-0f72-4110-a59c-16ebf0ed16c0`, quoted 2.75 credits.
-2. Seedance2.5 used it as both endpoints for a four-second silent 720p assembly: `4eb70cab-b41b-4c08-82d8-c104b63f7463`, quoted 28 credits.
-3. A targeted Seedance2.5 video edit removed literal windows and retained motion: `8565ad91-c870-4a2e-984a-a9061f5626d0`, quoted 31 credits. The current 97-frame/24fps/4.041667-second source is `seedance-logo-source.mp4`, outside public assets.
+## Sources and runtime
 
-The observed balances 371.95 → 341.20 → 310.20 match the 61.75-credit total across the two generated versions. This cursor-driven iteration reuses that source and spends no additional generation credits. Exact prompts, quotes, IDs and accepted still remain in `~/.local/share/agent-workflows/studio-building-og-20261105/`. `media.json` pins composition/source/output hashes and provenance. [Provider output-use guidance](https://higgsfield.ai/creator-hub/help-center/account/who-owns-my-generations-and-can-i-use-them-commercially), checked November 5, permits commercial outputs. No new project, subscription or account was created.
+- Owned SVG paths and the existing licensed Chillax font. `logo-paths.json` is an exact extraction of the four source paths, verified against the SVG.
+- Existing Three.js0.185.1, Remotion4.0.463 and React19.2.6. No new package, website dependency, model generation, upload, subscription or credit spend was needed.
+- `logo-scene.js` creates the geometry, lighting, projection and pointer targets. Mirroring happens in the SVG transform before extrusion, preserving cap winding. The installed SVGLoader's `path.toShapes()` avoids its deprecated wrapper.
+- `index.jsx` renders the local WebGL canvas and vector editing overlay; none of this runtime ships to the website. Public visitors receive only the final MP4 or JPEG when a share client requests it.
+
+`media.json` pins current source/output hashes and actual media properties. Published v3/v7 files remain unchanged for cached links. `seedance-logo-source.mp4` remains the earlier published v7 source; the new composition does not read or sample it. Historical generation provenance remains in Git and the prior task receipt.
 
 ## Reproduce
 
-`index.jsx` is the deterministic Remotion composition. Reuse the pinned Remotion4.0.463/React19.2.6 runtime at `/Users/jordan/projects/output/blum-studios-ads-2026-11-05/runtime/`; it is build-time tooling, not a website dependency. The ignored render workspace is `output/studio-og/`, with its `node_modules` linked to that runtime and the source copied to `src/index.jsx`. Copy the committed raw clip to `public/source-video.mp4` and Chillax to the same public folder. Do not install latest or add Remotion to Astro.
-
-A frame-driven Freeze controls source sampling in composition-time units (30fps), not the input's 24fps frame numbers. Dragging advances source time 0 → 1.5 seconds; the button press at composition frame32 releases the 1.5 → 4-second rise. The final 0.2-second blend to source time zero stabilizes the loop. Cursor/handle/progress coordinates are derived from the same composition frame. The button and Studios text have non-overlapping visibility windows.
+Use the isolated pinned runtime at `/Users/jordan/projects/output/blum-studios-ads-2026-11-05/runtime/`. The ignored workspace `output/studio-og/` links its node_modules to that runtime; the existing repo installation supplies Three.js0.185.1. Copy index.jsx, logo-scene.js, motion.js and logo-paths.json into its src folder, and Chillax into its public folder. No latest/download step is required.
 
 ```
 ./node_modules/.bin/remotion render src/index.jsx StudioOG ABSOLUTE/render.mp4 \
   --public-dir=ABSOLUTE/public --codec=h264 --pixel-format=yuv420p \
-  --color-space=bt709 --concurrency=1 \
+  --color-space=bt709 --concurrency=1 --gl=angle \
   --browser-executable='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 ```
 
-Pass absolute public/output paths so the nested renderer does not discover Astro's public folder. Losslessly remux video using ffmpeg `-map 0:v:0 -c:v copy -an -movflags +faststart` into `public/assets/blum-studios/studio-og-v7.mp4`. Decode its first frame into `studio-og-v7.jpg` using `-frames:v 1 -q:v 2`. Validate 1200×630, 90 frames/30fps, three seconds, H264/yuv420p/bt709, no audio, faststart and full decode. Inspect actual drag/press/build/completion states, cursor targets, type, loop seam and compact playback. The unit guard verifies all source/output hashes. Published v3 files remain immutable; unshipped drafts v4–v6 are superseded.
+Use absolute output/public paths to avoid ancestor Astro discovery. WebGL runs only while rendering locally. Losslessly remux using ffmpeg `-map 0:v:0 -c:v copy -an -movflags +faststart` into `public/assets/blum-studios/studio-og-v8.mp4`. Decode frame72 (`-vf 'select=eq(n\,72)' -frames:v 1 -q:v 2`) to studio-og-v8.jpg. The poster intentionally shows the complete result, rather than the flat opening draft.
 
-## Metadata and limits
+Validate 1200×630,90frames/30fps,three seconds,H264/yuv420p/bt709,no audio,faststart and full decode. Inspect the actual M placement, pointer-to-handle attachment, 3D lift, complete held result and compact playback. The loop holds the finished mark, then cuts back to the editing draft on replay; it does not blend away an unfinished M or claim a seamless geometry loop. Failed renders must not promote a prior output file: inspect the successful current render before replacing exports.
 
-Only the studio homepage declares a direct HTTPS MP4 `og:video` with actual MIME/dimensions. Layouts retain a matching JPEG large-image fallback and alt. Tags are server-rendered and consistent across devices; normal visits do not preload/embed OG assets. The source clip is not a public website asset.
+## Delivery limits
 
-[Apple TN3156](https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages), checked via Savvy Firecrawl November 5, documents direct downloadable video metadata, static tags, fallback imagery and a 10MB associated-resource guideline. Recipient apps control support, autoplay, reduced-motion behavior and cached-card refresh. X stays `summary_large_image`. Source/browser/native-metadata checks do not prove a personal Messages share or every recipient's settings.
+Only the studio homepage declares server-rendered direct HTTPS MP4 og:video with actual MIME/dimensions. A matching JPEG result poster and accessible alt remain available; normal page visits do not preload/embed OG artwork. Homepage body, contact flow and app pages are unchanged.
+
+[Apple TN3156](https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages), read via Savvy Firecrawl November5, documents direct video metadata and image fallbacks. Recipient apps control support, autoplay, reduced-motion behavior and cached-card refresh. X stays summary_large_image. Browser/native-metadata checks do not prove a personal Messages share or every recipient's settings.
