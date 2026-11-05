@@ -2,37 +2,39 @@ import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Composition, Img, cancelRender, continueRender, delayRender, interpolate, registerRoot, staticFile, useCurrentFrame} from 'remotion';
 
 export const StudioCard = () => {
-  const frame = useCurrentFrame();
-  const phase = frame / 179 * Math.PI * 2;
+  const frame = (useCurrentFrame() + 24) % 89;
   const clamp = {extrapolateLeft:'clamp', extrapolateRight:'clamp'};
-  const alive = interpolate(frame, [45,57,130,145], [0,1,1,0], clamp);
-  const birthday = interpolate(frame, [105,117,165,179], [0,1,1,0], clamp);
-  const [fontHandle] = useState(() => delayRender('Load studio fonts'));
+  const stroke = interpolate(frame, [8,44], [0,1], clamp);
+  const pencilOpacity = interpolate(frame, [5,9,47,55], [0,1,1,0], clamp);
+  const inkOpacity = interpolate(frame, [8,12,66,84], [0,1,1,0], clamp);
+  const [fontHandle] = useState(() => delayRender('Load studio font'));
   useEffect(() => {
-    Promise.all([
-      new FontFace('Switzer', `url(${staticFile('switzer-400.woff2')})`).load(),
-      new FontFace('Chillax', `url(${staticFile('chillax-600.woff2')})`, {weight: '600'}).load(),
-    ]).then(fonts => {
-      fonts.forEach(font => document.fonts.add(font));
+    new FontFace('Chillax', `url(${staticFile('chillax-600.woff2')})`, {weight:'600'}).load().then(font => {
+      document.fonts.add(font);
       continueRender(fontHandle);
     }).catch(cancelRender);
   }, [fontHandle]);
-  return <AbsoluteFill style={{background:'#F7F3ED', color:'#2B2521', overflow:'hidden', fontFamily:'Switzer'}}>
-    <Img src={staticFile('city.webp')} style={{position:'absolute',left:0,bottom:-95,width:1200,height:675,objectFit:'cover',opacity:0.32,transform:`translateY(${Math.sin(phase)*2}px)`}} />
-    <div style={{position:'absolute',inset:0,background:'linear-gradient(#F7F3ED 0%, #F7F3ED 30%, rgba(247,243,237,.75) 64%, rgba(247,243,237,0) 100%)'}} />
-    <div style={{position:'absolute',left:70,top:70,width:440}}>
-      <Img src={staticFile('blum.svg')} style={{width:310,height:156,objectFit:'contain',transform:`translateY(${Math.sin(phase)*2}px)`}} />
-      <div style={{fontFamily:'Chillax',fontWeight:600,fontSize:51,lineHeight:1,letterSpacing:'-0.06em',marginLeft:59,marginTop:-12}}>Studios</div>
-      <div style={{fontFamily:'Chillax',fontWeight:600,fontSize:49,lineHeight:1.13,letterSpacing:'-0.055em',marginTop:55}}>iOS apps.<br/>Web products.</div>
-    </div>
-    <div style={{position:'absolute',left:598,top:241,width:455,height:285,padding:14,background:'#DFE6DB',border:'1px solid #D3DACC',borderRadius:27,boxShadow:'0 20px 45px rgba(43,37,33,.12)',transform:`translateY(${Math.sin(phase)*9}px) rotate(${-5+Math.sin(phase)*0.6}deg)`}}>
-      <div style={{height:20,display:'flex',gap:5,alignItems:'center',paddingLeft:3}}>{[0,1,2].map(dot=><span key={dot} style={{width:5,height:5,borderRadius:'50%',background:'#8F9F88'}}/>)}</div>
-      <Img src={staticFile('web.webp')} style={{display:'block',width:'100%',height:230,objectFit:'contain',borderRadius:15,background:'#F7F3ED'}} />
-    </div>
-    <div style={{position:'absolute',left:921,top:75,width:214,height:440,transform:`translateY(${-Math.sin(phase)*11}px) rotate(${7-Math.sin(phase)*0.8}deg)`,filter:'drop-shadow(0 18px 17px rgba(43,37,33,.16))'}}>
-      {[['phone.webp',1],['phone-alive.webp',alive],['phone-birthday.webp',birthday]].map(([src,opacity]) => <Img key={src} src={staticFile(src)} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'contain',opacity}} />)}
-    </div>
+  return <AbsoluteFill style={{background:'#F7F3ED',overflow:'hidden'}}>
+    {[0,1,2,3].map(letter => {
+      const progress = interpolate(frame, [6+letter*5,30+letter*5], [0,1], clamp);
+      const press = Math.sin(progress*Math.PI);
+      return <Img key={letter} src={staticFile(`letter-${letter}.svg`)} style={{position:'absolute',left:75,top:-6,width:1050,height:528,objectFit:'contain',transform:`translateY(${press*10}px)`,filter:`drop-shadow(0 ${4+press*3}px 0 rgba(112,43,37,${.09+press*.07}))`}}/>;
+    })}
+    <svg width="1200" height="630" viewBox="0 0 1200 630" style={{position:'absolute',inset:0,opacity:inkOpacity}}>
+      <path d="M130 509 H1060" fill="none" stroke="#547FA0" strokeWidth="7" strokeLinecap="round" pathLength="1" strokeDasharray="1" strokeDashoffset={1-stroke}/>
+    </svg>
+    <div style={{position:'absolute',left:0,right:0,top:528,textAlign:'center',fontFamily:'Chillax',fontWeight:600,fontSize:74,lineHeight:1,letterSpacing:'-0.06em',color:'#2B2521'}}>Studios</div>
+    <svg width="330" height="130" viewBox="0 0 330 130" style={{position:'absolute',left:130+stroke*930,top:509-112,opacity:pencilOpacity,transform:'translateX(-12px)'}}>
+      <g stroke="#243F51" strokeWidth="3" strokeLinejoin="round">
+        <path d="M12 112 60 69 296 10 312 67 76 126Z" fill="#5E8FAC"/>
+        <path d="m60 69 236-59 8 27-236 59Z" fill="#8BB5CA"/>
+        <path d="m12 112 48-43 16 57Z" fill="#D7B785"/>
+        <path d="m12 112 15-14 5 17Z" fill="#243F51"/>
+        <path d="m296 10 11-3q12-3 15 10l9 31q3 12-9 15l-10 4Z" fill="#B85046"/>
+        <path d="m286 13 16 57" fill="none"/>
+      </g>
+    </svg>
   </AbsoluteFill>;
 };
-const Root = () => <Composition id="StudioOG" component={StudioCard} durationInFrames={180} fps={30} width={1200} height={630}/>;
+const Root = () => <Composition id="StudioOG" component={StudioCard} durationInFrames={90} fps={30} width={1200} height={630}/>;
 registerRoot(Root);

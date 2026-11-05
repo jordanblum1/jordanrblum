@@ -11,11 +11,11 @@ interface Props {
 }
 const { title, description, path = Astro.url.pathname } = Astro.props;
 const canonical = new URL(path, studio.origin);
-const socialImage = new URL('/assets/blum-studios/studio-og-v2.jpg', studio.origin);
-const socialVideo = path === '/' ? new URL('/assets/blum-studios/studio-og-v2.mp4', studio.origin) : null;
+const socialImage = new URL('/assets/blum-studios/studio-og-v3.jpg', studio.origin);
+const socialVideo = path === '/' ? new URL('/assets/blum-studios/studio-og-v3.mp4', studio.origin) : null;
 const socialTitle = path === '/' ? 'iOS apps & web products' : title;
 const socialDescription = path === '/' ? 'Independent product design and development. From idea to launch with Blum Studios.' : description;
-const socialAlt = 'Blum Studios with a genuine iPhone app, web project and illustrated New York backdrop.';
+const socialAlt = 'An oversized BLUM Studios mark with a blue drafting pencil drawing an underline.';
 ---
 <!doctype html>
 <html lang="en">

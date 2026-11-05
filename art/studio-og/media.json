@@ -12,44 +12,21 @@
       "sha256": "dea3eddf28866cfebbb7fb5f18ee1be38456fb8dc33224029e8f1ee79a9c4ecb"
     },
     {
-      "path": "src/assets/fonts/switzer-400.woff2",
-      "sha256": "ddd9595560c35725e00d01667ce9bee519d245620e610844f0dd149df10b5d5f"
-    },
-    {
       "path": "src/assets/fonts/chillax-600.woff2",
       "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56"
-    },
-    {
-      "path": "src/assets/studio-work/stamp-shift-iphone.webp",
-      "sha256": "0940f31cfbcf996b5e0e7d1d8d9c3940be68240e7f58efd8fe6718330422be12"
-    },
-    {
-      "path": "src/assets/studio-work/alive-still-iphone.webp",
-      "sha256": "704f83ca7bb4d04a274a60926b19c87d3cc9e89747e7712f4d0dcf77a5ff1eaa"
-    },
-    {
-      "path": "src/assets/studio-work/birthday-iphone.webp",
-      "sha256": "09ba4140656f258202d669b9c6c289c03b75f781854fe05e1a5c805c539f93d3"
-    },
-    {
-      "path": "src/assets/projects/peek-citibike.webp",
-      "sha256": "adc93f9ed0dd6748396cc6cc21546c12eecb8b0682001912e4a8478e18f5ea51"
-    },
-    {
-      "path": "public/assets/blum-studios/journey-poster-landscape.webp",
-      "sha256": "7f837383942233969e1f2dd5f7cd5f3bb9c539e7b51a39ad41851b803b6a5db4"
     }
   ],
+  "pencil": "Original vector paths in index.jsx; no stock or third-party graphic.",
   "outputs": [
     {
-      "path": "public/assets/blum-studios/studio-og-v2.mp4",
-      "sha256": "d1640e3bc94a99d449748b12f289aed4647cb6f1cc1a6fe4bd58fe93f44a82e7",
-      "bytes": 1786193
+      "path": "public/assets/blum-studios/studio-og-v3.mp4",
+      "sha256": "6fcfcf2fdf337c50673d5a5964669c10ddf8d4b9df38208a86cd501207478c63",
+      "bytes": 251060
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v2.jpg",
-      "sha256": "034fb44a34ccea061188e241d4bf4d2e64be28832df2a2abcb96241f2fd5b337",
-      "bytes": 96198
+      "path": "public/assets/blum-studios/studio-og-v3.jpg",
+      "sha256": "a249e11e7b5e27aa4465a3bfe9bfc09ecb214862443f1758939d0e45b2b4fd04",
+      "bytes": 48027
     }
   ],
   "video": {
@@ -63,15 +40,15 @@
         "pix_fmt": "yuv420p",
         "color_space": "bt709",
         "r_frame_rate": "30/1",
-        "nb_frames": "180",
+        "nb_frames": "90",
         "side_data_list": [
           {}
         ]
       }
     ],
     "format": {
-      "duration": "6.000000",
-      "size": "1786193"
+      "duration": "3.000000",
+      "size": "251060"
     }
   },
   "still": {
@@ -80,5 +57,6 @@
     "format": "JPEG",
     "frame": 0
   },
-  "limits": "Receiving clients own video support/cache/autoplay; no personal Messages share was sent."
+  "design": "Full-card giant BLUM/Studios, original drafting pencil, three-second loop; no small UI imagery.",
+  "limits": "Receivingclients own video/cache/autoplay; noMessages share sent."
 }

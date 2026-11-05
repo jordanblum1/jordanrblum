@@ -1,22 +1,22 @@
 # Blum Studios social preview
 
-A six-second silent studio postcard: original BLUM mark and concise service promise, genuine Work product composites, slow object motion and an illustrated New York backdrop. The first and last frame have matching geometry. This is link-preview media, separate from the homepage background and the freelance ad.
+A three-second silent full-card brand animation. The existing BLUM mark fills the artwork; four original letter groups gently press into warm paper while an original blue drafting pencil draws an underline. Large Studios lettering completes the identity. Every frame is readable, and frame0/89have matching geometry. There are no small phone screenshots, product collages, subtitles or personal contact details. This is link-preview media, separate from the homepage background and freelance ad.
 
 ## Sources and rights
 
-- `src/assets/identity/blum-mark.svg`: owned studio identity; recolored to the existing oxblood.
-- `src/assets/fonts/{switzer-400,chillax-600}.woff2`: existing licensed local studio fonts.
-- `src/assets/studio-work/{stamp-shift,alive-still,birthday}-iphone.webp`: existing first-party captures with the licensed Webmobilefirst iPhone frame flattened into the image. The complete capture and authentic device are contained uniformly; no standalone vendor frame is distributed. See [Work media](../../docs/studio-work.md).
-- `src/assets/projects/peek-citibike.webp`: owned publicly presented Citi Bike Wrapped project.
-- `public/assets/blum-studios/journey-poster-landscape.webp`: existing illustrated Williamsburg Bridge; source generation/reference rights in the external media ledger and [home media manifest](../../docs/studio-home-media.json).
+- `src/assets/identity/blum-mark.svg`: owned studio identity, split into its four existing letter groups and recolored to the existing oxblood. Geometry is preserved.
+- `src/assets/fonts/chillax-600.woff2`: existing licensed local studio font.
+- Pencil paths: original vector artwork inside `index.jsx`; no external stock, vendor device art or generated image.
 
-No new image generation, fonts, npm dependency, tracking, form behavior or hosting service was introduced. The video cycles actual app composites rather than generating or redrawing UI.
+No new generation credits, fonts, npm/site dependency, tracking, form behavior or hosting service. The earlier small product-card concept was rejected; only the large v3 assets are shipped by this PR.
 
 ## Reproduce
 
-`index.jsx` is the complete deterministic Remotion composition. Reuse the isolated pinned Remotion4.0.463/React19.2.6 runtime at `/Users/jordan/projects/output/blum-studios-ads-2026-11-05/runtime/`; it is build-time tooling, not a site dependency. Do not download latest or add Remotion to Astro. The tested workspace is ignored `output/studio-og/`, with `node_modules` linked to that runtime, a source copy and the sources above copied into `public/` as `blum.svg`, `city.webp`, `web.webp`, `phone.webp`, `phone-alive.webp`, `phone-birthday.webp` and the original font filenames. The SVG adds only `fill="#9C4037"` on the root.
+`index.jsx` is the complete deterministic Remotion composition. Reuse the isolated pinned Remotion4.0.463/React19.2.6 runtime at `/Users/jordan/projects/output/blum-studios-ads-2026-11-05/runtime/`; it is build-time tooling, not a site dependency. Do not add Remotion to Astro or download latest. The tested workspace is ignored `output/studio-og/`, with `node_modules` linked to that runtime and a source copy at `src/index.jsx`.
 
-From that workspace run the installed CLI with explicit absolute `--public-dir` and output paths (Remotion otherwise discovers the ancestor Astro package and serves the wrong public folder):
+Copy Chillax into its `public/`. Extract the four `<g>...</g>` blocks from the source logo in order; wrap each in `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576.87 290" fill="#9C4037">` and save as `public/letter-0.svg` through `letter-3.svg`. No geometry transformation is needed.
+
+From that workspace run the installed CLI with explicit absolute public/output paths (a nested render folder otherwise discovers the ancestor Astro package's public folder):
 
 ```
 ./node_modules/.bin/remotion render src/index.jsx StudioOG ABSOLUTE/render.mp4 \
@@ -25,10 +25,10 @@ From that workspace run the installed CLI with explicit absolute `--public-dir` 
   --browser-executable='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 ```
 
-Losslessly remux video only using installed ffmpeg (`-map 0:v:0 -c:v copy -an -movflags +faststart`) into `public/assets/blum-studios/studio-og-v2.mp4`. Decode its first frame into JPEG (`-frames:v 1 -q:v 2`) at `studio-og-v2.jpg`. Validate dimensions1200×630,180frames/30fps,6seconds,H264/yuv420p/bt709,no audio,faststart and full decode; inspect the three app states and the loop seam. `media.json` owns source/output hashes and final format evidence. Keep `v2` assets immutable; a later art change needs new filenames because receiving apps cache previews.
+Losslessly remux only video with installed ffmpeg (`-map 0:v:0 -c:v copy -an -movflags +faststart`) into `public/assets/blum-studios/studio-og-v3.mp4`. Decode the first frame into JPEG (`-frames:v 1 -q:v 2`) at `studio-og-v3.jpg`. Validate1200×630,90frames/30fps,3seconds,H264/yuv420p/bt709,no audio,faststart and full decode; inspect the pencil path, whole-card scale and loop seam. `media.json` owns source/output hashes and final format. Keep published filenames immutable; subsequent art needs a new version because receiving apps cache previews.
 
 ## Metadata and limits
 
-Only the studio homepage declares `og:video` with a direct absolute HTTPSMP4 URL, MIME type and actual dimensions. All studio layouts retain a JPEG large-image fallback and alt text, with server-rendered tags and consistent mobile/desktop output. No OG file is embedded/preloaded by a normal page visit, so this change adds no homepage media download.
+Only the studio homepage declares `og:video` with a direct absolute HTTPSMP4 URL, MIME and actual dimensions. Studio layouts retain the matching JPEG large-image fallback/alt text. Tags are static and consistent for mobile/desktop; normal site visits do not embed/preload either OG asset.
 
-[Apple TN3156](https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages), read through Savvy Firecrawl on November5,2026, documents direct playable/downloadable video metadata, server-rendered tags, an image fallback and a10MB associated-resource guideline. New video+poster remain well below that budget. Its guidance favors graphical imagery and minimal raster text; the card keeps only studio identity and the short service promise, with accessible text metadata. Playback, looping, reduced-motion preferences and refresh caches are controlled by the receiving app. A local/browser pass is not proof that every social network will animate, or that an existing cached Messages thread will refresh. X remains `summary_large_image`; no unsupported universal-video claim is made.
+[Apple TN3156](https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages), read via Savvy Firecrawl November5,2026, documents direct playable/downloadable video metadata, server-rendered tags, image fallbacks and a10MB associated-resource guideline. Its imagery guidance favors minimal raster text; this card carries only the identity, with an accessible descriptive title/alt. New video+poster remain well below the budget. Recipient apps control support, autoplay, reduced-motion preferences and cached-link refresh. X remains `summary_large_image`. Browser/source QA does not prove every social network animates or an old Messages thread refreshes.
