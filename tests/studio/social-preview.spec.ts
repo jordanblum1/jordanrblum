@@ -3,15 +3,15 @@ import {expect, test} from '@playwright/test';
 test('studio shares a downloadable video with a matching image fallback without loading either on the homepage', async ({page, request}) => {
   const socialDownloads: string[] = [];
   page.on('request', outgoing => {
-    if (/studio-og-v7\.(jpg|mp4)/.test(outgoing.url())) socialDownloads.push(outgoing.url());
+    if (/studio-og-v8\.(jpg|mp4)/.test(outgoing.url())) socialDownloads.push(outgoing.url());
   });
   const response = await page.goto('/');
   if (!response) throw new Error('Studio homepage returned no navigation response');
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain('property="og:video"');
-  const image = 'https://buildwithblum.com/assets/blum-studios/studio-og-v7.jpg';
-  const video = 'https://buildwithblum.com/assets/blum-studios/studio-og-v7.mp4';
+  const image = 'https://buildwithblum.com/assets/blum-studios/studio-og-v8.jpg';
+  const video = 'https://buildwithblum.com/assets/blum-studios/studio-og-v8.mp4';
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', image);
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute('content', image);
   await expect(page.locator('meta[property="og:video"]')).toHaveAttribute('content', video);

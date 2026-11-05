@@ -3,81 +3,51 @@
   "composition": "index.jsx",
   "runtime": {
     "remotion": "4.0.463",
-    "react": "19.2.6"
+    "react": "19.2.6",
+    "three": "0.185.1"
   },
   "sources": [
     {
       "path": "src/assets/identity/blum-mark.svg",
-      "sha256": "dea3eddf28866cfebbb7fb5f18ee1be38456fb8dc33224029e8f1ee79a9c4ecb"
+      "sha256": "dea3eddf28866cfebbb7fb5f18ee1be38456fb8dc33224029e8f1ee79a9c4ecb",
+      "bytes": 1699
     },
     {
       "path": "src/assets/fonts/chillax-600.woff2",
-      "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56"
+      "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56",
+      "bytes": 21420
     },
     {
       "path": "art/studio-og/index.jsx",
-      "sha256": "91a4c0b161eed0e2579f387bd1a9067a3fd610e093b8fb658e431368303e9492"
+      "sha256": "b67ca364cc3e716b85eedb7bfccea1010c81d9cc952f237b7a562c97bb55fa80",
+      "bytes": 3442
     },
     {
-      "path": "art/studio-og/seedance-logo-source.mp4",
-      "sha256": "05c3c4d38f7ac52e35edfdbda46d6e0d59440ea186e3a9dcb7ff2b6fccd9e3cb"
+      "path": "art/studio-og/logo-scene.js",
+      "sha256": "cee86de74654562c39ea3561bb9184ea2b65cbabcef7b812730840f5cf4f4f73",
+      "bytes": 4642
+    },
+    {
+      "path": "art/studio-og/logo-paths.json",
+      "sha256": "481b0cf53d02117398d9cb7fc34481b54f8d23d2958ca63b09121d739f7a7ed7",
+      "bytes": 1254
+    },
+    {
+      "path": "art/studio-og/motion.js",
+      "sha256": "b452eb4462ffb8af26a25e358047e310d66268c694a8af06d91236f54620f722",
+      "bytes": 310
     }
   ],
-  "generated": {
-    "image": {
-      "model": "gpt_image_2_5",
-      "quality": "high",
-      "resolution": "2k",
-      "job_id": "329bd006-0f72-4110-a59c-16ebf0ed16c0",
-      "quoted_credits": 2.75,
-      "sha256": "33569df0833e9eb9a5d9610cba7b3ae9eee8cda48dba65105e30893b7e628ac1"
-    },
-    "video": {
-      "model": "seedance_2_5",
-      "mode": "omni_reference",
-      "duration_requested": 4,
-      "resolution": "720p",
-      "generate_audio": false,
-      "job_id": "4eb70cab-b41b-4c08-82d8-c104b63f7463",
-      "quoted_credits": 28,
-      "actual_media": {
-        "width": 1280,
-        "height": 720,
-        "fps": 24,
-        "frames": 97,
-        "duration": 4.041667
-      }
-    },
-    "quoted_total": 61.75,
-    "balance_before": 371.95,
-    "balance_after": 310.2,
-    "observed_balance_decrease": 61.75,
-    "rights": "https://higgsfield.ai/creator-hub/help-center/account/who-owns-my-generations-and-can-i-use-them-commercially",
-    "references": "Owned logo and original vector building concept; no third-party people or graphics.",
-    "video_edit": {
-      "model": "seedance_2_5",
-      "mode": "video_edit",
-      "source_job_id": "4eb70cab-b41b-4c08-82d8-c104b63f7463",
-      "job_id": "8565ad91-c870-4a2e-984a-a9061f5626d0",
-      "quoted_credits": 31,
-      "balance_before": 341.2,
-      "balance_after": 310.2,
-      "observed_balance_decrease": 31,
-      "resolution": "720p",
-      "generate_audio": false,
-      "edit": "Remove rectangular windows, interiors and lighting; preserve logo silhouette and assembly motion."
-    }
-  },
   "outputs": [
     {
-      "path": "public/assets/blum-studios/studio-og-v7.mp4",
-      "sha256": "138edcc2d19a3ebf0b900c2b76197a435aa916ec2161ee98763a30cebd0fd00c",
-      "bytes": 473741
+      "path": "public/assets/blum-studios/studio-og-v8.mp4",
+      "sha256": "ea54026bbee657256d0ea6916f318c9529f10b7dd93a656b8ddb15baa99018f1",
+      "bytes": 343173
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v7.jpg",
-      "sha256": "88d1688f6616c4adb762cc462ca427f82af3a8be58811d9dc0bd91eb8047cdcb",
-      "bytes": 51848
+      "path": "public/assets/blum-studios/studio-og-v8.jpg",
+      "sha256": "905c46c574e655d1fc296de985522c2b8a2c53ed59caf1c33938375725cee4eb",
+      "bytes": 40746
     }
   ],
   "video": {
@@ -99,25 +69,28 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "473741"
+      "size": "343173"
     }
   },
   "still": {
     "width": 1200,
     "height": 630,
     "format": "JPEG",
-    "frame": 0
+    "frame": 72
   },
-  "design": "Cursor drags logo handle to flatten draft; clicks Build to release the retimed letter assembly; progress confirms completion and clears to Studios. No service subtitle or architectural windows.",
-  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipient clients own video/cache/autoplay.",
+  "design": "A dotted creative canvas: cursor snaps the original M path into place, then lifts the complete logo into true 3D. Every letter reaches full depth at frame47 and holds through frame89.",
   "iteration": {
-    "version": "v7",
+    "version": "v8",
     "additional_generation_credits": 0,
-    "source_reused_from": "8565ad91-c870-4a2e-984a-a9061f5626d0",
+    "source": "New Three.js scene using every exact owned SVG path; no generated video sampling.",
+    "placement_complete_frame": 22,
+    "lift_complete_frame": 47,
+    "complete_hold_frames": 43,
+    "loop": "Three-second edit, complete-result hold followed by a cut back to the draft on replay. Not a seamless geometry loop.",
     "research": [
       "https://www.figma.com/blog/figma-on-figma-evolving-our-visual-language/",
       "https://www.figma.com/motion/"
-    ],
-    "source_control": "Freeze samples source in 30fps composition-time units; click at frame32 releases build."
-  }
+    ]
+  },
+  "limits": "The animation is a studio identity illustration, not a recording of the Figma product. Recipient clients own video support, autoplay and cached-preview refresh."
 }
