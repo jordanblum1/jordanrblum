@@ -118,3 +118,7 @@ The three phone images flatten genuine native captures under the existing licens
 ## Do's and Don'ts
 
 Keep the homepage centered, brief and useful. Preserve the reviewed contact protocol, pending locks and idempotency behavior. Keep project examples inside Work; do not add them to the homepage. Do not add Resume, social copy, promotional cards, emojis, decorative labels, modal-routing frameworks, generic template effects or invented claims/testimonials. Preserve independent app support/privacy layouts and keep studio styles isolated.
+
+## Link preview motion
+
+The homepage social card uses the same warm paper, oxblood BLUM mark, local Switzer/Chillax, original bridge illustration and genuine licensed-device product captures as Work. The composition is a compact Decide/Learn preview: studio identity and the two-line service promise on the left; one web frame and a single cycling iPhone on the right. No personal email, decorative label, fake interface or metric appears. The six-second silent1200×630 loop stays readable from its first frame, with slow object movement and short app-image dissolves; its first/last frame geometry matches. A matching1200×630JPEG remains the large-image fallback. Metadata is static server-rendered HTML; the homepage alone declares og:video. These assets are metadata references, not another homepage video element, script or download. Receiving apps decide whether motion plays; a real Messages share is separate from source/browser QA. See [social preview sources and rendering](../art/studio-og/README.md).

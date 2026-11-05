@@ -11,7 +11,11 @@ interface Props {
 }
 const { title, description, path = Astro.url.pathname } = Astro.props;
 const canonical = new URL(path, studio.origin);
-const socialImage = new URL('/assets/blum-studios/og.png', studio.origin);
+const socialImage = new URL('/assets/blum-studios/studio-og-v2.jpg', studio.origin);
+const socialVideo = path === '/' ? new URL('/assets/blum-studios/studio-og-v2.mp4', studio.origin) : null;
+const socialTitle = path === '/' ? 'iOS apps & web products' : title;
+const socialDescription = path === '/' ? 'Independent product design and development. From idea to launch with Blum Studios.' : description;
+const socialAlt = 'Blum Studios with a genuine iPhone app, web project and illustrated New York backdrop.';
 ---
 <!doctype html>
 <html lang="en">
@@ -24,17 +28,26 @@ const socialImage = new URL('/assets/blum-studios/og.png', studio.origin);
     <meta name="theme-color" content="#F7F3ED" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={studio.name} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={socialTitle} />
+    <meta property="og:description" content={socialDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImage} />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Blum Studios — Apps, design & art." />
+    <meta property="og:image:alt" content={socialAlt} />
+    {socialVideo && <>
+      <meta property="og:video" content={socialVideo} />
+      <meta property="og:video:secure_url" content={socialVideo} />
+      <meta property="og:video:type" content="video/mp4" />
+      <meta property="og:video:width" content="1200" />
+      <meta property="og:video:height" content="630" />
+    </>}
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={socialTitle} />
+    <meta name="twitter:description" content={socialDescription} />
     <meta name="twitter:image" content={socialImage} />
+    <meta name="twitter:image:alt" content={socialAlt} />
     <link rel="icon" type="image/svg+xml" href="/assets/blum-studios/favicon.svg" />
     <link rel="preload" href={switzer} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={chillax} as="font" type="font/woff2" crossorigin />
