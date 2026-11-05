@@ -118,3 +118,7 @@ The three phone images flatten genuine native captures under the existing licens
 ## Do's and Don'ts
 
 Keep the homepage centered, brief and useful. Preserve the reviewed contact protocol, pending locks and idempotency behavior. Keep project examples inside Work; do not add them to the homepage. Do not add Resume, social copy, promotional cards, emojis, decorative labels, modal-routing frameworks, generic template effects or invented claims/testimonials. Preserve independent app support/privacy layouts and keep studio styles isolated.
+
+## Link preview motion
+
+The homepage OG image/video fills the entire1200×630card with the original oxblood BLUM mark, large Studios lettering and one original blue drafting pencil. The pencil draws an underline as the four logo pieces gently press into the warm-paper field. No small device screenshots, product collages, service subtitles or secondary cards: Jordan explicitly requested a simple, fun, recognizable, full-card identity on November5,2026. The silent three-second loop preserves a readable brand in every frame and matching first/last geometry. The JPEG fallback matches the first decoded video frame. Metadata is server-rendered HTML; the homepage alone declares og:video. Assets are metadata references, not another homepage video element, script or download. Receiving apps control motion and caches; a real Messages share remains separate from source/browser QA. See [social preview source and rendering](../art/studio-og/README.md).
