@@ -28,7 +28,7 @@ Use the isolated pinned runtime at `/Users/jordan/projects/output/blum-studios-a
   --browser-executable='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 ```
 
-Use absolute output/public paths to avoid ancestor Astro discovery. WebGL runs only while rendering locally. Losslessly remux using ffmpeg `-map 0:v:0 -c:v copy -an -movflags +faststart` into `public/assets/blum-studios/studio-og-v8.mp4`. Decode frame72 (`-vf 'select=eq(n\,72)' -frames:v1 -q:v2`) to studio-og-v8.jpg. The poster intentionally shows the complete result, rather than the flat opening draft.
+Use absolute output/public paths to avoid ancestor Astro discovery. WebGL runs only while rendering locally. Losslessly remux using ffmpeg `-map 0:v:0 -c:v copy -an -movflags +faststart` into `public/assets/blum-studios/studio-og-v8.mp4`. Decode frame72 (`-vf 'select=eq(n\,72)' -frames:v 1 -q:v 2`) to studio-og-v8.jpg. The poster intentionally shows the complete result, rather than the flat opening draft.
 
 Validate 1200×630,90frames/30fps,three seconds,H264/yuv420p/bt709,no audio,faststart and full decode. Inspect the actual M placement, pointer-to-handle attachment, 3D lift, complete held result and compact playback. The loop holds the finished mark, then cuts back to the editing draft on replay; it does not blend away an unfinished M or claim a seamless geometry loop. Failed renders must not promote a prior output file: inspect the successful current render before replacing exports.
 
