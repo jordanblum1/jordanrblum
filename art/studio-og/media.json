@@ -15,8 +15,12 @@
       "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56"
     },
     {
-      "path": "art/studio-og/seedance-building-source.mp4",
-      "sha256": "da256efd4271ba0f8b58f40108d965fd08263ca8b4da79b68eb024c410195ee3"
+      "path": "art/studio-og/index.jsx",
+      "sha256": "02ee5173d493c144c7687f37e4cd7b68ec36e10a1d0101d8b27796eb8078d248"
+    },
+    {
+      "path": "art/studio-og/seedance-logo-source.mp4",
+      "sha256": "05c3c4d38f7ac52e35edfdbda46d6e0d59440ea186e3a9dcb7ff2b6fccd9e3cb"
     }
   ],
   "generated": {
@@ -44,23 +48,36 @@
         "duration": 4.041667
       }
     },
-    "quoted_total": 30.75,
+    "quoted_total": 61.75,
     "balance_before": 371.95,
-    "balance_after": 341.2,
-    "observed_balance_decrease": 30.75,
+    "balance_after": 310.2,
+    "observed_balance_decrease": 61.75,
     "rights": "https://higgsfield.ai/creator-hub/help-center/account/who-owns-my-generations-and-can-i-use-them-commercially",
-    "references": "Owned logo and original vector building concept; no third-party people or graphics."
+    "references": "Owned logo and original vector building concept; no third-party people or graphics.",
+    "video_edit": {
+      "model": "seedance_2_5",
+      "mode": "video_edit",
+      "source_job_id": "4eb70cab-b41b-4c08-82d8-c104b63f7463",
+      "job_id": "8565ad91-c870-4a2e-984a-a9061f5626d0",
+      "quoted_credits": 31,
+      "balance_before": 341.2,
+      "balance_after": 310.2,
+      "observed_balance_decrease": 31,
+      "resolution": "720p",
+      "generate_audio": false,
+      "edit": "Remove rectangular windows, interiors and lighting; preserve logo silhouette and assembly motion."
+    }
   },
   "outputs": [
     {
-      "path": "public/assets/blum-studios/studio-og-v5.mp4",
-      "sha256": "718dd1031f91d4863ee99b4a60da1b329a2d29f10a539cb7e5a7dccb0d1541d7",
-      "bytes": 637944
+      "path": "public/assets/blum-studios/studio-og-v6.mp4",
+      "sha256": "0f7a3aba87a462cff7aec611488d50c23301aebb4fcac665b8a5c2c3ec9c75b3",
+      "bytes": 643499
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v5.jpg",
-      "sha256": "6ad7137135c793ed2e36eb096080955e8251b1b9f33fc8994ea2bb075d0fd0ae",
-      "bytes": 59453
+      "path": "public/assets/blum-studios/studio-og-v6.jpg",
+      "sha256": "9af3fe5e0e7b478cad6ba0a79f4c4ac038ae178c5ba6f62bb4b7ad22c2a57e10",
+      "bytes": 57479
     }
   ],
   "video": {
@@ -82,7 +99,7 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "637944"
+      "size": "643499"
     }
   },
   "still": {
@@ -91,6 +108,6 @@
     "format": "JPEG",
     "frame": 0
   },
-  "design": "Full-card tactile terracotta logo-studio, inset glass windows, no pasted icons; Seedance motion finished with native studio type in Remotion.",
-  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipientclients own video/cache/autoplay."
+  "design": "Full-card sculptural terracotta logo, no architectural windows or pasted letter icons; subtle vector selection/cursor, Studios and Software & design typography.",
+  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipient clients own video/cache/autoplay."
 }
