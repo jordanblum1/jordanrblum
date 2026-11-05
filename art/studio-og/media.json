@@ -14,19 +14,23 @@
     {
       "path": "src/assets/fonts/chillax-600.woff2",
       "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56"
-    }
-  ],
-  "pencil": "Original vector paths in index.jsx; no stock or third-party graphic.",
-  "outputs": [
-    {
-      "path": "public/assets/blum-studios/studio-og-v3.mp4",
-      "sha256": "6fcfcf2fdf337c50673d5a5964669c10ddf8d4b9df38208a86cd501207478c63",
-      "bytes": 251060
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v3.jpg",
-      "sha256": "a249e11e7b5e27aa4465a3bfe9bfc09ecb214862443f1758939d0e45b2b4fd04",
-      "bytes": 48027
+      "path": "art/studio-og/logo-paths.json",
+      "sha256": "481b0cf53d02117398d9cb7fc34481b54f8d23d2958ca63b09121d739f7a7ed7"
+    }
+  ],
+  "original_art": "Building projection/extrusion, blueprint and code/design windows in index.jsx; no external stock.",
+  "outputs": [
+    {
+      "path": "public/assets/blum-studios/studio-og-v4.mp4",
+      "sha256": "85c6fdeb5b80d7a2ab3dfe1c0ddb9ffd93c093df47ee59bd2d88fe56669f77d7",
+      "bytes": 449760
+    },
+    {
+      "path": "public/assets/blum-studios/studio-og-v4.jpg",
+      "sha256": "3fbaa0b227824cd656754d1badf52401f265678c0bd97e099295d094beed5b1c",
+      "bytes": 44076
     }
   ],
   "video": {
@@ -48,7 +52,7 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "251060"
+      "size": "449760"
     }
   },
   "still": {
@@ -57,6 +61,6 @@
     "format": "JPEG",
     "frame": 0
   },
-  "design": "Full-card giant BLUM/Studios, original drafting pencil, three-second loop; no small UI imagery.",
-  "limits": "Receivingclients own video/cache/autoplay; noMessages share sent."
+  "design": "BLUM constructed as architectural letter-buildings from blueprints; full-card3secRemotionloop.",
+  "limits": "Receivingclients own video/cache/autoplay; no personalMessages share."
 }
