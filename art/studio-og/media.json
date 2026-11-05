@@ -1,6 +1,5 @@
 {
   "date": "2026-11-05",
-  "new_generation_credits": 0,
   "composition": "index.jsx",
   "runtime": {
     "remotion": "4.0.463",
@@ -16,21 +15,52 @@
       "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56"
     },
     {
-      "path": "art/studio-og/logo-paths.json",
-      "sha256": "481b0cf53d02117398d9cb7fc34481b54f8d23d2958ca63b09121d739f7a7ed7"
+      "path": "art/studio-og/seedance-building-source.mp4",
+      "sha256": "da256efd4271ba0f8b58f40108d965fd08263ca8b4da79b68eb024c410195ee3"
     }
   ],
-  "original_art": "Building projection/extrusion, blueprint and code/design windows in index.jsx; no external stock.",
+  "generated": {
+    "image": {
+      "model": "gpt_image_2_5",
+      "quality": "high",
+      "resolution": "2k",
+      "job_id": "329bd006-0f72-4110-a59c-16ebf0ed16c0",
+      "quoted_credits": 2.75,
+      "sha256": "33569df0833e9eb9a5d9610cba7b3ae9eee8cda48dba65105e30893b7e628ac1"
+    },
+    "video": {
+      "model": "seedance_2_5",
+      "mode": "omni_reference",
+      "duration_requested": 4,
+      "resolution": "720p",
+      "generate_audio": false,
+      "job_id": "4eb70cab-b41b-4c08-82d8-c104b63f7463",
+      "quoted_credits": 28,
+      "actual_media": {
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "frames": 97,
+        "duration": 4.041667
+      }
+    },
+    "quoted_total": 30.75,
+    "balance_before": 371.95,
+    "balance_after": 341.2,
+    "observed_balance_decrease": 30.75,
+    "rights": "https://higgsfield.ai/creator-hub/help-center/account/who-owns-my-generations-and-can-i-use-them-commercially",
+    "references": "Owned logo and original vector building concept; no third-party people or graphics."
+  },
   "outputs": [
     {
-      "path": "public/assets/blum-studios/studio-og-v4.mp4",
-      "sha256": "85c6fdeb5b80d7a2ab3dfe1c0ddb9ffd93c093df47ee59bd2d88fe56669f77d7",
-      "bytes": 449760
+      "path": "public/assets/blum-studios/studio-og-v5.mp4",
+      "sha256": "718dd1031f91d4863ee99b4a60da1b329a2d29f10a539cb7e5a7dccb0d1541d7",
+      "bytes": 637944
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v4.jpg",
-      "sha256": "3fbaa0b227824cd656754d1badf52401f265678c0bd97e099295d094beed5b1c",
-      "bytes": 44076
+      "path": "public/assets/blum-studios/studio-og-v5.jpg",
+      "sha256": "6ad7137135c793ed2e36eb096080955e8251b1b9f33fc8994ea2bb075d0fd0ae",
+      "bytes": 59453
     }
   ],
   "video": {
@@ -52,7 +82,7 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "449760"
+      "size": "637944"
     }
   },
   "still": {
@@ -61,6 +91,6 @@
     "format": "JPEG",
     "frame": 0
   },
-  "design": "BLUM constructed as architectural letter-buildings from blueprints; full-card3secRemotionloop.",
-  "limits": "Receivingclients own video/cache/autoplay; no personalMessages share."
+  "design": "Full-card tactile terracotta logo-studio, inset glass windows, no pasted icons; Seedance motion finished with native studio type in Remotion.",
+  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipientclients own video/cache/autoplay."
 }

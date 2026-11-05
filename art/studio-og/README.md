@@ -1,22 +1,21 @@
 # Blum Studios social preview
 
-A three-second Remotion building animation. The original BLUM letter shapes become an architectural studio: blueprint outlines rise into solid letter-buildings, then code and vector-design windows light up. Large Studios lettering anchors the frame. The brand fills the1200×630artwork; there are no small device screenshots, product collages or extra service copy. Frame0/89match, and the JPEG fallback matches the first decoded video frame.
+A three-second hybrid ident: a tactile terracotta BLUM studio lowers into its footprint and rebuilds from left to right, then its inset glass windows warm up. The large logo fills the artwork; native Studios lettering stays crisp and fixed. No pasted code/vector icons, tiny product screenshots, extra service copy or AI-generated caption text.
 
 ## Sources and rights
 
-- `src/assets/identity/blum-mark.svg`: owned studio identity. `logo-paths.json` preserves its four path definitions exactly; only the projection/extrusion changes.
-- `src/assets/fonts/chillax-600.woff2`: existing licensed local studio font.
-- Building projection, blueprint, windows and code/design symbols: original SVG/Remotion artwork in `index.jsx`.
+- Owned `src/assets/identity/blum-mark.svg` and the original vector architectural concept guided the artwork. The result is a reference-led interpretation, not a pixel-exact SVG reproduction.
+- Existing licensed `src/assets/fonts/chillax-600.woff2` supplies the native caption.
+- Higgsfield GPT Image2.5 high2K refined one still (job329bd006-0f72-4110-a59c-16ebf0ed16c0), preserving the logo identity and replacing graphic icons with real inset glass windows, material texture and warm lighting.
+- Seedance2.5 used that completed still as both endpoint references for one4-second720p silent construction loop (job4eb70cab-b41b-4c08-82d8-c104b63f7463). The raw97-frame/24fps clip is `seedance-building-source.mp4`, outside the website's public assets.
 
-No generation credits, new fonts, npm/site dependency, tracking, form behavior or hosting service. Published v3 files stay available for cached previews; only v4 is advertised by the new metadata. This is share-preview media, separate from the homepage background and freelance ad.
+The two quotes total30.75credits; the observed balance decrease371.95→341.20matches. Prompt/quote/reference/job records and the accepted high-resolution still remain in the external task source archive at `~/.local/share/agent-workflows/studio-building-og-20261105/`. `media.json` pins committed source/output hashes and generation provenance. [Provider output-use guidance](https://higgsfield.ai/creator-hub/help-center/account/who-owns-my-generations-and-can-i-use-them-commercially), checked November5,2026, permits commercial output use. Inputs are first-party; no separate commercial license, project, subscription or account was created.
 
 ## Reproduce
 
-`index.jsx` and `logo-paths.json` are the complete deterministic Remotion composition. Reuse the isolated pinned Remotion4.0.463/React19.2.6 runtime at `/Users/jordan/projects/output/blum-studios-ads-2026-11-05/runtime/`; it is build-time tooling, not a site dependency. The tested workspace is ignored `output/studio-og/`, with `node_modules` linked to that runtime and both source files copied into `src/`. Copy Chillax into its `public/`. Do not add Remotion to Astro or download latest.
+`index.jsx` is the complete deterministic Remotion composition. Reuse the isolated pinned Remotion4.0.463/React19.2.6 runtime at `/Users/jordan/projects/output/blum-studios-ads-2026-11-05/runtime/`; it is build-time tooling, not a website dependency. The tested workspace is ignored `output/studio-og/`, with its `node_modules` linked to that runtime and a source copy at `src/index.jsx`. Copy the committed raw clip to `public/source-video.mp4` and Chillax to that `public/` folder. Do not download latest or add Remotion to Astro.
 
-The letter roofs use one affine projection. An SVG vertical dilation and offset extrude continuous walls without a stepped silhouette. A mask excludes the roofs from five window panels. Staggered Remotion springs raise the letters; the final portion returns smoothly to the blueprint before the loop rebuilds. Code/design artwork is confined to the two broad studio windows.
-
-From the workspace run the installed CLI with explicit absolute public/output paths (a nested render folder otherwise discovers the ancestor Astro package's public folder):
+The four-second source plays at4/3speed into a90-frame/30fps/1200×630composition. A final0.2-second blend to a frame-zero Freeze gives the loop its stable opening pose. Video uniformly covers the card; the font-loaded native caption overlays the quiet paper below the building. The SVG building rig and its pasted symbols are retired.
 
 ```
 ./node_modules/.bin/remotion render src/index.jsx StudioOG ABSOLUTE/render.mp4 \
@@ -25,10 +24,10 @@ From the workspace run the installed CLI with explicit absolute public/output pa
   --browser-executable='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 ```
 
-Losslessly remux video with ffmpeg (`-map 0:v:0 -c:v copy -an -movflags +faststart`) into `public/assets/blum-studios/studio-og-v4.mp4`. Decode the first frame into JPEG (`-frames:v 1 -q:v 2`) at `studio-og-v4.jpg`. Validate1200×630,90frames/30fps,3seconds,H264/yuv420p/bt709,no audio,faststart and full decode. Inspect blueprint readability, smooth wall edges, code/design windows, large-card scale and the loop seam. `media.json` owns source/output hashes and actual format. `studio-og.test.ts` guards logo-path fidelity and asset/source hashes. Published filenames remain immutable.
+Pass absolute public/output paths so the nested renderer does not discover Astro's public folder. Losslessly remux video with ffmpeg (`-map 0:v:0 -c:v copy -an -movflags +faststart`) into `public/assets/blum-studios/studio-og-v5.mp4`. Decode its first frame into JPEG (`-frames:v 1 -q:v 2`) at `studio-og-v5.jpg`. Validate1200×630,90frames/30fps,3seconds,H264/yuv420p/bt709,no audio,faststart and full decode. Inspect all letter shapes/window states, native text, whole-card scale and loop seam. The unit guard verifies source/output hashes. Published v3 remains for cached links; the unshipped v4 icon draft is superseded. Published filenames stay immutable.
 
 ## Metadata and limits
 
-Only the studio homepage declares `og:video` with a direct absolute HTTPSMP4 URL, MIME and actual dimensions. Studio layouts retain a matching JPEG large-image fallback/alt. Tags are static and consistent for mobile/desktop; normal visits do not embed/preload either OG asset.
+Only the studio homepage declares a direct HTTPSMP4 `og:video` with actual MIME/dimensions. Layouts retain a matching JPEG large-image fallback/alt. Tags are server-rendered and consistent across devices; normal visits do not preload/embed either OG asset. The raw generation is not shipped as a public website source.
 
-[Apple TN3156](https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages), checked via Savvy Firecrawl November5,2026, documents direct playable/downloadable video metadata, server-rendered tags, image fallbacks and a10MB associated-resource guideline. Its imagery guidance favors minimal raster text; this card carries only studio identity and graphical work symbols, with descriptive accessible metadata. Recipient apps control support, autoplay, reduced-motion preferences and cached-link refresh. X remains `summary_large_image`. Browser/source/native-metadata verification does not prove every client animates or an old Messages thread refreshes.
+[Apple TN3156](https://developer.apple.com/documentation/technotes/tn3156-create-rich-previews-for-messages), checked via Savvy Firecrawl November5,2026, documents direct downloadable video metadata, static tags, fallback imagery and a10MB associated-resource guideline. Recipient apps control support, autoplay, reduced-motion preferences and cached-card refresh. X stays `summary_large_image`. Source/browser/native-metadata checks do not prove an actual personal Messages share or every recipient's settings.
