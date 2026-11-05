@@ -1,6 +1,5 @@
 {
   "date": "2026-11-05",
-  "new_generation_credits": 0,
   "composition": "index.jsx",
   "runtime": {
     "remotion": "4.0.463",
@@ -14,19 +13,71 @@
     {
       "path": "src/assets/fonts/chillax-600.woff2",
       "sha256": "974d6085abacf1cb806922482efd026256d3d64b708e5c095559c1dd62f18f56"
-    }
-  ],
-  "pencil": "Original vector paths in index.jsx; no stock or third-party graphic.",
-  "outputs": [
-    {
-      "path": "public/assets/blum-studios/studio-og-v3.mp4",
-      "sha256": "6fcfcf2fdf337c50673d5a5964669c10ddf8d4b9df38208a86cd501207478c63",
-      "bytes": 251060
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v3.jpg",
-      "sha256": "a249e11e7b5e27aa4465a3bfe9bfc09ecb214862443f1758939d0e45b2b4fd04",
-      "bytes": 48027
+      "path": "art/studio-og/index.jsx",
+      "sha256": "91a4c0b161eed0e2579f387bd1a9067a3fd610e093b8fb658e431368303e9492"
+    },
+    {
+      "path": "art/studio-og/seedance-logo-source.mp4",
+      "sha256": "05c3c4d38f7ac52e35edfdbda46d6e0d59440ea186e3a9dcb7ff2b6fccd9e3cb"
+    }
+  ],
+  "generated": {
+    "image": {
+      "model": "gpt_image_2_5",
+      "quality": "high",
+      "resolution": "2k",
+      "job_id": "329bd006-0f72-4110-a59c-16ebf0ed16c0",
+      "quoted_credits": 2.75,
+      "sha256": "33569df0833e9eb9a5d9610cba7b3ae9eee8cda48dba65105e30893b7e628ac1"
+    },
+    "video": {
+      "model": "seedance_2_5",
+      "mode": "omni_reference",
+      "duration_requested": 4,
+      "resolution": "720p",
+      "generate_audio": false,
+      "job_id": "4eb70cab-b41b-4c08-82d8-c104b63f7463",
+      "quoted_credits": 28,
+      "actual_media": {
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "frames": 97,
+        "duration": 4.041667
+      }
+    },
+    "quoted_total": 61.75,
+    "balance_before": 371.95,
+    "balance_after": 310.2,
+    "observed_balance_decrease": 61.75,
+    "rights": "https://higgsfield.ai/creator-hub/help-center/account/who-owns-my-generations-and-can-i-use-them-commercially",
+    "references": "Owned logo and original vector building concept; no third-party people or graphics.",
+    "video_edit": {
+      "model": "seedance_2_5",
+      "mode": "video_edit",
+      "source_job_id": "4eb70cab-b41b-4c08-82d8-c104b63f7463",
+      "job_id": "8565ad91-c870-4a2e-984a-a9061f5626d0",
+      "quoted_credits": 31,
+      "balance_before": 341.2,
+      "balance_after": 310.2,
+      "observed_balance_decrease": 31,
+      "resolution": "720p",
+      "generate_audio": false,
+      "edit": "Remove rectangular windows, interiors and lighting; preserve logo silhouette and assembly motion."
+    }
+  },
+  "outputs": [
+    {
+      "path": "public/assets/blum-studios/studio-og-v7.mp4",
+      "sha256": "138edcc2d19a3ebf0b900c2b76197a435aa916ec2161ee98763a30cebd0fd00c",
+      "bytes": 473741
+    },
+    {
+      "path": "public/assets/blum-studios/studio-og-v7.jpg",
+      "sha256": "88d1688f6616c4adb762cc462ca427f82af3a8be58811d9dc0bd91eb8047cdcb",
+      "bytes": 51848
     }
   ],
   "video": {
@@ -48,7 +99,7 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "251060"
+      "size": "473741"
     }
   },
   "still": {
@@ -57,6 +108,16 @@
     "format": "JPEG",
     "frame": 0
   },
-  "design": "Full-card giant BLUM/Studios, original drafting pencil, three-second loop; no small UI imagery.",
-  "limits": "Receivingclients own video/cache/autoplay; noMessages share sent."
+  "design": "Cursor drags logo handle to flatten draft; clicks Build to release the retimed letter assembly; progress confirms completion and clears to Studios. No service subtitle or architectural windows.",
+  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipient clients own video/cache/autoplay.",
+  "iteration": {
+    "version": "v7",
+    "additional_generation_credits": 0,
+    "source_reused_from": "8565ad91-c870-4a2e-984a-a9061f5626d0",
+    "research": [
+      "https://www.figma.com/blog/figma-on-figma-evolving-our-visual-language/",
+      "https://www.figma.com/motion/"
+    ],
+    "source_control": "Freeze samples source in 30fps composition-time units; click at frame32 releases build."
+  }
 }
