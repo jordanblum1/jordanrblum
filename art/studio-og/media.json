@@ -16,7 +16,7 @@
     },
     {
       "path": "art/studio-og/index.jsx",
-      "sha256": "02ee5173d493c144c7687f37e4cd7b68ec36e10a1d0101d8b27796eb8078d248"
+      "sha256": "5dcfed1fafaa0df07465ce095b0b43a0d9d385521e94b306e6578d2bce7d6f96"
     },
     {
       "path": "art/studio-og/seedance-logo-source.mp4",
@@ -70,14 +70,14 @@
   },
   "outputs": [
     {
-      "path": "public/assets/blum-studios/studio-og-v6.mp4",
-      "sha256": "0f7a3aba87a462cff7aec611488d50c23301aebb4fcac665b8a5c2c3ec9c75b3",
-      "bytes": 643499
+      "path": "public/assets/blum-studios/studio-og-v7.mp4",
+      "sha256": "19520789781c79ffa312821b65dd6a1ec14f6d7d5484275d942210cb4cf3fd43",
+      "bytes": 473691
     },
     {
-      "path": "public/assets/blum-studios/studio-og-v6.jpg",
-      "sha256": "9af3fe5e0e7b478cad6ba0a79f4c4ac038ae178c5ba6f62bb4b7ad22c2a57e10",
-      "bytes": 57479
+      "path": "public/assets/blum-studios/studio-og-v7.jpg",
+      "sha256": "7ad78b49927a1970f15d119307d0ccf5ceb9b30b36b86aac45e6787de58ae317",
+      "bytes": 51823
     }
   ],
   "video": {
@@ -99,7 +99,7 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "643499"
+      "size": "473691"
     }
   },
   "still": {
@@ -108,6 +108,16 @@
     "format": "JPEG",
     "frame": 0
   },
-  "design": "Full-card sculptural terracotta logo, no architectural windows or pasted letter icons; subtle vector selection/cursor, Studios and Software & design typography.",
-  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipient clients own video/cache/autoplay."
+  "design": "Cursor drags logo handle to flatten draft; clicks Build to release the retimed letter assembly; progress confirms completion and clears to Studios. No service subtitle or architectural windows.",
+  "limits": "Reference-led generated interpretation, not exact SVG pixel reproduction. Recipient clients own video/cache/autoplay.",
+  "iteration": {
+    "version": "v7",
+    "additional_generation_credits": 0,
+    "source_reused_from": "8565ad91-c870-4a2e-984a-a9061f5626d0",
+    "research": [
+      "https://www.figma.com/blog/figma-on-figma-evolving-our-visual-language/",
+      "https://www.figma.com/motion/"
+    ],
+    "source_control": "Freeze samples source in 30fps composition-time units; click at frame32 releases build."
+  }
 }
