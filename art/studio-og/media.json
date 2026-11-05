@@ -16,7 +16,7 @@
     },
     {
       "path": "art/studio-og/index.jsx",
-      "sha256": "5dcfed1fafaa0df07465ce095b0b43a0d9d385521e94b306e6578d2bce7d6f96"
+      "sha256": "91a4c0b161eed0e2579f387bd1a9067a3fd610e093b8fb658e431368303e9492"
     },
     {
       "path": "art/studio-og/seedance-logo-source.mp4",
@@ -71,13 +71,13 @@
   "outputs": [
     {
       "path": "public/assets/blum-studios/studio-og-v7.mp4",
-      "sha256": "19520789781c79ffa312821b65dd6a1ec14f6d7d5484275d942210cb4cf3fd43",
-      "bytes": 473691
+      "sha256": "138edcc2d19a3ebf0b900c2b76197a435aa916ec2161ee98763a30cebd0fd00c",
+      "bytes": 473741
     },
     {
       "path": "public/assets/blum-studios/studio-og-v7.jpg",
-      "sha256": "7ad78b49927a1970f15d119307d0ccf5ceb9b30b36b86aac45e6787de58ae317",
-      "bytes": 51823
+      "sha256": "88d1688f6616c4adb762cc462ca427f82af3a8be58811d9dc0bd91eb8047cdcb",
+      "bytes": 51848
     }
   ],
   "video": {
@@ -99,7 +99,7 @@
     ],
     "format": {
       "duration": "3.000000",
-      "size": "473691"
+      "size": "473741"
     }
   },
   "still": {
