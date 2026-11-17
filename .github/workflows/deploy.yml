@@ -38,21 +38,28 @@ jobs:
       - uses: pnpm/action-setup@v6
         with: { version: 10 }
 
-      - name: Prepare pnpm cache directory
-        run: mkdir -p "$(pnpm store path --silent)"
-
       - uses: actions/setup-node@v7
-        with: { node-version: 22, cache: pnpm }
+        with:
+          node-version: 22
+          # The private Mac retains the pnpm store across runs.
+          package-manager-cache: false
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm typecheck
+      - name: Typecheck and run unit tests in parallel
+        shell: bash
+        run: |
+          pnpm typecheck & types=$!
+          pnpm test:unit & tests=$!
+
+          status=0
+          wait "$types" || { echo "::error::Typecheck failed"; status=1; }
+          wait "$tests" || { echo "::error::Unit tests failed"; status=1; }
+          exit "$status"
 
       - run: pnpm build
         env:
           PUBLIC_WAITLIST_API_URL: ${{ vars.PUBLIC_WAITLIST_API_URL }}
-
-      - run: pnpm test:unit
 
       # Performance budget: fails the build if a change cooks the benchmark
       # (thresholds in .lighthouserc.json, calibrated with ~25% headroom over
