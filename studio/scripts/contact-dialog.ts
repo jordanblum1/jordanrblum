@@ -9,6 +9,12 @@ export function initContactDialog(root: ParentNode = document): void {
   let shape: Animation | undefined;
   let reveal: Animation | undefined;
   let operation = 0;
+  let arrivalFrame = 0;
+  let arrivalTimer: ReturnType<typeof setTimeout> | undefined;
+  const cancelArrival = () => {
+    cancelAnimationFrame(arrivalFrame);
+    clearTimeout(arrivalTimer);
+  };
   const viewport = () => {
     if (phase === 'closing') return;
     dialog.style.setProperty('--contact-viewport-height', `${visualViewport?.height ?? innerHeight}px`);
@@ -63,6 +69,7 @@ export function initContactDialog(root: ParentNode = document): void {
     if (current === operation) finishClose();
   };
   const open = async (updateHash = true) => {
+    cancelArrival();
     if (phase !== 'closed') return;
     const current = ++operation;
     phase = 'opening';
@@ -104,6 +111,7 @@ export function initContactDialog(root: ParentNode = document): void {
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) void close();
   });
   const syncHash = () => {
+    cancelArrival();
     if (location.hash === '#contact') void open(false);
     else if (dialog.open) void close(false);
   };
@@ -116,5 +124,16 @@ export function initContactDialog(root: ParentNode = document): void {
       if (animation?.playState === 'running' || animation?.playState === 'paused') animation.finish();
     });
   });
-  syncHash();
+  addEventListener('pagehide', cancelArrival);
+  addEventListener('pageshow', event => { if (event.persisted) syncHash(); });
+  // Let outside arrivals see the homepage; links from Work stay immediate too.
+  const referrer = document.referrer ? new URL(document.referrer) : undefined;
+  const fromThisSite = referrer?.origin === location.origin && !/^\/contact\/?$/.test(referrer.pathname);
+  if (location.hash === '#contact' && !fromThisSite) {
+    arrivalFrame = requestAnimationFrame(() => {
+      arrivalFrame = requestAnimationFrame(() => {
+        arrivalTimer = setTimeout(syncHash, 700);
+      });
+    });
+  } else syncHash();
 }
