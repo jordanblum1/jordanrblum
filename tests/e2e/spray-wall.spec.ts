@@ -366,7 +366,7 @@ test('Escape finishes Clear, restores footer access, and permits fresh paint', a
   await expect(wall(page)).not.toHaveAttribute('data-spray-clearing', 'true');
   await expectEmpty(page);
   const footer = page.locator('.footer-inner');
-  const footerLink = page.getByRole('link', { name: 'Want to work with me?' });
+  const footerLink = page.getByRole('link', { name: 'Work with me', exact: true });
   await expect(footer).not.toHaveAttribute('inert', '');
   await expect(footerLink).toBeVisible();
   await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');

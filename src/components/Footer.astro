@@ -35,7 +35,10 @@ const blumMark = blumMarkSource
           <span class="visually-hidden">chat?</span>
         </p>
         <div class="footer-cta-group">
-          <a class="freelance-link" href={`${studio.origin}/#contact`}>Want to work with me?</a>
+          <a href={`${studio.origin}/#contact`}>
+            <span>Work with me</span>
+            <span class="footer-arrow" aria-hidden="true">→</span>
+          </a>
           <button
             type="button"
             class="chat-cta"
@@ -46,7 +49,7 @@ const blumMark = blumMarkSource
             aria-controls="chat-panel"
           >
             <span>Chat with my assistant</span>
-            <span aria-hidden="true">→</span>
+            <span class="footer-arrow" aria-hidden="true">→</span>
           </button>
         </div>
       </div>
@@ -261,6 +264,7 @@ const blumMark = blumMarkSource
 
   .footer-lead {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--space-8);
     align-items: end;
@@ -333,25 +337,20 @@ const blumMark = blumMarkSource
     align-items: center;
   }
 
-  .freelance-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    text-underline-offset: .25em;
-  }
-
-  .chat-cta {
+  .footer-cta-group > :is(a, button) {
     display: inline-flex;
     flex: 0 0 auto;
     align-items: center;
-    gap: var(--space-8);
+    gap: var(--space-4);
+    min-height: 48px;
     padding: 0.9rem 1.15rem;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--accent-contrast);
-    font-size: 0.88rem;
-    font-weight: 500;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    background: var(--paper-raised);
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
     font-family: inherit;
     cursor: pointer;
     box-shadow: var(--shadow-small);
@@ -359,7 +358,19 @@ const blumMark = blumMarkSource
       border-color var(--duration-default) var(--ease),
       background-color var(--duration-default) var(--ease),
       color var(--duration-default) var(--ease),
+      translate 420ms var(--ease-bounce),
+      scale var(--duration-fast) var(--ease),
       transform 420ms var(--ease-bounce);
+  }
+
+  .footer-cta-group > .chat-cta {
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .footer-arrow {
+    transition: translate var(--duration-default) var(--ease-bounce);
   }
 
   /* No-JS visitors never see a CTA that can't do anything. The footer carries
@@ -532,14 +543,25 @@ const blumMark = blumMarkSource
     backdrop-filter: blur(8px);
   }
 
-  :global(html.pointer-moved) .chat-cta:hover {
-    transform: translateY(-2px);
-    opacity: 0.92;
+  :global(html.pointer-moved) .footer-cta-group > :is(a, button):hover,
+  .footer-cta-group > :is(a, button):focus-visible {
+    border-color: var(--accent);
   }
 
-  /* Physical press feedback everywhere; the bouncy transition springs it back. */
-  .chat-cta:active {
-    transform: scale(0.96);
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.pointer-moved) .footer-cta-group > :is(a, button):hover,
+    .footer-cta-group > :is(a, button):focus-visible {
+      translate: 0 -2px;
+    }
+
+    :global(html.pointer-moved) .footer-cta-group > :is(a, button):hover .footer-arrow,
+    .footer-cta-group > :is(a, button):focus-visible .footer-arrow {
+      translate: 3px 0;
+    }
+
+    .footer-cta-group > :is(a, button):active {
+      scale: 0.96;
+    }
   }
 
   :global(html.pointer-moved) .social a:hover {
@@ -569,7 +591,8 @@ const blumMark = blumMarkSource
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .chat-cta,
+    .footer-cta-group > :is(a, button),
+    .footer-arrow,
     .social a {
       transition: color 120ms, border-color 120ms;
     }
