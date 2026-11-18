@@ -42,17 +42,19 @@ test('leaving the contact hash during arrival cancels the pending open', async (
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('Contact from Work skips the outside-arrival delay', async ({ page }) => {
-  await page.clock.install();
-  await page.clock.pauseAt(new Date(Date.now() + 1000));
-  await page.goto('/work');
-  await page.getByRole('navigation', { name: 'Studio' }).getByRole('link', { name: 'Contact', exact: true }).click();
-  await expect(page).toHaveURL(/#contact$/);
-  // The morph starts immediately, before advancing the paused arrival clock.
-  await expect(page.getByRole('dialog')).toBeVisible();
-  await page.clock.runFor(550);
-  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
-});
+for (const [path, link] of [['/work', 'Contact'], ['/privacy', 'Back to contact']]) {
+  test(`Contact from ${path} skips the outside-arrival delay`, async ({ page }) => {
+    await page.clock.install();
+    await page.clock.pauseAt(new Date(Date.now() + 1000));
+    await page.goto(path);
+    await page.getByRole('link', { name: link, exact: true }).click();
+    await expect(page).toHaveURL(/#contact$/);
+    // The morph starts immediately, before advancing the paused arrival clock.
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.clock.runFor(550);
+    await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  });
+}
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 }, { width: 375, height: 420 }]) {
   test(`autofill viewport coordinates stay aligned in ${viewport.width}x${viewport.height}`, async ({ page }) => {
