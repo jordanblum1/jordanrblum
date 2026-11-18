@@ -1,18 +1,21 @@
 import { expect, test } from '@playwright/test';
 
-test('incoming contact link shows the homepage before opening', async ({ page }) => {
-  await page.clock.install();
-  await page.clock.pauseAt(new Date(Date.now() + 1000));
-  await page.goto('/#contact');
-  await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeVisible();
-  await page.clock.runFor(100);
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await page.clock.runFor(600);
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await page.clock.runFor(600);
-  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
-});
+for (const path of ['/#contact', '/contact']) {
+  test(`incoming ${path} shows the homepage before opening`, async ({ page }) => {
+    await page.clock.install();
+    await page.clock.pauseAt(new Date(Date.now() + 1000));
+    await page.goto(path);
+    await expect(page).toHaveURL(/#contact$/);
+    await expect(page.getByRole('button', { name: 'Contact', exact: true })).toBeVisible();
+    await page.clock.runFor(100);
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await page.clock.runFor(600);
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await page.clock.runFor(600);
+    await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
+  });
+}
 
 test('an explicit click bypasses and cancels the arrival delay', async ({ page }) => {
   await page.clock.install();
@@ -37,6 +40,18 @@ test('leaving the contact hash during arrival cancels the pending open', async (
   await expect(page.getByRole('dialog')).toBeHidden();
   await page.evaluate(() => { location.hash = 'contact'; });
   await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('Contact from Work skips the outside-arrival delay', async ({ page }) => {
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await page.goto('/work');
+  await page.getByRole('navigation', { name: 'Studio' }).getByRole('link', { name: 'Contact', exact: true }).click();
+  await expect(page).toHaveURL(/#contact$/);
+  // The morph starts immediately, before advancing the paused arrival clock.
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.clock.runFor(550);
+  await expect(page.getByLabel('Name', { exact: true })).toBeFocused();
 });
 
 for (const viewport of [{ width: 1440, height: 900 }, { width: 375, height: 812 }, { width: 375, height: 420 }]) {

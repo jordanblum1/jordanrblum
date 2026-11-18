@@ -126,13 +126,14 @@ export function initContactDialog(root: ParentNode = document): void {
   });
   addEventListener('pagehide', cancelArrival);
   addEventListener('pageshow', event => { if (event.persisted) syncHash(); });
-  // Let the homepage paint before an incoming contact link begins its morph.
-  // On-site clicks and subsequent history navigation still open immediately.
-  if (location.hash === '#contact') {
+  // Let outside arrivals see the homepage; links from Work stay immediate too.
+  const referrer = document.referrer ? new URL(document.referrer) : undefined;
+  const fromThisSite = referrer?.origin === location.origin && !/^\/contact\/?$/.test(referrer.pathname);
+  if (location.hash === '#contact' && !fromThisSite) {
     arrivalFrame = requestAnimationFrame(() => {
       arrivalFrame = requestAnimationFrame(() => {
         arrivalTimer = setTimeout(syncHash, 700);
       });
     });
-  }
+  } else syncHash();
 }
