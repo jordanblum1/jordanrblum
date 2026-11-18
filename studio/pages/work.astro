@@ -22,7 +22,7 @@ import '../styles/work.css';
       <div class="studio-work-rail" data-work-rail role="group" tabindex="0" aria-label={`${collection.label} gallery`}>
         {collection.examples.map((example, index) => <article class="studio-work-example" data-work-example data-treatment={example.treatment} data-tone={example.tone} aria-label={example.title}>
           <div class="studio-work-caption"><h2>{example.title}</h2><p>{example.description}</p></div>
-          <figure class="studio-work-image"><Image src={example.image} alt={example.alt} widths={example.treatment === 'phone' ? [389, 778] : [640, 1280]} sizes={example.treatment === 'phone' ? '(max-width: 600px) 190px, 225px' : '(max-width: 600px) 85vw, 700px'} format="webp" quality={90} loading={collection.id === 'products' && index < 3 ? 'eager' : 'lazy'} /></figure>
+          <figure class="studio-work-image"><Image src={example.image} alt={example.alt} widths={example.treatment === 'phone' ? [389, 778] : [640, 1280]} sizes={example.treatment === 'phone' ? '(max-width: 600px) 190px, 225px' : '(max-width: 600px) 85vw, 700px'} format="webp" quality={90} loading={collection.id === 'ios-apps' && index < 3 ? 'eager' : 'lazy'} /></figure>
           <a class="studio-work-pill studio-work-project-action" href={example.href}>{example.action}</a>
         </article>)}
       </div>

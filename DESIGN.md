@@ -98,3 +98,7 @@ Jordan explicitly requested a compact, independently branded game page on Octobe
 ## Independent studio build
 
 Blum Studios uses `astro.studio.config.mjs`, `studio/` and its scoped [design contract](studio/DESIGN.md) on buildwithblum.com. The default personal build, homepage, canonical host and chat remain unchanged. Studio app routes reuse the existing Stamp Shift sources; metadata and hosting disclosures follow the selected site. Public app support/privacy URLs on the personal host remain available during domain cutover.
+
+## iOS apps portfolio collection
+
+The personal homepage stays an Explore surface with three independent-project features. Its iOS apps feature groups Stamp Shift, Alive Still and Birthday as three genuine, fully contained licensed iPhone composites, with a short shared caption and one link to Build with Blum's Work collection. Reuse src/data/ios-apps.ts for both sites. Preserve existing project hover/focus treatment and reduced motion; no additional homepage sections or separate app-card grid.

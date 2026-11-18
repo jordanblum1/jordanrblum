@@ -125,13 +125,13 @@ test.describe('reduced motion', () => {
     await expect(portrait.locator('.portrait-ripple')).toHaveCSS('animation-name', 'none');
 
     for (const reaction of [
-      { href: 'https://alivestill.app', selector: '.alive-device-image' },
+      { href: 'https://buildwithblum.com/work', selector: '.ios-app-device img' },
       { href: 'https://chicksofnyc.com', selector: '.chicks-image' },
       { href: 'https://citibikewrapped.com', selector: '.citibike-image' },
     ]) {
       const card = page.locator(`#work a[href="${reaction.href}"]`);
       await card.hover();
-      await expect(card.locator(reaction.selector)).toHaveCSS('animation-name', 'none');
+      await expect(card.locator(reaction.selector).first()).toHaveCSS('animation-name', 'none');
     }
   });
 

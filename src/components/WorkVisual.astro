@@ -1,9 +1,7 @@
 ---
 import { Image } from 'astro:assets';
+import IosAppsPreview from './IosAppsPreview.astro';
 import type { WorkVisual as WorkVisualName } from '../data/site';
-import aliveActivity from '../assets/projects/alive-activity.png';
-import aliveHome from '../assets/projects/alive-home.png';
-import aliveTrip from '../assets/projects/alive-trip.png';
 import chicksLogo from '../assets/projects/chicks-logo.png';
 import citibikeWrapped from '../assets/projects/citibike-wrapped.webp';
 
@@ -17,6 +15,7 @@ const { visual, size = 'feature' } = Astro.props;
 ---
 
 <div class:list={['work-visual', `visual-${visual}`, `visual-${size}`]} aria-hidden="true">
+  {visual === 'ios-apps' && <IosAppsPreview />}
   {visual === 'roam' && (
     <div class="study study-roam">
       <div class="roam-window">
@@ -43,54 +42,6 @@ const { visual, size = 'feature' } = Astro.props;
             <span>Listing details</span>
             <span>Neighborhood</span>
             <span>Pricing</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )}
-
-  {visual === 'alive' && (
-    <div class="alive-stage">
-      <div class="alive-phones">
-        <div class="alive-phone alive-phone-left">
-          <span class="alive-side-button" aria-hidden="true"></span>
-          <div class="alive-screen">
-            <Image
-              src={aliveTrip}
-              alt=""
-              widths={[240, 360, 480]}
-              sizes="(max-width: 44rem) 28vw, 14vw"
-              loading="lazy" decoding="async"
-              class="alive-screen-image alive-device-image"
-            />
-          </div>
-        </div>
-
-        <div class="alive-phone alive-phone-center">
-          <span class="alive-side-button" aria-hidden="true"></span>
-          <div class="alive-screen">
-            <Image
-              src={aliveHome}
-              alt=""
-              widths={[280, 420, 560]}
-              sizes="(max-width: 44rem) 34vw, 17vw"
-              loading="lazy" decoding="async"
-              class="alive-screen-image"
-            />
-          </div>
-        </div>
-
-        <div class="alive-phone alive-phone-right">
-          <span class="alive-side-button" aria-hidden="true"></span>
-          <div class="alive-screen">
-            <Image
-              src={aliveActivity}
-              alt=""
-              widths={[240, 360, 480]}
-              sizes="(max-width: 44rem) 28vw, 14vw"
-              loading="lazy" decoding="async"
-              class="alive-screen-image"
-            />
           </div>
         </div>
       </div>
@@ -243,7 +194,6 @@ const { visual, size = 'feature' } = Astro.props;
   }
 
   .study,
-  .alive-stage,
   .chicks-stage,
   .citibike-stage {
     position: relative;
@@ -376,91 +326,6 @@ const { visual, size = 'feature' } = Astro.props;
     font-size: 0.62rem;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-xs);
-  }
-
-  .alive-stage {
-    isolation: isolate;
-    background:
-      radial-gradient(circle at 50% 46%, color-mix(in oklab, var(--success) 18%, transparent), transparent 42%),
-      linear-gradient(145deg, color-mix(in oklab, var(--paper-raised) 90%, var(--success)), var(--paper-raised));
-  }
-
-  .alive-stage::before {
-    position: absolute;
-    inset: 12% 8% -36%;
-    background: color-mix(in oklab, var(--success) 8%, transparent);
-    border-radius: var(--radius-pill) var(--radius-pill) 0 0;
-    content: '';
-  }
-
-  .alive-phones {
-    position: absolute;
-    inset: 0;
-  }
-
-  .alive-phone {
-    position: absolute;
-    bottom: -8%;
-    aspect-ratio: 1206 / 2622;
-    padding: clamp(0.16rem, 0.42vw, 0.3rem);
-    background: linear-gradient(
-      145deg,
-      color-mix(in oklab, var(--ink) 62%, var(--paper-raised)),
-      var(--ink) 42%,
-      color-mix(in oklab, var(--ink) 76%, var(--paper-raised))
-    );
-    border: 1px solid color-mix(in oklab, var(--paper-raised) 30%, var(--ink));
-    border-radius: var(--radius-lg);
-    box-shadow:
-      0 var(--space-5) var(--space-10) color-mix(in oklab, var(--ink) 22%, transparent),
-      inset 0 0 0 1px color-mix(in oklab, var(--paper-raised) 16%, transparent);
-    transform-origin: 50% 100%;
-  }
-
-  .alive-phone-left {
-    left: 27%;
-    z-index: 1;
-    height: 90%;
-    transform: translateX(-50%) rotate(-5deg);
-  }
-
-  .alive-phone-center {
-    left: 50%;
-    z-index: 3;
-    height: 104%;
-    transform: translateX(-50%);
-  }
-
-  .alive-phone-right {
-    right: 27%;
-    z-index: 2;
-    height: 90%;
-    transform: translateX(50%) rotate(5deg);
-  }
-
-  .alive-screen {
-    position: absolute;
-    inset: clamp(0.16rem, 0.42vw, 0.3rem);
-    overflow: hidden;
-    background: var(--paper-raised);
-    border-radius: calc(var(--radius-lg) - var(--space-1));
-  }
-
-  .alive-side-button {
-    position: absolute;
-    top: 24%;
-    left: -0.22rem;
-    width: 0.18rem;
-    height: 16%;
-    background: color-mix(in oklab, var(--ink) 72%, var(--paper-raised));
-    border-radius: var(--radius-pill);
-  }
-
-  :global(.alive-screen-image) {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 
   .study-procore {
@@ -635,27 +500,6 @@ const { visual, size = 'feature' } = Astro.props;
     100% { transform: translateY(calc(var(--space-1) * -1)) rotate(-1deg) scale(1.01); }
   }
 
-  @keyframes alive-phone-left {
-    0%,
-    100% { transform: translateX(-50%) rotate(-5deg); }
-    42% { transform: translate(-56%, -6px) rotate(-8deg); }
-    72% { transform: translate(-48%, 2px) rotate(-4deg); }
-  }
-
-  @keyframes alive-phone-center {
-    0%,
-    100% { transform: translateX(-50%); }
-    42% { transform: translate(-50%, -12px) scale(1.015); }
-    72% { transform: translate(-50%, 2px) scale(0.997); }
-  }
-
-  @keyframes alive-phone-right {
-    0%,
-    100% { transform: translateX(50%) rotate(5deg); }
-    42% { transform: translate(56%, -6px) rotate(8deg); }
-    72% { transform: translate(48%, 2px) rotate(4deg); }
-  }
-
   @keyframes citibike-coast {
     0%,
     100% { transform: translate3d(0, 0, 0) scale(1); }
@@ -712,20 +556,6 @@ const { visual, size = 'feature' } = Astro.props;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    :global(.project-link:hover) .alive-phone-left,
-    :global(.project-link:focus-visible) .alive-phone-left {
-      animation: alive-phone-left 640ms cubic-bezier(0.34, 1.56, 0.64, 1) 1 both;
-    }
-
-    :global(.project-link:hover) .alive-phone-center,
-    :global(.project-link:focus-visible) .alive-phone-center {
-      animation: alive-phone-center 640ms 35ms cubic-bezier(0.34, 1.56, 0.64, 1) 1 both;
-    }
-
-    :global(.project-link:hover) .alive-phone-right,
-    :global(.project-link:focus-visible) .alive-phone-right {
-      animation: alive-phone-right 640ms 70ms cubic-bezier(0.34, 1.56, 0.64, 1) 1 both;
-    }
 
     :global(.project-link:hover) .chicks-stage::before,
     :global(.project-link:focus-visible) .chicks-stage::before {
@@ -1028,15 +858,6 @@ const { visual, size = 'feature' } = Astro.props;
       padding-inline: var(--space-4);
     }
 
-    .alive-phone-left,
-    .alive-phone-right {
-      height: 87%;
-    }
-
-    .alive-phone-center {
-      height: 101%;
-    }
-
     .release-columns {
       grid-template-columns: minmax(6.5rem, 0.6fr) 1fr;
       gap: var(--space-3);
@@ -1066,33 +887,12 @@ const { visual, size = 'feature' } = Astro.props;
       animation: none;
     }
 
-    :global(.project-link:hover) .alive-phone-left,
-    :global(.project-link:focus-visible) .alive-phone-left,
-    :global(.project-link:hover) .alive-phone-center,
-    :global(.project-link:focus-visible) .alive-phone-center,
-    :global(.project-link:hover) .alive-phone-right,
-    :global(.project-link:focus-visible) .alive-phone-right,
     :global(.project-link:hover) :global(.chicks-image),
     :global(.project-link:focus-visible) :global(.chicks-image),
     :global(.project-link:hover) .citibike-scene,
     :global(.project-link:focus-visible) .citibike-scene {
       animation: none;
       transform: none;
-    }
-
-    :global(.project-link:hover) .alive-phone-left,
-    :global(.project-link:focus-visible) .alive-phone-left {
-      transform: translateX(-50%) rotate(-5deg);
-    }
-
-    :global(.project-link:hover) .alive-phone-center,
-    :global(.project-link:focus-visible) .alive-phone-center {
-      transform: translateX(-50%);
-    }
-
-    :global(.project-link:hover) .alive-phone-right,
-    :global(.project-link:focus-visible) .alive-phone-right {
-      transform: translateX(50%) rotate(5deg);
     }
 
     :global(.project-link:hover) .fountain-stream,

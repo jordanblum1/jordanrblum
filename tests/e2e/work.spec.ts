@@ -10,7 +10,7 @@ test('employment and independent projects use clearly different treatments', asy
   await expect(page.locator('#work .work-visual[aria-hidden="true"]')).toHaveCount(3);
   await expect(page.locator('#work .work-meta, #work .study-label, #work .asset-note')).toHaveCount(0);
 
-  for (const title of ['Savvy', 'Roam', 'Procore', 'Workday', 'Alive Still', 'Chicks of NYC', 'Citi Bike Wrapped']) {
+  for (const title of ['Savvy', 'Roam', 'Procore', 'Workday', 'iOS apps', 'Chicks of NYC', 'Citi Bike Wrapped']) {
     await expect(page.locator('#work').getByRole('heading', { level: 4, name: new RegExp(title) })).toBeVisible();
   }
 
@@ -29,7 +29,7 @@ test('employment and independent projects use clearly different treatments', asy
   await expect(page.locator('#work a[href="/about#roam"]')).toHaveCount(1);
   await expect(page.locator('#work a[href="/about#procore"]')).toHaveCount(1);
   await expect(page.locator('#work a[href="/about#workday"]')).toHaveCount(1);
-  await expect(page.locator('#work a[href="https://alivestill.app"]')).toHaveAttribute('target', '_blank');
+  await expect(page.locator('#work a[href="https://buildwithblum.com/work"]')).toHaveAttribute('target', '_blank');
   await expect(page.locator('#work a[href="https://chicksofnyc.com"]')).toHaveAttribute('target', '_blank');
   await expect(page.locator('#work a[href="https://citibikewrapped.com"]')).toHaveAttribute('target', '_blank');
   await expect(page.locator('#work a[href="https://citibikewrapped.com"]')).toContainText('About three weeks after I posted mine on Reddit');
@@ -57,20 +57,20 @@ test('homepage archive includes the featured projects and omits weaker retired e
 test('project artwork gets one-shot card reactions and a continuous fountain', async ({ page }) => {
   await page.goto('/');
 
-  const aliveCard = page.locator('#work a[href="https://alivestill.app"]');
-  const aliveScreens = aliveCard.locator('.alive-screen-image');
-  await expect(aliveCard.locator('.alive-phone')).toHaveCount(3);
-  await expect(aliveScreens).toHaveCount(3);
-  const aliveSources = await aliveScreens.evaluateAll((screens) => screens.map((screen) => screen.getAttribute('src')));
-  expect(new Set(aliveSources).size).toBe(3);
+  const appsCard = page.locator('#work a[href="https://buildwithblum.com/work"]');
+  const appScreens = appsCard.locator('.ios-app-device img');
+  await expect(appsCard.locator('.ios-app-device')).toHaveCount(3);
+  await expect(appScreens).toHaveCount(3);
+  const appSources = await appScreens.evaluateAll((screens) => screens.map((screen) => screen.getAttribute('src')));
+  expect(new Set(appSources).size).toBe(3);
 
   for (const reaction of [
-    { href: 'https://alivestill.app', selector: '.alive-phone-center', animation: 'alive-phone-center' },
+    { href: 'https://buildwithblum.com/work', selector: '.ios-app-device', animation: 'ios-app-lift' },
     { href: 'https://chicksofnyc.com', selector: '.chicks-image', animation: 'chicks-hop' },
     { href: 'https://citibikewrapped.com', selector: '.citibike-scene', animation: 'citibike-coast' },
   ]) {
     const card = page.locator(`#work a[href="${reaction.href}"]`);
-    const visual = card.locator(reaction.selector);
+    const visual = card.locator(reaction.selector).first();
     await card.hover();
     await expect(visual).toHaveCSS('animation-name', reaction.animation);
     await expect(visual).toHaveCSS('animation-iteration-count', '1');
@@ -104,3 +104,28 @@ test('professional cards route to the corresponding experience entry', async ({ 
   await expect(page.locator('#workday')).toBeVisible();
   await expect(page.locator('#workday')).toContainText('about three hours a week');
 });
+
+for (const width of [1440, 375, 320]) {
+  test(`iOS collection keeps three whole phones in its single feature at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const card = page.locator('#work a[href="https://buildwithblum.com/work"]');
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toContainText('Stamp Shift, Alive Still and Birthday.');
+    await expect(card.locator('img')).toHaveCount(3);
+    for (const image of await card.locator('img').all()) {
+      await expect.poll(() => image.evaluate(element => element instanceof HTMLImageElement && element.complete && element.naturalWidth > 0)).toBe(true);
+      const fit = await image.evaluate(element => {
+        const bounds = element.getBoundingClientRect();
+        const frame = element.closest('.visual-shell')!.getBoundingClientRect();
+        return { ratio: bounds.width / bounds.height, contained: bounds.left >= frame.left && bounds.right <= frame.right && bounds.top >= frame.top && bounds.bottom <= frame.bottom };
+      });
+      expect(fit.ratio).toBeCloseTo(778 / 1600, 2);
+      expect(fit.contained).toBe(true);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await card.hover();
+    await expect(card.locator('.ios-app-device').first()).toHaveCSS('animation-name', 'none');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+}
