@@ -23,9 +23,21 @@ The site deploys to S3, with optional CloudFront invalidation, on pushes to `mas
 
 `develop` hangs a darkroom print of the page's own words. In Chrome with HTML-in-Canvas, the real DOM develops through a WebGL shader and stays selectable; other browsers get the same print with a CSS develop. To turn the API on for visitors, register for the [HTML-in-Canvas origin trial](https://developer.chrome.com/origintrials/#/view_trial/3478467762190286849) and set `PUBLIC_HTML_IN_CANVAS_OT_TOKEN` at build time; `Base.astro` adds the `origin-trial` meta tag only when it's set.
 
+## Portfolio footer verification
+
+| Journey | Implementation | Visible success |
+| --- | --- | --- |
+| Work with me | `Footer.astro` → `studio.origin/#contact` | A readable action reaches the studio Contact form. |
+| Chat with my assistant | `Footer.astro` → `scripts/chat.ts` | The chat panel opens; closing returns focus to its trigger. |
+| Spray → return to footer | `SprayWall.astro` / `scripts/spray-wall.ts` | Footer actions return with their surfaces, keyboard access and destinations intact. |
+
+Use `pnpm test:footer` for the affected layout, contrast, input and spray states. When chat behavior changes, also run the existing chat suite. Footer controls share the container's action rule so adding an anchor does not silently create an unstyled action.
+
+Inspect the **resting footer over the actual mural**, hover/focus/press, and the return from spray mode on desktop and compact screens. A visible or clickable link is not proof of readable contrast or design consistency. `footer-actions.spec.ts` captures 1280/768/375px views and checks opaque surfaces, text contrast, target sizes, matching geometry, motion and no-JS navigation. Its destination fixture proves navigation only; check the live studio form without submitting an inquiry before claiming the cross-site journey works.
+
 ## Assistant chat
 
-The chat widget (`src/components/ChatWidget.astro` + `src/scripts/chat.ts`), opened from the nav “Chat” button and the footer CTA, is a static-site island, mounted site-wide from `src/layouts/Base.astro`, that talks to a streaming AWS Lambda backend in `server/` — see [`server/README.md`](server/README.md) for the architecture, the `reveal_email` gate, transcript storage, and how to switch models. The `mailto:` link stays as a visible fallback everywhere it already appeared (footer, nav).
+The chat widget (`src/components/ChatWidget.astro` + `src/scripts/chat.ts`), opened from the nav “Chat” button and the footer CTA, is a static-site island, mounted site-wide from `src/layouts/Base.astro`, that talks to a streaming AWS Lambda backend in `server/` — see [`server/README.md`](server/README.md) for the architecture, the `reveal_email` gate, transcript storage, and how to switch models. Without JavaScript, the nav email remains the fallback and the footer's Work action still reaches the studio's Contact email fallback.
 
 The widget POSTs to a relative `/api/chat` by default, which only works in production because CloudFront proxies that path to the Lambda Function URL (AWS_IAM + OAC — not reachable directly). For local development against a real backend, set `PUBLIC_CHAT_ENDPOINT` to the deployed endpoint in a `.env` file (Astro loads `PUBLIC_*` env vars into the client bundle automatically):
 

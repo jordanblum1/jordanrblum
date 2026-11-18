@@ -71,6 +71,12 @@ Retain the brand's 8/16/24/32px radius vocabulary where needed; reading pages do
 
 ## Components
 
+### Portfolio footer actions
+
+The direct links and buttons in `.footer-cta-group` share one surface, typography, pill geometry and hover/focus/press rule in `Footer.astro`. Work uses opaque paper and ink over the mural; Chat retains the accent variant. Keep both readable at 4.5:1, at least 44px tall, and within the viewport. Reduce Motion preserves the surfaces and focus outline while removing travel. Navigation links elsewhere keep their existing treatment. See the [footer verification map](README.md#portfolio-footer-verification).
+
+### App documentation
+
 Text links use the existing oxblood underline and a visible focus outline. Current documentation sections pair text with `aria-current`. FAQs use native `details`/`summary`; contact links use native `mailto:`. Only the Stamp Shift overview may load its isolated game-landing motion scripts; its scoped contract supersedes this editorial shell for that overview. Support, privacy and the directory remain static. Use a visible email label, an explicit per-app notification request on form submission, 44px controls, pending/disabled/error/success states and a live status region. No new dependencies. Global tokens, font faces and primitives come from `global.css`; page styles are scoped beneath `.app-docs`.
 
 ## Do's and Don'ts
