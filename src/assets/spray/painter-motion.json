@@ -1,0 +1,8 @@
+{
+  "frames": 16,
+  "columns": 4,
+  "rows": 4,
+  "frameWidth": 256,
+  "frameHeight": 384,
+  "frameDurationMs": 80
+}
