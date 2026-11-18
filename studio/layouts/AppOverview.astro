@@ -1,43 +1,39 @@
 ---
+import { Image } from 'astro:assets';
 import StudioLayout from './StudioLayout.astro';
+import StudioBrand from '../components/StudioBrand.astro';
 import { studio } from '../../src/data/studio';
-interface Props {
-  name: string;
-  description: string;
-  path: string;
-  appStoreUrl: string;
-  website: string;
-  supportEmail: string;
-  privacyUrl?: string;
-}
-const { name, description, path, appStoreUrl, website, supportEmail, privacyUrl } = Astro.props;
-const supportUrl = `mailto:${supportEmail}?subject=${encodeURIComponent(`${name} support`)}`;
-const hasArtwork = Astro.slots.has('artwork');
+import { iosApps } from '../../src/data/ios-apps';
+import { iosAppArt } from '../../src/data/ios-app-art';
+interface Props { appId: typeof iosApps[number]['id']; }
+const app = iosApps.find(app => app.id === Astro.props.appId);
+if (!app) throw new Error('Unknown app overview');
+const path = `/apps/${app.id}`;
 ---
-<StudioLayout title={`${name} — ${studio.name}`} description={description} path={path}>
+<StudioLayout title={`${app.title} — ${studio.name}`} description={app.description} path={path}>
   <header class="overview-header overview-width">
-    <a href="/">{studio.name}</a>
-    <a href="/apps">All apps <span aria-hidden="true">↗</span></a>
+    <StudioBrand />
+    <a class="studio-pill" href="/apps">All apps</a>
   </header>
   <main id="main-content" tabindex="-1" class="overview-main overview-width">
-    <section class:list={['overview-hero', { 'overview-with-art': hasArtwork }]} aria-labelledby="app-title">
+    <section class="overview-hero overview-with-art" aria-labelledby="app-title">
       <div class="overview-copy">
-        <h1 id="app-title">{name}</h1>
-        <p class="overview-description">{description}</p>
-        <a class="overview-download" href={appStoreUrl}>Download on the App Store <span aria-hidden="true">↗</span></a>
-        <a class="overview-website" href={website}>Visit the official website <span aria-hidden="true">↗</span></a>
+        <h1 id="app-title">{app.title}</h1>
+        <p class="overview-description">{app.description}</p>
+        <a class="studio-pill studio-pill-primary overview-download" href={app.storeUrl}>Download on the App Store</a>
+        <a class="overview-website" href={app.website}>Visit the official website</a>
       </div>
-      {hasArtwork && <div class="overview-artwork"><slot name="artwork" /></div>}
+      <div class="overview-artwork" data-tone={app.tone}><Image src={iosAppArt[app.id]} alt={app.alt} widths={[389, 778]} sizes="(max-width: 800px) 190px, 260px" /></div>
     </section>
     <section class="overview-help" aria-labelledby="help-title">
       <h2 id="help-title">Need a hand?</h2>
       <div>
-        <a href={supportUrl}>Email support <span aria-hidden="true">↗</span></a>
-        {privacyUrl && <a href={privacyUrl}>Privacy policy <span aria-hidden="true">↗</span></a>}
+        <a href={app.supportUrl}>Email support</a>
+        <a href={app.privacyUrl}>Privacy policy</a>
       </div>
     </section>
   </main>
-  <footer class="overview-footer overview-width"><a href="/">{studio.name}</a><a href="/apps">Browse all apps <span aria-hidden="true">↗</span></a></footer>
+  <footer class="overview-footer overview-width"><a href="/">{studio.name}</a><a href="/apps">Browse all apps</a></footer>
 </StudioLayout>
 <style>
   .overview-width { width: min(100% - 5rem, 77rem); margin-inline: auto; }
@@ -50,12 +46,12 @@ const hasArtwork = Astro.slots.has('artwork');
   .overview-with-art { display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; gap: 5rem; }
   .overview-copy h1 { color: var(--studio-accent); font: 600 clamp(3.5rem, 7.5vw, 7rem)/1.05 Chillax, Switzer, sans-serif; letter-spacing: -.055em; }
   .overview-description { max-width: 27ch; margin-top: 1.5rem; font-size: clamp(1.25rem, 2.1vw, 1.75rem); line-height: 1.4; }
-  .overview-download { display: flex; align-items: center; justify-content: space-between; gap: 2rem; width: fit-content; min-height: 60px; margin-top: 2rem; padding: 1rem 1.5rem; color: var(--studio-paper); background: var(--studio-accent); text-decoration: none; }
-  .overview-download:hover { background: var(--studio-ink); }
+  .overview-download { display: flex; width: fit-content; margin-top: 2rem; }
   .overview-website { margin-top: .75rem; }
   .overview-header a:hover, .overview-footer a:hover, .overview-help a:hover, .overview-website:hover { color: var(--studio-accent); }
-  .overview-artwork { display: flex; justify-content: center; max-height: 560px; overflow: hidden; padding: 2.5rem 2rem 0; background: #dfe6db; }
-  .overview-artwork :global(img) { width: min(100%, 260px); height: auto; align-self: start; border: 4px solid var(--studio-ink); border-radius: 28px; }
+  .overview-artwork { display: flex; justify-content: center; height: 560px; padding: 2rem; border-radius: 26px; background: #e8e5ed; }
+  .overview-artwork[data-tone="birthday"] { background: #e3e9df; }
+  .overview-artwork :global(img) { display: block; max-width: 100%; width: auto; height: 100%; object-fit: contain; }
   .overview-help { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-block: 1.5rem; border-block: 1px solid var(--studio-line); }
   .overview-help h2 { font-size: 1.25rem; font-weight: 500; }
   .overview-help > div { display: flex; flex-wrap: wrap; column-gap: 2rem; }
@@ -66,13 +62,12 @@ const hasArtwork = Astro.slots.has('artwork');
     .overview-main { padding-block: 1.5rem 2rem; }
     .overview-with-art { grid-template-columns: 1fr; gap: 3rem; }
     .overview-hero { padding-block: 1.5rem 3rem; }
-    .overview-artwork { max-height: 450px; }
+    .overview-artwork { height: 450px; }
   }
   @media (max-width: 540px) {
     .overview-width { width: calc(100% - 2.5rem); }
     .overview-copy h1 { font-size: 3.5rem; }
     .overview-help { align-items: start; flex-direction: column; gap: .5rem; }
-    .overview-download { width: 100%; gap: 1rem; padding-inline: 1rem; }
-    .overview-artwork { max-height: 380px; }
+    .overview-artwork { height: 380px; }
   }
 </style>

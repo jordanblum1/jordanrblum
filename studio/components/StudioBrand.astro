@@ -1,0 +1,12 @@
+---
+import blumMark from '../../src/assets/identity/blum-mark.svg?raw';
+---
+<a class="studio-brand" href="/" aria-label="Back to Blum Studios"><span class="studio-brand-mark" aria-hidden="true" set:html={blumMark} /><span>Studios</span></a>
+<style>
+  .studio-brand { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; min-width: 0; color: var(--studio-accent) !important; text-decoration: none; }
+  .studio-brand-mark { width: 64px; flex-shrink: 0; }
+  .studio-brand-mark :global(svg) { width: 100%; height: auto; fill: currentColor; }
+  .studio-brand > span:last-child { font: 600 1.15rem/1 Chillax, Switzer, sans-serif; letter-spacing: -.06em; }
+  @media (max-width: 600px) { .studio-brand-mark { width: 54px; } .studio-brand > span:last-child { font-size: 1rem; } }
+  @media (max-width: 360px) { .studio-brand { flex-wrap: wrap; gap: 4px; } }
+</style>

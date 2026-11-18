@@ -26,7 +26,7 @@ for (const width of [1440, 375]) {
 
 test('a first visitor can find the game, restore instructions and host-specific privacy', async ({ page }) => {
   await page.goto('/apps');
-  await page.getByRole('link', { name: 'Stamp Shift ↗', exact: true }).click();
+  await page.getByRole('link', { name: 'Stamp Shift', exact: true }).click();
   await expect(page.getByRole('link', { name: 'Download on the App Store', exact: true })).toHaveAttribute('href', 'https://apps.apple.com/us/app/stamp-shift/id6824269145');
   await page.getByRole('link', { name: 'Support', exact: true }).click();
   await page.getByText('How do I restore Extra Routes?', { exact: true }).click();

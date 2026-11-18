@@ -1,11 +1,12 @@
 ---
 import { Image } from 'astro:assets';
 import { iosApps } from '../data/ios-apps';
+import { iosAppArt } from '../data/ios-app-art';
 ---
 
 <div class="ios-app-preview">
   {iosApps.map((app, index) => <div class="ios-app-device" style={`--app-index: ${index}`}>
-    <Image src={app.image} alt="" widths={[194, 389]} sizes="(max-width: 44rem) 25vw, 15vw" loading="lazy" decoding="async" />
+    <Image src={iosAppArt[app.id]} alt="" widths={[194, 389]} sizes="(max-width: 44rem) 25vw, 15vw" loading="lazy" decoding="async" />
   </div>)}
 </div>
 

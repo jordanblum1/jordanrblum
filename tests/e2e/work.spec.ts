@@ -40,7 +40,7 @@ test('homepage archive includes the featured projects and omits weaker retired e
 
   const rows = page.locator('.more-section .archive-table tbody tr');
   await expect(rows).toHaveCount(7);
-  await expect(rows.nth(0)).toContainText('Alive Still');
+  await expect(rows.nth(0)).toContainText('iOS apps');
   await expect(rows.nth(1)).toContainText('Chicks of NYC');
   await expect(rows.nth(2)).toContainText('Citi Bike Wrapped');
   await expect(rows.nth(2)).toContainText('A personal year in review for your Citi Bike rides');
@@ -111,7 +111,7 @@ for (const width of [1440, 375, 320]) {
     await page.goto('/');
     const card = page.locator('#work a[href="https://buildwithblum.com/work"]');
     await card.scrollIntoViewIfNeeded();
-    await expect(card).toContainText('Stamp Shift, Alive Still and Birthday.');
+    await expect(card).toContainText('Stamp Shift, Alive Still, and Birthday.');
     await expect(card.locator('img')).toHaveCount(3);
     for (const image of await card.locator('img').all()) {
       await expect.poll(() => image.evaluate(element => element instanceof HTMLImageElement && element.complete && element.naturalWidth > 0)).toBe(true);

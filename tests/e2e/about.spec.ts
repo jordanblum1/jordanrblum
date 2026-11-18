@@ -277,7 +277,7 @@ test('about archive exposes seven public projects with real links', async ({ pag
 
   const rows = page.locator('#projects .archive-table tbody tr');
   await expect(rows).toHaveCount(7);
-  await expect(page.locator('#projects a[href="https://alivestill.app"]')).toContainText('Alive Still');
+  await expect(page.locator('#projects a[href="https://buildwithblum.com/work"]')).toContainText('iOS apps');
   await expect(page.locator('#projects a[href="https://chicksofnyc.com"]')).toContainText('Chicks of NYC');
   await expect(page.locator('#projects a[href="https://wimdy.io"]')).toContainText('wimdy');
   await expect(page.locator('#projects a[href="https://blumblumblum.com"]')).toContainText('blumblumblum');
