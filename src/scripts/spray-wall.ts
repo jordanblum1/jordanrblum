@@ -6,6 +6,7 @@
 // nothing loops while idle. Reduced motion keeps the toy but drops the
 // wobble flourishes; sound is off until unmuted and gated behind the arm tap.
 import { reducedMotion } from './media';
+import { repaintWall } from './spray-wall-cleanup';
 
 interface Nozzle {
   /** Spray radius in CSS px. */
@@ -130,6 +131,10 @@ if (root && stage) {
   const nozzleButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-spray-nozzle]')];
   const audio = new SprayAudio();
   const footerInner = stage.querySelector<HTMLElement>('.footer-inner');
+  const clearButton = root.querySelector<HTMLButtonElement>('[data-spray-clear]')!;
+  const wallStatus = root.querySelector<HTMLElement>('[data-spray-wall-status]')!;
+  const painter = root.querySelector<HTMLElement>('[data-spray-painter]')!;
+  const paintActions = [...root.querySelectorAll<HTMLButtonElement>('[data-spray-clear], [data-spray-undo], [data-spray-save]')];
   // Tag game: a faint BLUM stencil. Where Chrome's HTML-in-Canvas API exists
   // the real DOM word (site font, still in the accessibility tree) is drawn
   // into the stencil canvas; elsewhere fillText draws it from the same
@@ -162,7 +167,9 @@ if (root && stage) {
   let dripFrame = 0;
   let buildup = new Map<number, number>();
   let undoSnapshot: HTMLCanvasElement | null = null;
-  let restored = false;
+  let dirty = false;
+  let clearing = false;
+  let finishCleanup: (() => void) | null = null;
   let moved = false;
   let tag: 'off' | 'ready' | 'live' | 'up' | 'buffed' = 'off';
   let round: CanvasRenderingContext2D | null = null;
@@ -172,8 +179,13 @@ if (root && stage) {
   const bounds = () => stage.getBoundingClientRect();
 
   const resize = () => {
+    finishCleanup?.();
     const box = bounds();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const nextDpr = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(box.width * nextDpr));
+    const height = Math.max(1, Math.round(box.height * nextDpr));
+    if (canvas.width === width && canvas.height === height && dpr === nextDpr) return;
+    dpr = nextDpr;
     // Preserve existing paint across resizes (drawImage copy — no readback).
     let keep: HTMLCanvasElement | null = null;
     if (canvas.width > 0 && canvas.height > 0) {
@@ -182,8 +194,8 @@ if (root && stage) {
       keep.height = canvas.height;
       keep.getContext('2d')!.drawImage(canvas, 0, 0);
     }
-    canvas.width = Math.round(box.width * dpr);
-    canvas.height = Math.round(box.height * dpr);
+    canvas.width = width;
+    canvas.height = height;
     if (keep) ctx.drawImage(keep, 0, 0, canvas.width, canvas.height);
     stencil.width = canvas.width;
     stencil.height = canvas.height;
@@ -303,29 +315,36 @@ if (root && stage) {
   };
 
   const persist = () => {
+    if (!dirty || clearing) return;
     try {
       // Downscaled webp keeps us well under localStorage quotas.
       const off = document.createElement('canvas');
-      off.width = Math.round(canvas.width / 2);
-      off.height = Math.round(canvas.height / 2);
+      const scale = Math.min(0.5, 1536 / Math.max(canvas.width, canvas.height));
+      off.width = Math.max(1, Math.round(canvas.width * scale));
+      off.height = Math.max(1, Math.round(canvas.height * scale));
       off.getContext('2d')!.drawImage(canvas, 0, 0, off.width, off.height);
       localStorage.setItem(STORAGE_KEY, off.toDataURL('image/webp', 0.6));
+      dirty = false;
     } catch {
       /* quota or serialization issues — the wall just won't persist */
     }
   };
 
   const restore = () => {
-    if (restored) return;
-    restored = true;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
+      if (!saved || !/^data:image\/(webp|png);base64,/.test(saved)) return;
+      // Finish decoding the saved layer before tools can overwrite it.
+      armButton.disabled = true;
       const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        armButton.disabled = false;
+      };
+      img.onerror = () => { armButton.disabled = false; };
       img.src = saved;
     } catch {
-      /* ignore */
+      armButton.disabled = false;
     }
   };
 
@@ -354,6 +373,7 @@ if (root && stage) {
   };
 
   const stampAt = (x: number, y: number, alphaScale: number) => {
+    dirty = true;
     const r = nozzle.radius;
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -429,6 +449,7 @@ if (root && stage) {
   };
 
   const stepDrips = () => {
+    dirty = true;
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     for (const drip of drips) {
@@ -448,6 +469,14 @@ if (root && stage) {
     const box = bounds();
     drips = drips.filter((d) => d.width > 0.8 && d.y < box.height && d.y - d.startY < d.maxRun);
     dripFrame = drips.length > 0 ? requestAnimationFrame(stepDrips) : 0;
+    if (!dripFrame && !spraying) persist();
+  };
+
+  const stopDrips = () => {
+    cancelAnimationFrame(dripFrame);
+    dripFrame = 0;
+    drips = [];
+    buildup.clear();
   };
 
   const setPointer = (clientX: number, clientY: number) => {
@@ -460,7 +489,7 @@ if (root && stage) {
   };
 
   const startSpray = () => {
-    if (spraying) return;
+    if (spraying || clearing) return;
     if (tag === 'ready') startRound();
     spraying = true;
     lastX = pointerX;
@@ -505,7 +534,6 @@ if (root && stage) {
     audio.resume();
     if (!audio.muted) audio.rattle();
     resize();
-    restore();
     root.classList.add('is-armed');
     stage.classList.add('is-spray-armed');
     footerInner?.setAttribute('inert', '');
@@ -515,8 +543,10 @@ if (root && stage) {
   };
 
   const disarm = () => {
+    finishCleanup?.();
     armed = false;
     stopSpray();
+    persist();
     window.clearInterval(roundTimer);
     round = null;
     setTag('off');
@@ -535,7 +565,7 @@ if (root && stage) {
 
   // Painting input — pointer events with capture so strokes survive fast drags.
   canvas.addEventListener('pointerdown', (event) => {
-    if (!armed) return;
+    if (!armed || clearing) return;
     event.preventDefault();
     try {
       canvas.setPointerCapture(event.pointerId);
@@ -561,6 +591,7 @@ if (root && stage) {
   });
   canvas.addEventListener('pointerup', stopSpray);
   canvas.addEventListener('pointercancel', stopSpray);
+  canvas.addEventListener('lostpointercapture', stopSpray);
 
   // Toolbar --------------------------------------------------------------
   canButtons.forEach((button) => {
@@ -582,18 +613,22 @@ if (root && stage) {
   });
 
   root.querySelector('[data-spray-undo]')?.addEventListener('click', () => {
+    if (clearing) return;
     if (undoSnapshot) {
+      stopDrips();
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(undoSnapshot, 0, 0);
+      ctx.drawImage(undoSnapshot, 0, 0, canvas.width, canvas.height);
       ctx.restore();
       undoSnapshot = null;
+      dirty = true;
       persist();
     }
   });
 
   root.querySelector('[data-spray-save]')?.addEventListener('click', () => {
+    if (clearing) return;
     // Composite the mural + user paint so the download is the whole wall.
     const art = stage.querySelector<HTMLImageElement>('.footer-art img:not([hidden])');
     const out = document.createElement('canvas');
@@ -630,7 +665,53 @@ if (root && stage) {
   root.querySelector('[data-spray-close]')?.addEventListener('click', disarm);
   tagRetry.addEventListener('click', readyTag);
 
-  window.addEventListener('resize', () => {
-    if (armed) resize();
+  clearButton.addEventListener('click', () => {
+    if (clearing) return;
+    stopSpray();
+    stopDrips();
+    window.clearInterval(roundTimer);
+    round = null;
+    setTag('off');
+    undoSnapshot = null;
+    dirty = false;
+    // Remove first so leaving mid-animation cannot bring the old paint back.
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* storage may be disabled */ }
+    const finish = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      clearing = false;
+      finishCleanup = null;
+      delete root.dataset.sprayClearing;
+      root.removeAttribute('aria-busy');
+      paintActions.forEach((button) => button.removeAttribute('aria-disabled'));
+      wallStatus.textContent = 'Wall cleared.';
+    };
+    if (reducedMotion.matches) {
+      finish();
+      return;
+    }
+    clearing = true;
+    root.dataset.sprayClearing = 'true';
+    root.setAttribute('aria-busy', 'true');
+    paintActions.forEach((button) => button.setAttribute('aria-disabled', 'true'));
+    wallStatus.textContent = 'Repainting the wall…';
+    finishCleanup = repaintWall(canvas, painter, finish);
   });
+
+  window.addEventListener('blur', stopSpray);
+  const saveBeforeLeaving = () => {
+    finishCleanup?.();
+    stopSpray();
+    persist();
+  };
+  window.addEventListener('pagehide', saveBeforeLeaving);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) saveBeforeLeaving();
+  });
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) finishCleanup?.();
+  });
+
+  resize();
+  restore();
+  new ResizeObserver(resize).observe(stage);
 }

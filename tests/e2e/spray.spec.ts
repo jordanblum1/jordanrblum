@@ -77,7 +77,7 @@ test('spraying once fades in the BLUM stencil, drawn from real DOM text', async 
   await expect(wall(page)).toHaveAttribute('data-tag', 'ready');
   await expect(page.locator('[data-spray-stencil]')).toHaveAttribute('data-mode', 'element');
   await expect(page.locator('[data-spray-stencil-word]')).toHaveText('BLUM');
-  await expect(page.getByRole('status')).toContainText('10');
+  await expect(page.locator('[data-spray-tag-status]')).toContainText('10');
   const inked = await page.evaluate(() => {
     const c = document.querySelector<HTMLCanvasElement>('[data-spray-stencil]')!;
     const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
@@ -96,8 +96,8 @@ test('a careful trace goes up with a crew name and saves the best score', async 
   await traceStencil(page);
   await page.clock.runFor(10_500);
   await expect(wall(page)).toHaveAttribute('data-tag', 'up');
-  await expect(page.getByRole('status')).toContainText(/went up/i);
-  await expect(page.getByRole('status')).toContainText(/[A-Z]{3,} [A-Z]{3,}/);
+  await expect(page.locator('[data-spray-tag-status]')).toContainText(/went up/i);
+  await expect(page.locator('[data-spray-tag-status]')).toContainText(/[A-Z]{3,} [A-Z]{3,}/);
   const best = await page.evaluate(() => Number(localStorage.getItem('jrb-spray-best')));
   expect(best).toBeGreaterThanOrEqual(60);
 });
@@ -112,7 +112,7 @@ test('a sloppy trace gets buffed after ten seconds and can retry', async ({ page
   await expect(wall(page)).toHaveAttribute('data-tag', 'live');
   await page.clock.runFor(10_500);
   await expect(wall(page)).toHaveAttribute('data-tag', 'buffed');
-  await expect(page.getByRole('status')).toContainText(/buffed/i);
+  await expect(page.locator('[data-spray-tag-status]')).toContainText(/buffed/i);
   await page.getByRole('button', { name: 'Go again' }).click();
   await expect(wall(page)).toHaveAttribute('data-tag', 'ready');
 });

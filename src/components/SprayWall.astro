@@ -10,6 +10,7 @@ import canSage from '../assets/spray/can-sage.webp';
 import canSlate from '../assets/spray/can-slate.webp';
 import canInk from '../assets/spray/can-ink.webp';
 import shelf from '../assets/spray/shelf.webp';
+import painter from '../assets/spray/mural-painter.svg?url';
 
 const cans = [
   { id: 'terracotta', color: '#9C4037', src: canTerracotta, label: 'terracotta' },
@@ -44,6 +45,10 @@ const cans = [
   </canvas>
 
   <canvas class="spray-canvas" data-spray-canvas aria-hidden="true"></canvas>
+  <div class="spray-painter" data-spray-painter aria-hidden="true">
+    <img src={painter} alt="" width="688" height="1024" loading="lazy" />
+  </div>
+  <p class="visually-hidden" data-spray-wall-status role="status"></p>
 
   <div class="spray-tag">
     <span class="spray-tag-clock" data-spray-tag-clock aria-hidden="true"></span>
@@ -140,6 +145,15 @@ const cans = [
     </div>
 
     <div class="spray-actions">
+      <button type="button" class="spray-icon" data-spray-clear aria-label="Clear wall" title="clear wall">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path class="dab" d="M11 2C5 1 1 6 2 12s5 10 11 9 10-5 9-11S17 1 11 2Z" filter="url(#spray-rough)" />
+          <g class="glyph">
+            <rect class="mark" x="5" y="6" width="12" height="5" rx="1.5" />
+            <path class="mark" d="M17 8.5h2v5h-7v5" />
+          </g>
+        </svg>
+      </button>
       <button type="button" class="spray-icon" data-spray-undo aria-label="Undo last stroke" title="undo">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <g class="backdrop" filter="url(#spray-rough)">
@@ -235,6 +249,57 @@ const cans = [
     pointer-events: auto;
     touch-action: none;
     cursor: none;
+  }
+
+  .spray-painter {
+    position: absolute;
+    bottom: 1%;
+    left: 0;
+    z-index: 6;
+    display: none;
+    width: clamp(12rem, 19vw, 15rem);
+    pointer-events: none;
+    filter: drop-shadow(0 5px 3px rgb(43 37 33 / 0.18));
+  }
+
+  .spray-painter img {
+    width: 100%;
+    height: auto;
+    transform-origin: 60% 100%;
+  }
+
+  .spray-wall[data-spray-clearing="true"] .spray-painter {
+    display: block;
+  }
+
+  .spray-wall[data-spray-clearing="true"] {
+    overflow: clip;
+  }
+
+  .spray-wall[data-spray-clearing="true"] .spray-painter img {
+    animation: roller-step 340ms ease-in-out infinite alternate;
+  }
+
+  .spray-wall[data-spray-clearing="true"] .spray-canvas {
+    pointer-events: none;
+  }
+
+  .spray-wall[data-spray-clearing="true"] .spray-cursor {
+    visibility: hidden;
+  }
+
+  .spray-wall[data-spray-clearing="true"] .spray-toolbar {
+    opacity: 0.3;
+  }
+
+  .spray-icon[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: wait;
+  }
+
+  @keyframes roller-step {
+    from { transform: translateY(0) rotate(-1deg); }
+    to { transform: translateY(-4px) rotate(1deg); }
   }
 
   /* While armed, the footer content stands aside (visually and for input) so
@@ -769,7 +834,7 @@ const cans = [
     }
 
     .spray-icon {
-      width: 2.5rem;
+      width: 2.75rem;
     }
 
     .spray-arm {
