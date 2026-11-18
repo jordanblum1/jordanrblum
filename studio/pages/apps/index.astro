@@ -1,23 +1,40 @@
 ---
+import { Image } from 'astro:assets';
 import StudioLayout from '../../layouts/StudioLayout.astro';
+import StudioBrand from '../../components/StudioBrand.astro';
 import { studio } from '../../../src/data/studio';
+import { iosApps } from '../../../src/data/ios-apps';
+import { iosAppArt } from '../../../src/data/ios-app-art';
 ---
-<StudioLayout title="Apps — Blum Studios" description="Games and useful little apps from Blum Studios. Find an app, get support or read its privacy policy." path="/apps">
-  <header class="directory-header">
-    <a href="/" class="directory-home">{studio.name}</a>
-    <a href={`mailto:${studio.contactEmail}?subject=Project%20inquiry`}>Work with us ↗</a>
-  </header>
-  <main id="main-content" tabindex="-1" class="directory-main">
-    <h1>Our apps.</h1>
+<StudioLayout title="iOS apps — Blum Studios" description="Stamp Shift, Alive Still and Birthday. Download an app, get support or read its privacy policy." path="/apps">
+  <header class="directory-header directory-width"><StudioBrand /><a class="studio-pill" href="/#contact">Contact</a></header>
+  <main id="main-content" tabindex="-1" class="directory-main directory-width">
+    <h1>iOS apps</h1>
     <ul class="directory-list" aria-label="Apps">
-      <li><h2><a href="/apps/stamp-shift">Stamp Shift ↗</a></h2><p>A little stamp-sorting puzzle for iPhone.</p><nav aria-label="Stamp Shift help"><a href="/apps/stamp-shift/support">Support</a><a href="/apps/stamp-shift/privacy">Privacy</a></nav></li>
-      <li><h2><a href="/apps/alive-still">Alive Still ↗</a></h2><p>A daily check-in for people who live alone.</p></li>
-      <li><h2><a href="/apps/birthday">Birthday ↗</a></h2><p>Birthdays, wishes and thoughtful gifts.</p></li>
+      {iosApps.map(app => <li>
+        <Image src={iosAppArt[app.id]} alt={app.alt} width={194} sizes="72px" />
+        <div><h2><a href={`/apps/${app.id}`}>{app.title}</a></h2><p>{app.description}</p>
+          <nav aria-label={`${app.title} help`}><a href={app.supportUrl}>Support</a><a href={app.privacyUrl}>Privacy</a></nav>
+        </div>
+      </li>)}
     </ul>
-    <a href={`mailto:${studio.supportEmail}?subject=App%20support`}>Need a hand? Email support ↗</a>
+    <a href={`mailto:${studio.supportEmail}?subject=App%20support`}>Email support</a>
   </main>
-  <footer class="directory-footer"><a href="/">Blum Studios</a><a href="https://jordanblum.com">About Jordan ↗</a></footer>
+  <footer class="directory-footer directory-width"><a href="/work">Work</a><a href="https://jordanblum.com/about">About Jordan</a></footer>
 </StudioLayout>
 <style>
-  .directory-header,.directory-footer{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:1.5rem 0;border-bottom:1px solid #DDD5CB}.directory-home{font-weight:600}.directory-main{padding:4rem 0 5rem}.directory-main h1{font-family:Chillax,Switzer,sans-serif;font-size:clamp(3rem,7vw,5rem);margin:0 0 3rem;line-height:1.05;letter-spacing:-.04em}.directory-list{list-style:none;padding:0;margin:0 0 3rem}.directory-list li{padding:1.5rem 0;border-top:1px solid #DDD5CB}.directory-list h2{font-size:1.6rem;margin:0 0 .5rem}.directory-list p{margin:0 0 .75rem}.directory-list nav{display:flex;gap:1.5rem}.directory-footer{border-top:1px solid #DDD5CB;border-bottom:0}.directory-header a,.directory-main a,.directory-footer a{display:inline-flex;min-height:44px;align-items:center}.directory-header,.directory-main,.directory-footer{width:min(100% - 3rem,72rem);margin-inline:auto}@media(max-width:500px){.directory-main{padding-block:3rem}.directory-header,.directory-footer{flex-wrap:wrap}}
+  .directory-width { width: min(100% - 3rem, 72rem); margin-inline: auto; }
+  .directory-header, .directory-footer { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding-block: 1.5rem; }
+  .directory-main { padding-block: 3rem 4rem; }
+  .directory-main h1 { font: 600 clamp(2.75rem, 5vw, 4rem)/1.1 Chillax, Switzer, sans-serif; letter-spacing: -.065em; margin-bottom: 2rem; }
+  .directory-list { list-style: none; padding: 0; margin: 0 0 2rem; }
+  .directory-list li { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 2rem; align-items: center; padding-block: 1.5rem; border-top: 1px solid var(--studio-line); }
+  .directory-list :global(img) { display: block; width: 100%; height: auto; }
+  .directory-list h2 { font: 600 1.6rem/1.2 Chillax, Switzer, sans-serif; letter-spacing: -.04em; }
+  .directory-list h2 a { text-decoration: none; }
+  .directory-list p { color: var(--studio-muted); margin-block: .5rem !important; }
+  .directory-list nav { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .directory-main a, .directory-footer a { display: inline-flex; min-height: 44px; align-items: center; }
+  .directory-footer { border-top: 1px solid var(--studio-line); }
+  @media(max-width: 500px) { .directory-list li { grid-template-columns: 72px minmax(0, 1fr); gap: 1rem; } .directory-header, .directory-footer { flex-wrap: wrap; } }
 </style>

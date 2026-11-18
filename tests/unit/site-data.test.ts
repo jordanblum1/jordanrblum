@@ -138,7 +138,7 @@ test('the public project archive contains seven live, intentional projects', () 
   expect((archiveBlock.match(/title:/g) ?? [])).toHaveLength(7);
   expect((archiveBlock.match(/href: 'https:\/\//g) ?? [])).toHaveLength(7);
 
-  for (const project of ['Alive Still', 'Chicks of NYC', 'Citi Bike Wrapped', 'wimdy', 'Roast My Friend', 'Photo archive', 'blumblumblum']) {
+  for (const project of ['iOS apps', 'Chicks of NYC', 'Citi Bike Wrapped', 'wimdy', 'Roast My Friend', 'Photo archive', 'blumblumblum']) {
     expect(archiveBlock).toContain(`title: '${project}'`);
   }
 
@@ -242,7 +242,7 @@ test('the redesign uses Jordan and project-owned imagery', () => {
     expect(workVisualSource).toContain(asset);
   }
 
-  const iosCatalogue = readFileSync('src/data/ios-apps.ts', 'utf8');
+  const iosCatalogue = readFileSync('src/data/ios-app-art.ts', 'utf8');
   for (const name of ['stamp-shift', 'alive-still', 'birthday']) {
     expect(iosCatalogue).toContain(`${name}-iphone.webp`);
   }

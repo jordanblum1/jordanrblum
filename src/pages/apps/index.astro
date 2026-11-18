@@ -1,14 +1,15 @@
 ---
 import AppDocs from '../../layouts/AppDocs.astro';
-import { apps, supportEmail } from '../../data/apps';
+import { supportEmail } from '../../data/apps';
+import { iosApps } from '../../data/ios-apps';
+import { studio } from '../../data/studio';
 ---
-<AppDocs title="App support & privacy" description="Support, instructions and privacy policies for apps made by Jordan Blum." heading="App support & privacy." intro="A home for the details: how my apps work, where to get help, and what happens to your information.">
+<AppDocs title="App support & privacy" description="Support, instructions and privacy policies for apps made by Jordan Blum." heading="App support & privacy.">
   <ul class="docs-directory" aria-label="Apps with documentation">
-    {apps.map((app) => <li>
-      <p class="docs-caption">{app.platform}</p>
-      <h2><a href={`/apps/${app.slug}`}>{app.name}</a></h2>
+    {iosApps.map((app) => <li>
+      <h2><a href={app.id === 'stamp-shift' ? `/apps/${app.id}` : `${studio.origin}/apps/${app.id}`}>{app.title}</a></h2>
       <p>{app.description}</p>
-      <div class="docs-actions"><a href={`/apps/${app.slug}/support`}>Support for {app.name}</a><a href={`/apps/${app.slug}/privacy`}>{app.name} privacy policy</a></div>
+      <div class="docs-actions"><a href={app.supportUrl}>Support for {app.title}</a><a href={app.privacyUrl}>{app.title} privacy policy</a></div>
     </li>)}
   </ul>
   <section><h2>Need a hand?</h2><p class="docs-contact">Email <a href={`mailto:${supportEmail}`}>{supportEmail}</a> with the app name and a description of what happened. Please leave out passwords and payment details.</p></section>

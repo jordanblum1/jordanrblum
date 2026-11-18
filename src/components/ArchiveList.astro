@@ -1,7 +1,6 @@
 ---
 import { Image } from 'astro:assets';
 import type { ArchiveItem, ArchivePeek } from '../data/site';
-import peekAlive from '../assets/projects/peek-alive.webp';
 import peekChicks from '../assets/projects/peek-chicks.webp';
 import peekCitibike from '../assets/projects/peek-citibike.webp';
 import peekWimdy from '../assets/projects/peek-wimdy.webp';
@@ -19,7 +18,6 @@ const { items, compact = false } = Astro.props;
 // All peek assets are purpose-cropped to 4:3 (tools in the repo history) so the
 // polaroid frame never crops them unpredictably.
 const peekImages: Record<ArchivePeek, ImageMetadata> = {
-  alive: peekAlive,
   chicks: peekChicks,
   citibike: peekCitibike,
   wimdy: peekWimdy,
@@ -252,7 +250,7 @@ const peeksInUse = [...new Set(items.flatMap((item) => (item.peek ? [item.peek] 
      the cursor); the inner card owns the show/hide pop so the two motions
      don't fight. */
   /* display: none off fine-pointer screens so touch devices never download
-     the seven peek images a cursor can't summon. */
+     the peek images a cursor can't summon. */
   .archive-peek {
     display: none;
     position: fixed;

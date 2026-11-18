@@ -16,6 +16,9 @@ on:
     branches: [master]
     paths:
       - 'server/**'
+      - 'src/data/site.ts'
+      - 'src/data/ios-apps.ts'
+      - 'public/llms.txt'
       - '.github/workflows/chat-backend.yml'
 
 env:

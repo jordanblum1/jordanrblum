@@ -10,7 +10,7 @@ interface Props {
   title: string;
   description: string;
   heading: string;
-  intro: string;
+  intro?: string;
   app?: AppDocumentation;
   active?: 'overview' | 'support' | 'privacy';
 }
@@ -37,7 +37,7 @@ const sections = app ? [
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/assets/blum-studios/favicon.svg" type="image/svg+xml" sizes="32x32" />
-    <link rel="apple-touch-icon" href={isStudio ? "/assets/stamp-shift/apple-touch-icon.png" : "/apple-touch-icon.png"} sizes="180x180" />
+    <link rel="apple-touch-icon" href="/assets/blum-studios/apple-touch-icon.png" sizes="180x180" />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={switzer400Url} />
     <link rel="preload" as="font" type="font/woff2" crossorigin href={chillax600Url} />
     <meta name="color-scheme" content="light" />
@@ -52,13 +52,13 @@ const sections = app ? [
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="docs-header wide">
       <a class="docs-home" href={isStudio ? '/' : studio.origin}>{siteName}</a>
-      <nav aria-label="Site"><a href="/apps" aria-current={app ? undefined : 'page'}>App docs</a><a href={`mailto:${email}`}>{isStudio ? 'Contact' : 'Email me'}</a></nav>
+      <nav aria-label="Site"><a href="/apps" aria-current={app ? undefined : 'page'}>App docs</a><a href={`mailto:${email}`}>Email support</a></nav>
     </header>
     <main id="main-content" class="docs-main wide" tabindex="-1">
       <div class="docs-intro">
-        <p class="docs-kicker">{app ? <><a href="/apps">App docs</a><span aria-hidden="true"> / </span>{app.name}</> : 'Support & privacy'}</p>
+        {app && <p class="docs-kicker"><a href="/apps">App docs</a><span aria-hidden="true"> / </span>{app.name}</p>}
         <h1>{heading}</h1>
-        <p class="docs-lede">{intro}</p>
+        {intro && <p class="docs-lede">{intro}</p>}
       </div>
       <div class:list={['docs-body', { 'docs-body--app': app }]}>
         {app && <nav class="docs-sections" aria-label={`${app.name} documentation`}>

@@ -2,7 +2,13 @@
 import StudioLayout from '../layouts/StudioLayout.astro';
 ---
 <StudioLayout title="Page not found — Blum Studios" description="This page could not be found. Return to Blum Studios or get help with an app." path="/404">
-  <main id="main-content" tabindex="-1" style="padding:6rem 1.5rem;max-width:48rem;margin:auto">
-    <h1>That page moved.</h1><p><a href="/">Back to Blum Studios</a></p><p><a href="/apps">Find your app</a></p>
+  <main id="main-content" tabindex="-1" class="not-found">
+    <h1>Page not found.</h1>
+    <nav aria-label="Recovery"><a class="studio-pill studio-pill-primary" href="/">Back to Blum Studios</a><a class="studio-pill" href="/apps">Find your app</a></nav>
   </main>
 </StudioLayout>
+<style>
+  .not-found { max-width: 48rem; margin: auto; padding: 6rem 1.5rem; }
+  h1 { font: 600 clamp(2.75rem, 5vw, 4rem)/1.1 Chillax, Switzer, sans-serif; letter-spacing: -.065em; }
+  nav { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+</style>

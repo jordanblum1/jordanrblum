@@ -64,7 +64,7 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('## Information you can use');
     expect(prompt).toContain('current and previous roles (Savvy Wealth, Roam, Procore, Workday)');
     expect(prompt).toContain('Reed, AI infrastructure, evaluation methods');
-    expect(prompt).toContain('independent products (Alive Still, Chicks of NYC, Citi Bike Wrapped');
+    expect(prompt).toContain('independent products (the iOS app collection (Stamp Shift, Alive Still and Birthday)');
     expect(prompt).toContain('**Personal section:**');
     expect(prompt).toContain('Every claim still needs explicit support in the biography');
   });

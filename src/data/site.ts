@@ -1,3 +1,5 @@
+import { iosAppsSummary } from './ios-apps';
+
 export type WorkVisual = 'ios-apps' | 'savvy' | 'roam' | 'procore' | 'chicks' | 'citibike' | 'workday';
 
 interface SelectedWorkItemBase {
@@ -54,7 +56,6 @@ export type ExperienceItem = ExperienceItemBase & (
 );
 
 export type ArchivePeek =
-  | 'alive'
   | 'chicks'
   | 'citibike'
   | 'wimdy'
@@ -101,7 +102,7 @@ export const selectedWork: SelectedWorkItem[] = [
   },
   {
     title: 'iOS apps',
-    blurb: 'Stamp Shift, Alive Still and Birthday.',
+    blurb: iosAppsSummary,
     href: 'https://buildwithblum.com/work',
     external: true,
     group: 'project',
@@ -261,13 +262,7 @@ export const toolkit = [
 ];
 
 export const projectArchive: ArchiveItem[] = [
-  {
-    title: 'Alive Still',
-    date: '2026',
-    description: 'A daily safety check-in for people who live alone.',
-    href: 'https://alivestill.app',
-    peek: 'alive',
-  },
+  { title: 'iOS apps', date: '2026', description: iosAppsSummary, href: 'https://buildwithblum.com/work' },
   {
     title: 'Chicks of NYC',
     date: '2025—',

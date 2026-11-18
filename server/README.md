@@ -5,6 +5,8 @@ The AWS Lambda backend for the "Jordan's assistant" chat widget on
 [response streaming](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html)
 to serve Server-Sent Events to the browser.
 
+The existing self-hosted deploy also runs when `src/data/site.ts`, `src/data/ios-apps.ts` or `public/llms.txt` changes. These are public biography inputs; `pnpm build` regenerates the assistant's reference text before packaging. Keep the generated biography committed after changing these inputs. No client message or live model call is needed to refresh the facts.
+
 ## Architecture
 
 ```

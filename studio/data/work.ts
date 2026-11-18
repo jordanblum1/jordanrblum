@@ -1,5 +1,6 @@
 import type { ImageMetadata } from 'astro';
 import { iosApps } from '../../src/data/ios-apps';
+import { iosAppArt } from '../../src/data/ios-app-art';
 import chicks from '../../src/assets/projects/peek-chicks.webp';
 import citibike from '../../src/assets/projects/citibike-wrapped.webp';
 import capeTown from '../../src/assets/photos/photo0020.jpg';
@@ -27,7 +28,7 @@ export interface WorkCollection {
 export const workCollections: readonly WorkCollection[] = [
   {
     id: 'ios-apps', label: 'iOS apps', examples: iosApps.map(app => ({
-      ...app, treatment: 'phone', href: `/apps/${app.id}`, action: `Explore ${app.title}`,
+      ...app, image: iosAppArt[app.id], treatment: 'phone', href: `/apps/${app.id}`, action: `Explore ${app.title}`,
     })),
   },
   {

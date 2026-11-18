@@ -2,7 +2,7 @@
 
 > Jordan Blum is a New York–based product engineer with eight years of experience building consumer products, AI systems, developer platforms, and release tooling. He works across product definition, interface design, frontend, backend, infrastructure, analytics, evaluation, rollout, and iteration.
 
-Last updated: 2026-08-20
+Last updated: 2026-11-18
 Canonical website: https://jordanblum.com
 
 ## Important attribution and team context
@@ -115,6 +115,20 @@ Jordan began in release engineering and was promoted within 14 months. He built 
 - Built deployment and incident-response tooling and supported adoption across an 80-person engineering organization.
 
 ## Selected independent projects
+
+iOS app collection: https://buildwithblum.com/work — Stamp Shift, Alive Still and Birthday.
+
+### Stamp Shift
+
+https://buildwithblum.com/apps/stamp-shift
+
+Jordan's iPhone puzzle game: sort stamps into one delivery order. Part of the iOS apps collection at https://buildwithblum.com/work.
+
+### Birthday
+
+https://trybirthday.com
+
+Jordan's iPhone app for birthdays, reminders and thoughtful gift ideas. Its app overview and download are at https://buildwithblum.com/apps/birthday.
 
 ### Alive Still
 
