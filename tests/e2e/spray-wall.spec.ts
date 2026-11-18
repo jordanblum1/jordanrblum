@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 
 const STORAGE_KEY = 'jrb-spray-wall-v1';
 const SEED_FLAG = 'spray-wall-restore-race-seeded';
@@ -120,6 +120,17 @@ async function alphaPixelsBySide(page: Page) {
   });
 }
 
+async function painterTransforms(page: Page) {
+  return page.locator('[data-spray-painter]').evaluate((outer) => {
+    const inner = outer.querySelector('[data-spray-painter-frames]');
+    if (!(inner instanceof HTMLImageElement)) throw new Error('Painter atlas image is missing');
+    return {
+      inner: getComputedStyle(inner).transform,
+      outer: getComputedStyle(outer).transform,
+    };
+  });
+}
+
 async function expectPaint(page: Page) {
   await expect.poll(() => alphaPixels(page), { timeout: 5000 }).toBeGreaterThan(100);
 }
@@ -226,6 +237,85 @@ test('a corrupt saved image unlocks the tools on error so paint and Clear still 
   expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toBeNull();
 });
 
+test('a deferred painter atlas cannot let an old Clear finish a newer one', async ({ page }) => {
+  let atlasRequested = false;
+  let resolveAtlas!: (route: Route) => void;
+  const atlasRequest = new Promise<Route>((resolve) => (resolveAtlas = resolve));
+  await page.route('**/*painter-motion*', (route) => {
+    atlasRequested = true;
+    resolveAtlas(route);
+  });
+
+  await page.goto('/');
+  expect(atlasRequested).toBe(false);
+  const arm = page.getByRole('button', { name: 'Spray paint on the wall' });
+  await arm.scrollIntoViewIfNeeded();
+  await arm.click();
+  const pendingAtlas = await atlasRequest;
+  await page.getByRole('button', { name: 'Fat cap' }).click();
+
+  await paintStroke(page);
+  await expectPaint(page);
+  await page.getByRole('button', { name: 'Clear wall' }).click();
+  await expect(wall(page)).toHaveAttribute('data-spray-clearing', 'true');
+  await page.keyboard.press('Escape');
+  await expect(wall(page)).not.toHaveAttribute('data-spray-clearing', 'true');
+  await expectEmpty(page);
+
+  await arm.click();
+  await page.getByRole('button', { name: 'Fat cap' }).click();
+  await paintStroke(page);
+  await expectPaint(page);
+  await page.getByRole('button', { name: 'Clear wall' }).click();
+  await expect(wall(page)).toHaveAttribute('data-spray-clearing', 'true');
+
+  await pendingAtlas.continue();
+  await expect
+    .poll(async () => {
+      const transforms = await painterTransforms(page);
+      return transforms.inner !== 'none' && transforms.outer !== 'none';
+    })
+    .toBe(true);
+  await expect(wall(page)).toHaveAttribute('data-spray-clearing', 'true');
+  const firstFrame = await painterTransforms(page);
+  await expect.poll(async () => (await painterTransforms(page)).inner, { timeout: 1500 }).not.toBe(firstFrame.inner);
+  await expect.poll(async () => (await painterTransforms(page)).outer, { timeout: 1500 }).not.toBe(firstFrame.outer);
+  expect(firstFrame.inner).not.toBe(firstFrame.outer);
+
+  await expect(wall(page)).not.toHaveAttribute('data-spray-clearing', 'true', { timeout: 5000 });
+  await expectEmpty(page);
+  expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toBeNull();
+});
+
+test('an aborted painter atlas releases Clear without leaving the wall busy', async ({ page }) => {
+  let resolveAtlas!: (route: Route) => void;
+  const atlasRequest = new Promise<Route>((resolve) => (resolveAtlas = resolve));
+  await page.route('**/*painter-motion*', (route) => resolveAtlas(route));
+
+  await page.goto('/');
+  const arm = page.getByRole('button', { name: 'Spray paint on the wall' });
+  await arm.scrollIntoViewIfNeeded();
+  await arm.click();
+  const pendingAtlas = await atlasRequest;
+  await page.getByRole('button', { name: 'Fat cap' }).click();
+  await paintStroke(page);
+  await expectPaint(page);
+
+  const clear = page.getByRole('button', { name: 'Clear wall' });
+  await clear.click();
+  await expect(wall(page)).toHaveAttribute('data-spray-clearing', 'true');
+  await pendingAtlas.abort('failed');
+
+  await expect(wall(page)).not.toHaveAttribute('data-spray-clearing', 'true');
+  await expect(wall(page)).not.toHaveAttribute('aria-busy', 'true');
+  await expect(clear).not.toHaveAttribute('aria-disabled', 'true');
+  await expectEmpty(page);
+  expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toBeNull();
+
+  await paintStroke(page);
+  await expectPaint(page);
+});
+
 test('Clear wall animates, removes persisted paint, and cannot resurrect it on reload', async ({ page }, testInfo) => {
   await openWall(page);
   await paintStroke(page);
@@ -233,6 +323,7 @@ test('Clear wall animates, removes persisted paint, and cannot resurrect it on r
   expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).not.toBeNull();
 
   const startedAt = Date.now();
+  await expect(page.getByRole('button', { name: 'Clear wall' }).getByText('Clear', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Clear wall' }).click();
   await expect(wall(page)).toHaveAttribute('data-spray-clearing', 'true');
   await page.waitForTimeout(1200);

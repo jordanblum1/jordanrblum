@@ -134,6 +134,7 @@ if (root && stage) {
   const clearButton = root.querySelector<HTMLButtonElement>('[data-spray-clear]')!;
   const wallStatus = root.querySelector<HTMLElement>('[data-spray-wall-status]')!;
   const painter = root.querySelector<HTMLElement>('[data-spray-painter]')!;
+  const painterFrames = painter.querySelector<HTMLImageElement>('[data-spray-painter-frames]')!;
   const paintActions = [...root.querySelectorAll<HTMLButtonElement>('[data-spray-clear], [data-spray-undo], [data-spray-save]')];
   // Tag game: a faint BLUM stencil. Where Chrome's HTML-in-Canvas API exists
   // the real DOM word (site font, still in the accessibility tree) is drawn
@@ -534,6 +535,7 @@ if (root && stage) {
     audio.resume();
     if (!audio.muted) audio.rattle();
     resize();
+    if (!reducedMotion.matches && !painterFrames.hasAttribute('src')) painterFrames.src = painterFrames.dataset.src!;
     root.classList.add('is-armed');
     stage.classList.add('is-spray-armed');
     footerInner?.setAttribute('inert', '');
@@ -694,7 +696,17 @@ if (root && stage) {
     root.setAttribute('aria-busy', 'true');
     paintActions.forEach((button) => button.setAttribute('aria-disabled', 'true'));
     wallStatus.textContent = 'Repainting the wall…';
-    finishCleanup = repaintWall(canvas, painter, finish);
+    let stopAnimation: (() => void) | null = null;
+    const cancel = () => {
+      if (finishCleanup !== cancel) return;
+      if (stopAnimation) stopAnimation();
+      else finish();
+    };
+    finishCleanup = cancel;
+    if (!painterFrames.hasAttribute('src')) painterFrames.src = painterFrames.dataset.src!;
+    void painterFrames.decode().then(() => {
+      if (finishCleanup === cancel) stopAnimation = repaintWall(canvas, painter, finish);
+    }, cancel);
   });
 
   window.addEventListener('blur', stopSpray);

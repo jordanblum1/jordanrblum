@@ -4,13 +4,17 @@
 // The palette is a Montana-style plywood shelf of cans floating bottom-left,
 // with hand-drawn graffiti controls beside it — no panel chrome.
 // Engine + interactions live in scripts/spray-wall.ts.
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import canTerracotta from '../assets/spray/can-terracotta.webp';
 import canSage from '../assets/spray/can-sage.webp';
 import canSlate from '../assets/spray/can-slate.webp';
 import canInk from '../assets/spray/can-ink.webp';
 import shelf from '../assets/spray/shelf.webp';
-import painter from '../assets/spray/mural-painter.svg?url';
+import clearRoller from '../assets/spray/clear-roller.webp';
+import painterAtlas from '../assets/spray/painter-motion.webp';
+import motion from '../assets/spray/painter-motion.json';
+
+const painterImage = await getImage({ src: painterAtlas, width: painterAtlas.width, quality: 90 });
 
 const cans = [
   { id: 'terracotta', color: '#9C4037', src: canTerracotta, label: 'terracotta' },
@@ -46,7 +50,9 @@ const cans = [
 
   <canvas class="spray-canvas" data-spray-canvas aria-hidden="true"></canvas>
   <div class="spray-painter" data-spray-painter aria-hidden="true">
-    <img src={painter} alt="" width="688" height="1024" loading="lazy" />
+    <div class="spray-painter-sprite" style={`--atlas-width: ${motion.columns * 100}%; aspect-ratio: ${motion.frameWidth} / ${motion.frameHeight}`}>
+      <img data-spray-painter-frames data-src={painterImage.src} alt="" width={painterAtlas.width} height={painterAtlas.height} decoding="async" />
+    </div>
   </div>
   <p class="visually-hidden" data-spray-wall-status role="status"></p>
 
@@ -145,14 +151,11 @@ const cans = [
     </div>
 
     <div class="spray-actions">
-      <button type="button" class="spray-icon" data-spray-clear aria-label="Clear wall" title="clear wall">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path class="dab" d="M11 2C5 1 1 6 2 12s5 10 11 9 10-5 9-11S17 1 11 2Z" filter="url(#spray-rough)" />
-          <g class="glyph">
-            <rect class="mark" x="5" y="6" width="12" height="5" rx="1.5" />
-            <path class="mark" d="M17 8.5h2v5h-7v5" />
-          </g>
-        </svg>
+      <button type="button" class="spray-clear" data-spray-clear aria-label="Clear wall" title="clear wall">
+        <span class="spray-clear-art" aria-hidden="true">
+          <Image src={clearRoller} alt="" width={128} quality={85} loading="lazy" />
+        </span>
+        <span class="spray-clear-label">Clear</span>
       </button>
       <button type="button" class="spray-icon" data-spray-undo aria-label="Undo last stroke" title="undo">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -257,15 +260,23 @@ const cans = [
     left: 0;
     z-index: 6;
     display: none;
-    width: clamp(12rem, 19vw, 15rem);
+    width: clamp(10rem, 15vw, 13rem);
     pointer-events: none;
     filter: drop-shadow(0 5px 3px rgb(43 37 33 / 0.18));
   }
 
-  .spray-painter img {
-    width: 100%;
+  .spray-painter-sprite {
+    position: relative;
+    overflow: clip;
+  }
+
+  .spray-painter :global(img) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--atlas-width);
+    max-width: none;
     height: auto;
-    transform-origin: 60% 100%;
   }
 
   .spray-wall[data-spray-clearing="true"] .spray-painter {
@@ -274,10 +285,6 @@ const cans = [
 
   .spray-wall[data-spray-clearing="true"] {
     overflow: clip;
-  }
-
-  .spray-wall[data-spray-clearing="true"] .spray-painter img {
-    animation: roller-step 340ms ease-in-out infinite alternate;
   }
 
   .spray-wall[data-spray-clearing="true"] .spray-canvas {
@@ -292,14 +299,64 @@ const cans = [
     opacity: 0.3;
   }
 
-  .spray-icon[aria-disabled="true"] {
+  [aria-disabled="true"] {
     opacity: 0.45;
     cursor: wait;
   }
 
-  @keyframes roller-step {
-    from { transform: translateY(0) rotate(-1deg); }
-    to { transform: translateY(-4px) rotate(1deg); }
+  .spray-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    min-height: 2.9rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .spray-clear-art {
+    position: relative;
+    display: block;
+    width: 2.4rem;
+    aspect-ratio: 257 / 340;
+    overflow: clip;
+    transform-origin: 30% 85%;
+    transition: transform 220ms var(--ease-bounce);
+    filter: drop-shadow(0 2px 2px rgb(43 37 33 / 0.2));
+  }
+
+  .spray-clear-art :global(img) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+  }
+
+  .spray-clear-label {
+    padding: 0.2rem 0.5rem;
+    border-radius: 48% 40% 44% 35%;
+    background: var(--paper-raised);
+    font: 700 1rem / 1.3 var(--font-body);
+    box-shadow: 0 3px 4px rgb(43 37 33 / 0.2);
+  }
+
+  .spray-clear:is(:hover, :focus-visible) .spray-clear-art {
+    transform: translateY(-4px) rotate(-12deg);
+  }
+
+  .spray-clear:active .spray-clear-art {
+    transform: translateY(2px) rotate(8deg);
+  }
+
+  .spray-wall[data-spray-clearing="true"] .spray-clear-art {
+    animation: roller-pickup 280ms ease-out both;
+  }
+
+  @keyframes roller-pickup {
+    to { transform: translate(8px, -14px) rotate(-20deg); opacity: 0; }
   }
 
   /* While armed, the footer content stands aside (visually and for input) so
@@ -865,6 +922,7 @@ const cans = [
     }
 
     .spray-icon,
+    .spray-clear-art,
     .spray-icon .drip {
       transition: none;
     }
