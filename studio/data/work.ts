@@ -1,7 +1,5 @@
 import type { ImageMetadata } from 'astro';
-import stampShift from '../../src/assets/studio-work/stamp-shift-iphone.webp';
-import alive from '../../src/assets/studio-work/alive-still-iphone.webp';
-import birthday from '../../src/assets/studio-work/birthday-iphone.webp';
+import { iosApps } from '../../src/data/ios-apps';
 import chicks from '../../src/assets/projects/peek-chicks.webp';
 import citibike from '../../src/assets/projects/citibike-wrapped.webp';
 import capeTown from '../../src/assets/photos/photo0020.jpg';
@@ -28,10 +26,12 @@ export interface WorkCollection {
 
 export const workCollections: readonly WorkCollection[] = [
   {
-    id: 'products', label: 'Products', examples: [
-      { title: 'Stamp Shift', description: 'Sort stamps into one perfect order.', image: stampShift, treatment: 'phone', tone: 'stamp', alt: 'Stamp Shift’s real Route 20 stamp puzzle on an iPhone.', href: '/apps/stamp-shift', action: 'Explore Stamp Shift' },
-      { title: 'Alive Still', description: 'A daily safety check-in for people who live alone.', image: alive, treatment: 'phone', tone: 'alive', alt: 'Alive Still’s daily safety check-in screen on an iPhone.', href: '/apps/alive-still', action: 'Explore Alive Still' },
-      { title: 'Birthday', description: 'Birthdays, reminders and thoughtful gift ideas.', image: birthday, treatment: 'phone', tone: 'birthday', alt: 'Birthday’s upcoming birthdays screen on an iPhone, with fictional sample contacts.', href: '/apps/birthday', action: 'Explore Birthday' },
+    id: 'ios-apps', label: 'iOS apps', examples: iosApps.map(app => ({
+      ...app, treatment: 'phone', href: `/apps/${app.id}`, action: `Explore ${app.title}`,
+    })),
+  },
+  {
+    id: 'web', label: 'Web', examples: [
       { title: 'Chicks of NYC', description: 'A map and ranking of chicken wings we actually ate.', image: chicks, treatment: 'website', tone: 'chicks', alt: 'Chicks of NYC’s illustrated Brooklyn Bridge and chicken-wing identity.', href: 'https://chicksofnyc.com', action: 'Find your next wings' },
       { title: 'Citi Bike Wrapped', description: 'A personal year in review for your Citi Bike rides.', image: citibike, treatment: 'website', tone: 'bike', alt: 'A Citi Bike Wrapped ride recap.', href: 'https://citibikewrapped.com', action: 'See Citi Bike Wrapped' },
     ],

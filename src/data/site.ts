@@ -1,4 +1,4 @@
-export type WorkVisual = 'savvy' | 'roam' | 'alive' | 'procore' | 'chicks' | 'citibike' | 'workday';
+export type WorkVisual = 'ios-apps' | 'savvy' | 'roam' | 'procore' | 'chicks' | 'citibike' | 'workday';
 
 interface SelectedWorkItemBase {
   title: string;
@@ -100,13 +100,13 @@ export const selectedWork: SelectedWorkItem[] = [
     visual: 'roam',
   },
   {
-    title: 'Alive Still',
-    blurb: 'A daily safety check-in for people who live alone. Miss the window and it texts the people you chose.',
-    href: 'https://alivestill.app',
+    title: 'iOS apps',
+    blurb: 'Stamp Shift, Alive Still and Birthday.',
+    href: 'https://buildwithblum.com/work',
     external: true,
     group: 'project',
     size: 'feature',
-    visual: 'alive',
+    visual: 'ios-apps',
   },
   {
     title: 'Developer platform at Procore',

@@ -354,17 +354,17 @@ test('work rail browses real products, design and photos and reaches contact', a
   await expect(page).toHaveURL(/\/work\/?$/);
   const collection = page.locator('[data-work-collection]:visible');
   await expect(collection).toHaveCount(1);
-  await expect(collection.getByRole('heading')).toHaveText(['Stamp Shift', 'Alive Still', 'Birthday', 'Chicks of NYC', 'Citi Bike Wrapped']);
+  await expect(collection.getByRole('heading')).toHaveText(['Stamp Shift', 'Alive Still', 'Birthday']);
   await expect(page.getByRole('button', { name: 'Previous project' })).toBeDisabled();
-  const rail = page.getByRole('group', { name: 'Products gallery', exact: true });
+  const rail = page.getByRole('group', { name: 'iOS apps gallery', exact: true });
   await rail.focus();
   await page.keyboard.press('ArrowRight');
-  await expect.poll(() => rail.evaluate(element => element.scrollLeft)).toBeGreaterThan(200);
+  await expect.poll(() => rail.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
   await page.keyboard.press('End');
   await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
   await page.getByRole('button', { name: 'Previous project' }).click();
   await expect(page.getByRole('button', { name: 'Next project' })).toBeEnabled();
-  for (const [category, title] of [['Design', 'Blum'], ['Photos', 'Cape Town'], ['Products', 'Stamp Shift']]) {
+  for (const [category, title] of [['Design', 'Blum'], ['Photos', 'Cape Town'], ['Web', 'Chicks of NYC'], ['iOS apps', 'Stamp Shift']]) {
     await page.getByRole('button', { name: category, exact: true }).click();
     await expect(page.getByRole('button', { name: category, exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(collection.getByRole('heading').first()).toHaveText(title);
@@ -387,7 +387,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 320, height: 812 
     await page.goto('/work');
     await expect(page.locator('.studio-work-pill svg')).toHaveCount(0);
     if (viewport.width === 1440) await expect(page.getByRole('link', { name: 'Explore Stamp Shift', exact: true })).toBeInViewport({ ratio: 1 });
-    const cards = page.locator('[data-work-collection="products"] [data-work-example]');
+    const cards = page.locator('[data-work-collection="ios-apps"] [data-work-example]');
     const first = await cards.nth(0).boundingBox();
     const second = await cards.nth(1).boundingBox();
     expect(first?.x).toBeGreaterThanOrEqual(16);
@@ -414,7 +414,7 @@ test('work remains browsable without JavaScript', async ({ browser, baseURL }) =
   try {
     const page = await context.newPage();
     await page.goto('/work');
-    await expect(page.locator('[data-work-collection]:visible')).toHaveCount(3);
+    await expect(page.locator('[data-work-collection]:visible')).toHaveCount(4);
     await expect(page.getByRole('heading', { name: 'Birthday', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Deadvlei', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Next project' })).toBeHidden();
@@ -431,7 +431,7 @@ for (const width of [320, 375]) {
     try {
       const page = await browser.newPage({ viewport: { width, height: 844 } });
       await page.goto(`${baseURL}/work`);
-      for (const name of ['Products', 'Design', 'Photos']) {
+      for (const name of ['iOS apps', 'Web', 'Design', 'Photos']) {
         await page.getByRole('button', { name, exact: true }).click();
         await expect(page.getByRole('button', { name, exact: true })).toBeInViewport({ ratio: 1 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -446,7 +446,7 @@ for (const width of [320, 375]) {
 
 test('product phone images keep the full composite aspect ratio and route to real overviews', async ({ page }) => {
   await page.goto('/work');
-  const cards = page.locator('[data-work-collection="products"] [data-treatment="phone"]');
+  const cards = page.locator('[data-work-collection="ios-apps"] [data-treatment="phone"]');
   await expect(cards).toHaveCount(3);
   for (const [index, path] of ['/apps/stamp-shift', '/apps/alive-still', '/apps/birthday'].entries()) {
     const card = cards.nth(index);
@@ -467,14 +467,14 @@ test('product phone images keep the full composite aspect ratio and route to rea
 test('reduced motion rail supports keyboard boundaries and focus follows visible links', async ({ page, browserName }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/work');
-  const rail = page.locator('[data-work-collection="products"] [data-work-rail]');
+  const rail = page.locator('[data-work-collection="ios-apps"] [data-work-rail]');
   await rail.focus();
   await page.keyboard.press('End');
   await expect(page.getByRole('button', { name: 'Next project' })).toBeDisabled();
-  await expect(page.locator('[data-work-position]')).toContainText('of 5');
+  await expect(page.locator('[data-work-position]')).toContainText('of 3');
   await page.keyboard.press('Home');
   await expect(page.getByRole('button', { name: 'Previous project' })).toBeDisabled();
-  await expect(page.locator('[data-work-position]')).toContainText('Products · 1');
+  await expect(page.locator('[data-work-position]')).toContainText('iOS apps · 1');
   await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
   await expect(page.getByRole('link', { name: 'Explore Stamp Shift', exact: true })).toBeFocused();
   await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');

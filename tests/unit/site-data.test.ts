@@ -94,7 +94,7 @@ test('selected work balances four professional chapters with three independent p
   for (const title of [
     'AI engineering at Savvy',
     'Product engineering at Roam',
-    'Alive Still',
+    'iOS apps',
     'Developer platform at Procore',
     'Chicks of NYC',
     'Citi Bike Wrapped',
@@ -236,13 +236,15 @@ test('the redesign uses Jordan and project-owned imagery', () => {
   expect(homeSource).toContain('blum-tag-logo.png');
   expect(homeSource).toContain('widths={[320, 480, 640, 960, 1280]}');
   for (const asset of [
-    'alive-home.png',
-    'alive-trip.png',
-    'alive-activity.png',
     'chicks-logo.png',
     'citibike-wrapped.webp',
   ]) {
     expect(workVisualSource).toContain(asset);
+  }
+
+  const iosCatalogue = readFileSync('src/data/ios-apps.ts', 'utf8');
+  for (const name of ['stamp-shift', 'alive-still', 'birthday']) {
+    expect(iosCatalogue).toContain(`${name}-iphone.webp`);
   }
 
   for (const stock of ['sunset-beach', 'portfolio-3', 'cali-mountains', 'chicago-skyline']) {

@@ -2,7 +2,7 @@
 
 `/work` is an isolated studio Explore page. The homepage still uses the reviewed bridge composition and Contact morph. Work borrows product scale, solid fields, rail peeks, short headings and clear pill actions and circular browsing controls from [Apple Store](https://www.apple.com/store), checked November 3, 2026, and its installed community analysis. See [the design contract](../studio/DESIGN.md).
 
-The products are Stamp Shift, Alive Still, Birthday, Chicks of NYC and Citi Bike Wrapped, in that order. Design uses owned BLUM and Chicks art. Photos uses `photo0020.jpg` (Cape Town), `photo0030.jpg` (Deadvlei) and `photo0040.jpg` (Rome), each with a visible Jordan Blum Photography watermark. The full images are contained, preserving the watermark. `sunset-beach.jpeg` was rejected because its XMP copyright identifies Michael L. Baird; `chicago-skyline-night.jpg` was excluded because ownership was unverified. No personal contacts or private employer screens are published.
+The default iOS apps collection groups Stamp Shift, Alive Still and Birthday; Web groups Chicks of NYC and Citi Bike Wrapped. The shared catalogue in `src/data/ios-apps.ts` also powers the grouped iOS apps feature on jordanblum.com, linking back to `/work`. Design uses owned BLUM and Chicks art. Photos uses `photo0020.jpg` (Cape Town), `photo0030.jpg` (Deadvlei) and `photo0040.jpg` (Rome), each with a visible Jordan Blum Photography watermark. The full images are contained, preserving the watermark. `sunset-beach.jpeg` was rejected because its XMP copyright identifies Michael L. Baird; `chicago-skyline-night.jpg` was excluded because ownership was unverified. No personal contacts or private employer screens are published.
 
 ## Phone source contract
 
