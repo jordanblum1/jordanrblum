@@ -1,6 +1,6 @@
 import { iosAppsSummary } from './ios-apps';
 
-export type WorkVisual = 'ios-apps' | 'savvy' | 'roam' | 'procore' | 'chicks' | 'citibike' | 'workday';
+export type WorkVisual = 'jex' | 'ios-apps' | 'savvy' | 'roam' | 'procore' | 'chicks' | 'citibike' | 'workday';
 
 interface SelectedWorkItemBase {
   title: string;
@@ -149,6 +149,15 @@ export const selectedWork: SelectedWorkItem[] = [
     size: 'feature',
     visual: 'workday',
   },
+  {
+    title: 'jeX',
+    blurb: 'A searchable home for your X bookmarks and likes. Describe what you remember; Jev finds related posts beyond exact keywords.',
+    href: 'https://jex.buildwithblum.com/demo',
+    external: true,
+    group: 'project',
+    size: 'feature',
+    visual: 'jex',
+  },
 ];
 
 export const experience: ExperienceItem[] = [
@@ -262,6 +271,12 @@ export const toolkit = [
 ];
 
 export const projectArchive: ArchiveItem[] = [
+  {
+    title: 'jeX',
+    date: '2026',
+    description: 'Find your X bookmarks and likes by meaning, not just keywords.',
+    href: 'https://jex.buildwithblum.com/demo',
+  },
   { title: 'iOS apps', date: '2026', description: iosAppsSummary, href: 'https://buildwithblum.com/work' },
   {
     title: 'Chicks of NYC',

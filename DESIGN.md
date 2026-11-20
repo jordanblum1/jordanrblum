@@ -101,4 +101,6 @@ Blum Studios uses `astro.studio.config.mjs`, `studio/` and its scoped [design co
 
 ## iOS apps portfolio collection
 
-The personal homepage stays an Explore surface with three independent-project features. Its iOS apps feature groups Stamp Shift, Alive Still and Birthday as three genuine, fully contained licensed iPhone composites, with a short shared caption and one link to Build with Blum's Work collection. Reuse src/data/ios-apps.ts for both sites. Preserve existing project hover/focus treatment and reduced motion; no additional homepage sections or separate app-card grid.
+The personal homepage stays an Explore surface with four independent-project features. Its iOS apps feature groups Stamp Shift, Alive Still and Birthday as three genuine, fully contained licensed iPhone composites, with a short shared caption and one link to Build with Blum's Work collection. Reuse src/data/ios-apps.ts for both sites. Preserve existing project hover/focus treatment and reduced motion; no additional homepage sections or separate app-card grid.
+
+The jeX feature uses a fully contained composite of actual public-demo captures: a desktop natural-language search beside mobile Likes browsing. Keep the demo marker, source filters and real results intact; its link opens the public demo. The fourth feature uses a centered ten-column field and collapses to one column on phones, where a complete portrait search capture replaces the desktop pair for legibility. Capture provenance is in [jeX media](docs/jex-media.md).

@@ -6,13 +6,18 @@ test('employment and independent projects use clearly different treatments', asy
   await expect(page.locator('#places-heading')).toHaveClass(/visually-hidden/);
   await expect(page.locator('#projects-heading')).toHaveClass(/visually-hidden/);
   await expect(page.locator('#work .experience-list > li')).toHaveCount(4);
-  await expect(page.locator('#work .project-item')).toHaveCount(3);
-  await expect(page.locator('#work .work-visual[aria-hidden="true"]')).toHaveCount(3);
+  await expect(page.locator('#work .project-item')).toHaveCount(4);
+  await expect(page.locator('#work .work-visual[aria-hidden="true"]')).toHaveCount(4);
   await expect(page.locator('#work .work-meta, #work .study-label, #work .asset-note')).toHaveCount(0);
 
-  for (const title of ['Savvy', 'Roam', 'Procore', 'Workday', 'iOS apps', 'Chicks of NYC', 'Citi Bike Wrapped']) {
+  for (const title of ['Savvy', 'Roam', 'Procore', 'Workday', 'jeX', 'iOS apps', 'Chicks of NYC', 'Citi Bike Wrapped']) {
     await expect(page.locator('#work').getByRole('heading', { level: 4, name: new RegExp(title) })).toBeVisible();
   }
+
+  const jex = page.locator('#work a[href="https://jex.buildwithblum.com/demo"]');
+  await expect(jex).toHaveAttribute('target', '_blank');
+  await jex.scrollIntoViewIfNeeded();
+  await expect.poll(() => jex.locator('img').evaluate(image => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0)).toBe(true);
 
   for (const experience of [
     { href: '/about#savvy', focus: 'AI engineering', date: '2026—now' },
@@ -39,15 +44,16 @@ test('homepage archive includes the featured projects and omits weaker retired e
   await page.goto('/');
 
   const rows = page.locator('.more-section .archive-table tbody tr');
-  await expect(rows).toHaveCount(7);
-  await expect(rows.nth(0)).toContainText('iOS apps');
-  await expect(rows.nth(1)).toContainText('Chicks of NYC');
-  await expect(rows.nth(2)).toContainText('Citi Bike Wrapped');
-  await expect(rows.nth(2)).toContainText('A personal year in review for your Citi Bike rides');
-  await expect(rows.nth(3).locator('.archive-date')).toHaveText('2024');
+  await expect(rows).toHaveCount(8);
+  await expect(rows.nth(0)).toContainText('jeX');
+  await expect(rows.nth(1)).toContainText('iOS apps');
+  await expect(rows.nth(2)).toContainText('Chicks of NYC');
+  await expect(rows.nth(3)).toContainText('Citi Bike Wrapped');
+  await expect(rows.nth(3)).toContainText('A personal year in review for your Citi Bike rides');
   await expect(rows.nth(4).locator('.archive-date')).toHaveText('2024');
-  await expect(rows.nth(5)).toContainText('My hand-rolled version of Linktree, Beacons, and lnk.bio.');
-  await expect(rows.nth(6).locator('.archive-date')).toHaveText('2021 - ongoing');
+  await expect(rows.nth(5).locator('.archive-date')).toHaveText('2024');
+  await expect(rows.nth(6)).toContainText('My hand-rolled version of Linktree, Beacons, and lnk.bio.');
+  await expect(rows.nth(7).locator('.archive-date')).toHaveText('2021 - ongoing');
   await expect(page.locator('.more-section thead')).toHaveCount(0);
   await expect(page.locator('.more-section .section-kicker')).toHaveCount(0);
   await expect(page.locator('.more-section')).not.toContainText('Flâneur');

@@ -9,9 +9,9 @@ test.describe('no JavaScript', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.locator('[data-hero-field]')).toBeVisible();
     await expect(page.locator('#work .experience-list > li')).toHaveCount(4);
-    await expect(page.locator('#work .project-item')).toHaveCount(3);
+    await expect(page.locator('#work .project-item')).toHaveCount(4);
     await expect(page.locator('#work .project-item').first()).toBeVisible();
-    await expect(page.locator('.more-section .archive-table tbody tr')).toHaveCount(7);
+    await expect(page.locator('.more-section .archive-table tbody tr')).toHaveCount(8);
     await expect(page.getByRole('link', { name: /Read the longer version/ })).toHaveAttribute('href', '/about');
     await expect(page.locator('.personal-note img.personal-note-image')).toBeVisible();
     await expect(page.locator('.personal-note img.note-logo')).toBeVisible();
@@ -60,7 +60,7 @@ test.describe('no JavaScript', () => {
     await disclosures.nth(0).locator('summary').evaluate((element) => (element as HTMLElement).click());
     await expect(disclosures.nth(0)).not.toHaveAttribute('open', '');
     await expect(disclosures.nth(1)).toHaveAttribute('open', '');
-    await expect(page.locator('#projects .archive-table tbody tr')).toHaveCount(7);
+    await expect(page.locator('#projects .archive-table tbody tr')).toHaveCount(8);
     await expect(page.locator('html')).not.toHaveClass(/\bjs\b/);
     for (const revealTarget of await page.locator('[data-page-reveal]').all()) {
       await expect(revealTarget).toBeVisible();
@@ -219,4 +219,8 @@ test('independent project cards collapse to one readable column on mobile', asyn
   expect(Math.abs(first.x - second.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(first.width - second.width)).toBeLessThanOrEqual(1);
   expect(second.y).toBeGreaterThan(first.y + first.height);
+  const jex = page.locator('#work .project-item').last();
+  await jex.scrollIntoViewIfNeeded();
+  await expect.poll(() => jex.locator('img').evaluate(image => image instanceof HTMLImageElement ? image.currentSrc : '')).toContain('jex-search-mobile');
+  expect((await jex.boundingBox())?.width).toBe(first.width);
 });

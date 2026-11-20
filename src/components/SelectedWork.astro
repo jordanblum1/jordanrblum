@@ -213,6 +213,8 @@ const projectItems = items.filter(
   .project-item-1 { grid-column: 1 / span 7; }
   .project-item-2 { grid-column: 8 / span 5; padding-top: var(--space-16); }
   .project-item-3 { grid-column: 3 / span 8; }
+  .project-item-4 { grid-column: 2 / span 10; }
+  .project-item-4 .visual-shell { aspect-ratio: 3 / 2; }
 
   .project-card,
   .project-link {
@@ -396,10 +398,13 @@ const projectItems = items.filter(
 
     .project-item-1,
     .project-item-2,
-    .project-item-3 {
+    .project-item-3,
+    .project-item-4 {
       grid-column: 1;
       padding-top: 0;
     }
+
+    .project-item-4 .visual-shell { aspect-ratio: 390 / 844; }
 
     .project-item-2 .visual-shell,
     .project-item-3 .visual-shell {

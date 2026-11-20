@@ -80,13 +80,13 @@ test('S3 deployment publishes Astro pages at clean extensionless routes', () => 
   expect(layoutSource).toContain("Astro.url.pathname.replace(/\\/+$/, '')");
 });
 
-test('selected work balances four professional chapters with three independent products', () => {
-  expect((selectedWorkBlock.match(/title:/g) ?? [])).toHaveLength(7);
-  expect((selectedWorkBlock.match(/href:/g) ?? [])).toHaveLength(7);
-  expect((selectedWorkBlock.match(/size: 'feature'/g) ?? [])).toHaveLength(3);
+test('selected work balances four professional chapters with four independent products', () => {
+  expect((selectedWorkBlock.match(/title:/g) ?? [])).toHaveLength(8);
+  expect((selectedWorkBlock.match(/href:/g) ?? [])).toHaveLength(8);
+  expect((selectedWorkBlock.match(/size: 'feature'/g) ?? [])).toHaveLength(4);
   expect((selectedWorkBlock.match(/size: 'compact'/g) ?? [])).toHaveLength(4);
   expect((selectedWorkBlock.match(/group: 'work'/g) ?? [])).toHaveLength(4);
-  expect((selectedWorkBlock.match(/group: 'project'/g) ?? [])).toHaveLength(3);
+  expect((selectedWorkBlock.match(/group: 'project'/g) ?? [])).toHaveLength(4);
   expect((selectedWorkBlock.match(/company:/g) ?? [])).toHaveLength(4);
   expect((selectedWorkBlock.match(/focus:/g) ?? [])).toHaveLength(4);
   expect((selectedWorkBlock.match(/date:/g) ?? [])).toHaveLength(4);
@@ -99,6 +99,7 @@ test('selected work balances four professional chapters with three independent p
     'Chicks of NYC',
     'Citi Bike Wrapped',
     'Release tools at Workday',
+    'jeX',
   ]) {
     expect(selectedWorkBlock).toContain(`title: '${title}'`);
   }
@@ -134,11 +135,11 @@ test('the resume covers all four roles without making any one of them the whole 
   expect(experienceBlock).toContain('Associate DevOps / Release Engineer → Senior Associate Developer');
 });
 
-test('the public project archive contains seven live, intentional projects', () => {
-  expect((archiveBlock.match(/title:/g) ?? [])).toHaveLength(7);
-  expect((archiveBlock.match(/href: 'https:\/\//g) ?? [])).toHaveLength(7);
+test('the public project archive contains eight live, intentional projects', () => {
+  expect((archiveBlock.match(/title:/g) ?? [])).toHaveLength(8);
+  expect((archiveBlock.match(/href: 'https:\/\//g) ?? [])).toHaveLength(8);
 
-  for (const project of ['iOS apps', 'Chicks of NYC', 'Citi Bike Wrapped', 'wimdy', 'Roast My Friend', 'Photo archive', 'blumblumblum']) {
+  for (const project of ['jeX', 'iOS apps', 'Chicks of NYC', 'Citi Bike Wrapped', 'wimdy', 'Roast My Friend', 'Photo archive', 'blumblumblum']) {
     expect(archiveBlock).toContain(`title: '${project}'`);
   }
 
