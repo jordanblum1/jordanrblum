@@ -272,11 +272,12 @@ test('about hero and education stay compact on a phone', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
 
-test('about archive exposes seven public projects with real links', async ({ page }) => {
+test('about archive exposes eight public projects with real links', async ({ page }) => {
   await page.goto('/about');
 
   const rows = page.locator('#projects .archive-table tbody tr');
-  await expect(rows).toHaveCount(7);
+  await expect(rows).toHaveCount(8);
+  await expect(page.locator('#projects a[href="https://jex.buildwithblum.com/demo"]')).toContainText('jeX');
   await expect(page.locator('#projects a[href="https://buildwithblum.com/work"]')).toContainText('iOS apps');
   await expect(page.locator('#projects a[href="https://chicksofnyc.com"]')).toContainText('Chicks of NYC');
   await expect(page.locator('#projects a[href="https://wimdy.io"]')).toContainText('wimdy');
