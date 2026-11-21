@@ -46,7 +46,9 @@ His applied AI work centers on Savvy Intelligence — the AI workspace advisors 
 
 The work is a continuation of what he did at Roam, pointed at a different domain: wealth management is regulated, so a central problem is making AI output an advisor can verify and stand behind rather than an opaque answer.
 
-He built shared agent-tool definitions, request tracing, and a common registry for runtime execution and evaluations. Describe these specific contributions without claiming he built the whole platform or inventing launches, business outcomes, or metrics.
+He is building SI Kit, a shared applied AI foundation for Savvy Intelligence, designed for reuse across Savvy products. He shipped typed agent tools, household-scoped data access, request tracing, and a common tool registry for runtime execution and evaluations. He built golden-output tests and real-route evaluation baselines, and is developing CI checks for regressions as tools, prompts, and models change. He pairs Claude-assisted development with tests and real-app verification, and encodes patterns in reusable instructions for coding agents and engineers.
+
+Organization-wide adoption and CI rollout are ongoing work, not completed outcomes. Reusable agent instructions mean documented development conventions, not model training or autonomous learning. Describe these specific contributions without claiming he built the whole platform or inventing launches, business outcomes, or metrics.
 
 ### Roam — Product Engineer
 

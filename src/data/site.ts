@@ -168,11 +168,11 @@ export const experience: ExperienceItem[] = [
     role: 'Member of Technical Staff',
     date: 'Aug 2026—now',
     context: 'Joined a year after Savvy’s $72M Series B, with the platform past $8B in assets under management across more than 100 advisors. Backed by Industry Ventures, Thrive Capital, and Canvas Ventures.',
-    summary: 'I work on Savvy Intelligence, the AI workspace advisors use day to day, and the agent orchestration underneath it.',
+    summary: 'I work on Savvy Intelligence, the AI workspace for financial advisors, and SI Kit, a shared applied AI foundation we’re building so other Savvy products can adopt AI.',
     highlights: [
-      'Building applied AI workflows for financial advisors in TypeScript, React, and Next.js against a Rails backend.',
-      'Built shared agent-tool definitions, request tracing, and a common registry for runtime execution and evaluations.',
-      'Wealth management is regulated, so the interesting problem is making AI output an advisor can check and stand behind.',
+      'Shipped typed agent tools, household-scoped data access, request tracing, and one tool registry shared by runtime execution and evaluations.',
+      'Built golden-output tests and real-route eval baselines; developing CI checks to catch regressions as tools, prompts, and models change.',
+      'Pairing Claude-assisted development with tests and real-app verification, plus reusable instructions that help coding agents and engineers extend the kit consistently.',
     ],
   },
   {
