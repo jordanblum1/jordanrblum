@@ -33,7 +33,8 @@ const PUBLIC_SUPPLEMENT = `## Curated public supplement (reviewed additions)
 - Jordan started at Savvy Wealth in August 2026 as a member of technical staff. It is his current role.
 - Savvy is an AI-native wealth management platform for independent financial advisors, past $8B in assets under management across more than 100 advisors, and has raised more than $100M.
 - His applied AI work centers on Savvy Intelligence — the AI workspace advisors use day to day — plus the agent orchestration, tool integrations, and evals underneath it.
-- He built shared agent-tool definitions, request tracing, and a common registry for runtime execution and evaluations. Describe those contributions without inventing additional Savvy launches, features, metrics, or accomplishments, and never credit him with building Savvy's entire platform.
+- He is building SI Kit, a shared applied AI foundation for Savvy Intelligence, designed for reuse across Savvy products. He shipped typed agent tools, scoped data access, request tracing, and a common runtime/evaluation registry. He built golden-output tests and real-route evaluation baselines, is developing regression CI checks, and pairs Claude-assisted development with tests, real-app verification, and reusable agent instructions.
+- Organization-wide adoption and CI rollout remain in progress. Reusable agent instructions are documented development conventions, not model training or autonomous learning. Describe those contributions without inventing additional Savvy launches, features, metrics, or accomplishments, and never credit him with building Savvy's entire platform.
 
 ### Roam quick facts
 
