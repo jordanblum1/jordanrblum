@@ -171,8 +171,8 @@ export const experience: ExperienceItem[] = [
     summary: 'I work on Savvy Intelligence, the AI workspace for financial advisors, and SI Kit, a shared applied AI foundation we’re building so other Savvy products can adopt AI.',
     highlights: [
       'Shipped typed agent tools, household-scoped data access, request tracing, and one tool registry shared by runtime execution and evaluations.',
-      'Built golden-output tests and real-route eval baselines; developing CI checks to catch regressions as tools, prompts, and models change.',
-      'Pairing Claude-assisted development with tests and real-app verification, plus reusable instructions that help coding agents and engineers extend the kit consistently.',
+      'Built regression tests for tool outputs and evaluation baselines that exercise real application workflows; developing CI checks as tools, prompts, and models change.',
+      'Documenting reusable tool patterns and verification steps so engineers and coding agents, including Claude Code, can extend SI Kit consistently.',
     ],
   },
   {
