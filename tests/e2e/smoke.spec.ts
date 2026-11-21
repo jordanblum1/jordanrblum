@@ -25,7 +25,7 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
   await home.hover();
   await expect(home.locator('.mark-blue')).toHaveCSS('opacity', '1');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('product engineer in New York');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('AI agents');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('applied AI products');
   await expect(page.locator('.profile-facts > li')).toHaveCount(2);
   await expect(page.locator('.profile-facts')).toContainText('New York');
   await expect(page.locator('.profile-facts')).not.toContainText('Consumer products · AI agents');
@@ -165,7 +165,7 @@ test('document metadata, structured data, and keyboard skip link are present', a
   await page.goto('/');
 
   await expect(page).toHaveTitle('Jordan Blum — Product Engineer in New York');
-  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /consumer products, developer platforms, AI tools/);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /applied AI products, consumer software, and developer tools/);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jordanblum.com/');
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://jordanblum.com/og-image.jpg');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.png');
