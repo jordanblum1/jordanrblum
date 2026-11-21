@@ -25,7 +25,7 @@ test('homepage shell renders the new navigation, generalist hero, and footer', a
   await home.hover();
   await expect(home.locator('.mark-blue')).toHaveCSS('opacity', '1');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('product engineer in New York');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('applied AI products');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('software and AI tools');
   await expect(page.locator('.profile-facts > li')).toHaveCount(2);
   await expect(page.locator('.profile-facts')).toContainText('New York');
   await expect(page.locator('.profile-facts')).not.toContainText('Consumer products · AI agents');

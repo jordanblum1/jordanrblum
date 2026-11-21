@@ -42,7 +42,7 @@ August 2026–present · New York, NY
 
 Jordan joined Savvy Wealth, an AI-native wealth management platform for independent financial advisors, as a member of technical staff. He joined a year after the company's $72 million Series B, with the platform past $8 billion in assets under management across more than 100 advisors. Savvy has raised more than $100 million to date; its investors include Industry Ventures, Thrive Capital, Canvas Ventures, Vestigo Ventures, and Euclidean Capital.
 
-His scope is Savvy Intelligence — the AI workspace advisors use day to day — and the agent orchestration, tool integrations, and evaluation underneath it. The stack is TypeScript, React, and Next.js on the front end, against a Ruby on Rails backend with PostgreSQL and Sidekiq.
+His applied AI work centers on Savvy Intelligence — the AI workspace advisors use day to day — and the agent orchestration, tool integrations, and evaluation underneath it. The stack is TypeScript, React, and Next.js on the front end, against a Ruby on Rails backend with PostgreSQL and Sidekiq.
 
 The work is a continuation of what he did at Roam, pointed at a different domain: wealth management is regulated, so a central problem is making AI output an advisor can verify and stand behind rather than an opaque answer.
 

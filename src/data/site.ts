@@ -73,7 +73,7 @@ export interface ArchiveItem {
 }
 
 export const hero = {
-  statement: 'I’m Jordan, a product engineer in New York. I build applied AI products, consumer software, and developer tools.',
+  statement: 'I’m Jordan, a product engineer in New York. I build software and AI tools.',
   support: 'For the last eight years, I’ve worked across product, design, frontend, backend, and analytics. Outside work, I make iPhone apps and small web projects.',
 };
 
@@ -170,7 +170,7 @@ export const experience: ExperienceItem[] = [
     context: 'Joined a year after Savvy’s $72M Series B, with the platform past $8B in assets under management across more than 100 advisors. Backed by Industry Ventures, Thrive Capital, and Canvas Ventures.',
     summary: 'I work on Savvy Intelligence, the AI workspace advisors use day to day, and the agent orchestration underneath it.',
     highlights: [
-      'Building advisor-facing AI surfaces in TypeScript, React, and Next.js against a Rails backend.',
+      'Building applied AI workflows for financial advisors in TypeScript, React, and Next.js against a Rails backend.',
       'Built shared agent-tool definitions, request tracing, and a common registry for runtime execution and evaluations.',
       'Wealth management is regulated, so the interesting problem is making AI output an advisor can check and stand behind.',
     ],
