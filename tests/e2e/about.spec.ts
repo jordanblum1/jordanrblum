@@ -290,7 +290,7 @@ test('about metadata is route-specific', async ({ page }) => {
 
   await expect(page).toHaveTitle('About & Experience — Jordan Blum');
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jordanblum.com/about');
-  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /consumer products, developer platforms, AI tools/);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /working in applied AI, from agent orchestration and evaluations/);
 });
 
 test('company wordmarks and screenshots stay unchanged under a dark system preference', async ({ page }) => {
