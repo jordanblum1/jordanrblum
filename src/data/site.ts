@@ -73,7 +73,7 @@ export interface ArchiveItem {
 }
 
 export const hero = {
-  statement: 'I’m Jordan, a product engineer in New York. I build consumer products, developer tools, and AI agents.',
+  statement: 'I’m Jordan, a product engineer in New York. I build applied AI products, consumer software, and developer tools.',
   support: 'For the last eight years, I’ve worked across product, design, frontend, backend, and analytics. Outside work, I make iPhone apps and small web projects.',
 };
 
@@ -171,7 +171,7 @@ export const experience: ExperienceItem[] = [
     summary: 'I work on Savvy Intelligence, the AI workspace advisors use day to day, and the agent orchestration underneath it.',
     highlights: [
       'Building advisor-facing AI surfaces in TypeScript, React, and Next.js against a Rails backend.',
-      'Working on the agent orchestration, tool integrations, and evals those surfaces sit on top of.',
+      'Built shared agent-tool definitions, request tracing, and a common registry for runtime execution and evaluations.',
       'Wealth management is regulated, so the interesting problem is making AI output an advisor can check and stand behind.',
     ],
   },
@@ -180,7 +180,7 @@ export const experience: ExperienceItem[] = [
     href: 'https://www.withroam.com',
     logo: 'roam',
     role: 'Product Engineer',
-    date: 'May 2025—Aug 2026',
+    date: 'May 2025—Jul 2026',
     context: 'Joined just after Roam’s $11.5M Series A as the third engineer on a four-person team. Backed by Khosla Ventures and Founders Fund; early investors included Fifth Wall co-founder Brendan Wallace.',
     bridge: 'I worked across the marketplace, Reed, and the agent tooling behind both.',
     tracks: [
@@ -325,7 +325,7 @@ export const projectArchive: ArchiveItem[] = [
 export const about = {
   title: 'I like making things. I like making them look good, too.',
   paragraphs: [
-    'I studied computer science and studio art so I could do both. For the last eight years, I’ve worked across product, design, frontend, backend, and the systems behind them.',
+    'I studied computer science and studio art so I could do both. Over eight years, I’ve built consumer products and developer tools. My recent focus is applied AI: agent systems, evaluations, and the interfaces people use.',
     'I like following an idea from the first sketch to something people actually use. Sometimes that’s a consumer product, sometimes it’s an internal tool, and sometimes it’s a side project I wanted for myself.',
     'I live in New York. Outside work I ride bikes, make small apps, take photos, and run a chicken-wing site with friends.',
   ],

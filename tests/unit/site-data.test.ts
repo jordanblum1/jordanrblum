@@ -129,7 +129,7 @@ test('the resume covers all four roles without making any one of them the whole 
   expect(experienceBlock).toContain('one of two lead engineers who built Reed');
   expect(experienceBlock).toContain('internal agent harness our team used to plan, dispatch, and supervise parallel coding agents');
   // Roam is a past role now — its copy must not drift back to the present tense.
-  expect(experienceBlock).toContain("date: 'May 2025—Aug 2026'");
+  expect(experienceBlock).toContain("date: 'May 2025—Jul 2026'");
   expect(experienceBlock).not.toContain("date: 'May 2025—now'");
   expect((experienceBlock.match(/mediaGroup:/g) ?? [])).toHaveLength(3);
   expect(experienceBlock).toContain('Associate DevOps / Release Engineer → Senior Associate Developer');
@@ -187,10 +187,10 @@ test('llms.txt presents Savvy as current and Roam as past, without inventing Sav
   expect(llmsSource).toContain('### Savvy Wealth — Member of Technical Staff');
   expect(llmsSource).toContain('August 2026–present');
   expect(llmsSource).toContain('### Roam — Product Engineer');
-  expect(llmsSource).toContain('May 2025–August 2026');
+  expect(llmsSource).toContain('May 2025–July 2026');
   expect(llmsSource).not.toContain('May 2025–present');
   // Jordan started in August 2026. The file must keep telling models not to
-  // manufacture accomplishments for a role that has not produced them yet.
+  // manufacture accomplishments beyond his documented contributions.
   expect(llmsSource).toContain('do not invent launches, accomplishments, or numbers for this role');
   expect(llmsSource).toContain('Do not describe Jordan as still working at Roam');
 });
