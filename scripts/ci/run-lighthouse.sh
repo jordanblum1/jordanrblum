@@ -21,6 +21,13 @@ if [[ -z $profile || ! -d $profile ]]; then
 fi
 chrome_pid=
 
+print_group_diagnostics() {
+  local group_id=$1
+  printf 'PID PPID PGID SID STAT COMM\n' >&2
+  ps -eo pid=,ppid=,pgid=,sid=,stat=,comm= 2>/dev/null \
+    | awk -v group_id="$group_id" '$3 == group_id' >&2
+}
+
 group_has_live_processes() {
   local group_id=$1
   local process_stats
@@ -104,6 +111,7 @@ cleanup() {
       wait "$chrome_pid" 2>/dev/null || true
     else
       echo "Chrome process group $chrome_pid did not stop; keeping $profile for safe diagnosis" >&2
+      print_group_diagnostics "$chrome_pid" || true
       cleanup_status=1
     fi
   fi
