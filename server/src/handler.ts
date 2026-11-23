@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Context } from 'aws-lambda';
-import { runAgentTurn, DEFAULT_MODEL } from './lib/agent.js';
+import { configuredModel, runAgentTurn } from './lib/agent.js';
 import { clientIp, rateLimitBucket } from './lib/clientIp.js';
 import { handleContactRequest } from './lib/contact.js';
 import { hashIp } from './lib/ipHash.js';
@@ -155,7 +155,7 @@ async function handleChat(event: LambdaFunctionUrlEvent, responseStream: NodeJS.
         conversationId,
         messages,
         assistantReply,
-        model: process.env.CHAT_MODEL || DEFAULT_MODEL,
+        model: configuredModel(),
         ipHash,
         startedAt,
         finishedAt: new Date().toISOString(),

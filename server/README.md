@@ -16,7 +16,8 @@ Browser (chat widget)
             └─ handler.ts
                  ├─ validate body (size/shape caps)
                  ├─ rate limit (DynamoDB, per client-IP hash)
-                 ├─ agent.ts — @anthropic-ai/sdk tool runner, streams `text_delta`s as SSE
+                 ├─ agent.ts — @anthropic-ai/sdk tool runner through OpenRouter,
+                 │    streams `text_delta`s as SSE
                  │    └─ reveal_email tool → lib/tools/revealEmail.ts enforces the gate
                  └─ transcripts.ts — PutObject full conversation JSON to S3 (awaited
                     before the response stream closes)
@@ -104,6 +105,27 @@ generated bio, even if `CONTACT_EMAIL` happens to be set to it.
 The system prompt block is sent with a `cache_control: { type: "ephemeral" }`
 breakpoint so repeat turns in the same conversation reuse the cached prefix.
 
+## Model data path
+
+Each chat turn sends the system prompt, the visitor's submitted conversation
+history, tool definitions, and tool results from the Lambda to OpenRouter's
+Anthropic Messages endpoint. OpenRouter routes the request to an inference
+provider for the exact `anthropic/claude-haiku-4.5` model; this application does
+not opt into a fallback model or OpenRouter Auto. The Lambda separately saves
+the existing transcript record to the private S3 bucket described below.
+
+Tool execution stays in the Lambda. The model sees each tool result on the
+continuation request, including an allowed email reveal, so that content follows
+the same OpenRouter and inference-provider path as the visitor's messages.
+
+Before enabling this path for visitor traffic, the operator must verify the
+OpenRouter account's prompt-logging and provider data settings, resolve the
+user-facing privacy notice or consent requirement for the added gateway, add the
+`OPENROUTER_API_KEY` repository secret, and pass a staged non-visitor smoke test.
+Keep the old Anthropic credential in GitHub and the Lambda until every known
+consumer has been verified on its replacement; removal and revocation are a
+separate credential change.
+
 If `src/data/site.ts` or `public/llms.txt` change, re-run `pnpm generate:bio`
 and commit the updated `src/generated/bio.ts`.
 
@@ -129,8 +151,8 @@ detail.
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `ANTHROPIC_API_KEY` | yes | — | Anthropic API credential |
-| `CHAT_MODEL` | no | `claude-haiku-4-5-20251001` | Model used for chat turns |
+| `OPENROUTER_API_KEY` | yes | — | OpenRouter API credential sent as Bearer auth |
+| `CHAT_MODEL` | no | `anthropic/claude-haiku-4.5` | Exact OpenRouter model used for chat turns |
 | `CHAT_MAX_TOKENS` | no | `1200` | `max_tokens` per turn |
 | `CONTACT_EMAIL` | yes (for reveal to work) | — | The only source of the email address the model may share |
 | `CONTACT_DATABASE_URL` | yes (for studio contact) | — | Restricted Neon login for `blum_studio_contact.messages` only |
@@ -139,18 +161,21 @@ detail.
 
 ## Model choice and response examples
 
-Haiku 4.5 is the default. The system prompt gives it an information map, an
+Claude Haiku 4.5 through OpenRouter is the default. The system prompt gives it an information map, an
 explicit response-shape playbook, and reference answers for quick summaries,
 short lists, technical explanations with team attribution, detailed answers,
 missing facts, off-topic redirects, and tool-driven requests.
 
 On the first backend deploy after this change, the workflow migrates a Lambda
-still using the old `claude-sonnet-5` default to Haiku. It reads the existing
-environment and changes only `CHAT_MODEL`, preserving credentials and all
-other values. An existing non-legacy custom model is left unchanged.
+still using the direct Anthropic `claude-haiku-4-5-20251001` or older
+`claude-sonnet-5` default to the exact OpenRouter Haiku slug. It reads the
+existing environment, adds `OPENROUTER_API_KEY`, and preserves the old Anthropic
+credential and all other values. An existing exact OpenRouter `provider/model`
+slug is left unchanged. Any other direct model ID or `openrouter/auto` stops the
+workflow before it changes the Lambda.
 
 To change models later, run the **Chat backend** workflow manually and provide
-the desired Claude API model ID in `chat_model`. The workflow updates the
+the desired exact OpenRouter model slug in `chat_model`. The workflow updates the
 complete environment safely; direct `update-function-configuration` calls
 replace the whole `Environment.Variables` map rather than merging it.
 
@@ -176,8 +201,9 @@ pnpm install
 pnpm test:unit
 ```
 
-Anthropic, Neon and AWS boundaries are mocked or dependency-injected, so no
-network access or credentials are required to run the suite.
+OpenRouter/Anthropic, Neon and AWS boundaries use local HTTP fixtures, mocks, or
+dependency injection, so no live provider access or credentials are required to
+run the suite.
 
 ## Building
 

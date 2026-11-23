@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       chat_model:
-        description: 'Override CHAT_MODEL on the Lambda (leave blank to keep a custom model, or use Haiku 4.5 by default)'
+        description: 'Override CHAT_MODEL on the Lambda (leave blank to keep a custom OpenRouter model, or use Haiku 4.5 by default)'
         required: false
         default: ''
       diagnose:
@@ -28,8 +28,6 @@ env:
   TABLE_NAME: jordanrblum-chat-rate-limit
   OAC_NAME: jordanrblum-chat-lambda-oac
   CLOUDFRONT_DISTRIBUTION_ID: E2S9S3SPS1S2DW
-  DEFAULT_CHAT_MODEL: claude-haiku-4-5-20251001
-  LEGACY_CHAT_MODEL: claude-sonnet-5
   # jordanblum.com is canonical. blumjordan.com stays listed because the /api/*
   # behavior is deliberately NOT redirected — a browser holding a cached page
   # from the old domain still POSTs to blumjordan.com/api/chat with that Origin.
@@ -190,13 +188,14 @@ jobs:
         env:
           CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
           CONTACT_DATABASE_URL: ${{ secrets.CONTACT_DATABASE_URL }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CHAT_MODEL_INPUT: ${{ github.event.inputs.chat_model }}
         run: |
           set -euo pipefail
           umask 077
           lambda_env_dir=$(mktemp -d "${RUNNER_TEMP:-/tmp}/studio-lambda-env.XXXXXX")
           lambda_env_current="$lambda_env_dir/current.json"
+          lambda_env_keyed="$lambda_env_dir/keyed.json"
           lambda_env_updated="$lambda_env_dir/updated.json"
           lambda_env_error="$lambda_env_dir/read.err"
           cleanup_lambda_env() {
@@ -209,8 +208,8 @@ jobs:
             echo "::error::Secret CONTACT_EMAIL is not set — the reveal_email tool has nothing to reveal without it."
             exit 1
           fi
-          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-            echo "::error::Secret ANTHROPIC_API_KEY is not set."
+          if [ -z "${OPENROUTER_API_KEY:-}" ]; then
+            echo "::error::Secret OPENROUTER_API_KEY is not set."
             exit 1
           fi
           if aws lambda get-function-configuration \
@@ -232,31 +231,29 @@ jobs:
             exit 1
           fi
 
-          # Preserve an intentional custom CHAT_MODEL, but migrate the old
-          # Sonnet default to Haiku unless this run explicitly overrides it.
           EXISTING_MODEL=$(jq -r '.Variables.CHAT_MODEL // ""' "$lambda_env_current")
-          CURRENT_CHAT_MODEL="$DEFAULT_CHAT_MODEL"
-          if [ -n "$EXISTING_MODEL" ] && [ "$EXISTING_MODEL" != "$LEGACY_CHAT_MODEL" ]; then
-            CURRENT_CHAT_MODEL="$EXISTING_MODEL"
-          fi
-          if [ -n "${CHAT_MODEL_INPUT:-}" ]; then
-            CURRENT_CHAT_MODEL="$CHAT_MODEL_INPUT"
-          fi
+          CURRENT_CHAT_MODEL=$(node infra/resolve_chat_model.mjs "$EXISTING_MODEL" "${CHAT_MODEL_INPUT:-}")
           echo "Deploying with CHAT_MODEL=${CURRENT_CHAT_MODEL}"
+
+          jq \
+            --arg openrouter "$OPENROUTER_API_KEY" \
+            '.Variables | .OPENROUTER_API_KEY = $openrouter | {Variables: .}' \
+            "$lambda_env_current" \
+            > "$lambda_env_keyed"
 
           jq \
             --arg model "$CURRENT_CHAT_MODEL" \
             --arg email "$CONTACT_EMAIL" \
             --arg bucket "$BUCKET_NAME" \
             --arg table "$TABLE_NAME" \
-            --arg anthropic "$ANTHROPIC_API_KEY" \
+            --arg openrouter "$OPENROUTER_API_KEY" \
             --arg contactDatabase "${CONTACT_DATABASE_URL:-}" \
             '.Variables
               | .CHAT_MODEL = $model
               | .CONTACT_EMAIL = $email
               | .TRANSCRIPTS_BUCKET = $bucket
               | .RATE_TABLE = $table
-              | .ANTHROPIC_API_KEY = $anthropic
+              | .OPENROUTER_API_KEY = $openrouter
               | if $contactDatabase != "" then .CONTACT_DATABASE_URL = $contactDatabase else . end
               | {Variables: .}' \
             "$lambda_env_current" \
@@ -284,6 +281,13 @@ jobs:
             aws lambda wait function-active --function-name "$FUNCTION_NAME"
           elif grep -q "ResourceConflictException" /tmp/fn.err; then
             echo "Lambda function $FUNCTION_NAME already exists — updating"
+            CURRENT_OPENROUTER_API_KEY=$(jq -r '.Variables.OPENROUTER_API_KEY // ""' "$lambda_env_current")
+            if [ "$OPENROUTER_API_KEY" != "$CURRENT_OPENROUTER_API_KEY" ]; then
+              aws lambda update-function-configuration \
+                --function-name "$FUNCTION_NAME" \
+                --environment "file://$lambda_env_keyed"
+              aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+            fi
             aws lambda update-function-code \
               --function-name "$FUNCTION_NAME" \
               --zip-file fileb://lambda.zip
@@ -457,11 +461,13 @@ jobs:
         env:
           CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
           CONTACT_DATABASE_URL: ${{ secrets.CONTACT_DATABASE_URL }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           set -euo pipefail
           umask 077
           lambda_env_dir=$(mktemp -d "${RUNNER_TEMP:-/tmp}/studio-lambda-env.XXXXXX")
           lambda_env_current="$lambda_env_dir/current.json"
+          lambda_env_keyed="$lambda_env_dir/keyed.json"
           lambda_env_updated="$lambda_env_dir/updated.json"
           cleanup_lambda_env() {
             find "$lambda_env_dir" -type f -delete
@@ -472,17 +478,15 @@ jobs:
             echo "::error::Secret CONTACT_EMAIL is not set — refusing to deploy a stale reveal address."
             exit 1
           fi
+          if [ -z "${OPENROUTER_API_KEY:-}" ]; then
+            echo "::error::Secret OPENROUTER_API_KEY is not set."
+            exit 1
+          fi
           if ! aws lambda get-function --function-name "$FUNCTION_NAME" >/dev/null 2>/tmp/fn.err; then
             echo "::error::Lambda function $FUNCTION_NAME does not exist yet — run the 'provision' job (workflow_dispatch) first."
             cat /tmp/fn.err >&2
             exit 1
           fi
-          aws lambda update-function-code \
-            --function-name "$FUNCTION_NAME" \
-            --zip-file fileb://server/lambda.zip \
-            >/dev/null
-          aws lambda wait function-updated --function-name "$FUNCTION_NAME"
-
           aws lambda get-function-configuration \
             --function-name "$FUNCTION_NAME" \
             --query 'Environment' --output json \
@@ -494,18 +498,37 @@ jobs:
           fi
           CURRENT_CHAT_MODEL=$(jq -r '.Variables.CHAT_MODEL // ""' "$lambda_env_current")
           CURRENT_CONTACT_EMAIL=$(jq -r '.Variables.CONTACT_EMAIL // ""' "$lambda_env_current")
+          CURRENT_OPENROUTER_API_KEY=$(jq -r '.Variables.OPENROUTER_API_KEY // ""' "$lambda_env_current")
+          TARGET_CHAT_MODEL=$(node server/infra/resolve_chat_model.mjs "$CURRENT_CHAT_MODEL")
 
-          TARGET_CHAT_MODEL="$CURRENT_CHAT_MODEL"
-          if [ -z "$TARGET_CHAT_MODEL" ] || [ "$TARGET_CHAT_MODEL" = "$LEGACY_CHAT_MODEL" ]; then
-            TARGET_CHAT_MODEL="$DEFAULT_CHAT_MODEL"
+          if [ "$OPENROUTER_API_KEY" != "$CURRENT_OPENROUTER_API_KEY" ]; then
+            jq \
+              --arg openrouter "$OPENROUTER_API_KEY" \
+              '.Variables | .OPENROUTER_API_KEY = $openrouter | {Variables: .}' \
+              "$lambda_env_current" \
+              > "$lambda_env_keyed"
+            aws lambda update-function-configuration \
+              --function-name "$FUNCTION_NAME" \
+              --environment "file://$lambda_env_keyed" \
+              >/dev/null
+            aws lambda wait function-updated --function-name "$FUNCTION_NAME"
           fi
+
+          aws lambda update-function-code \
+            --function-name "$FUNCTION_NAME" \
+            --zip-file fileb://server/lambda.zip \
+            >/dev/null
+          aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+
           jq \
             --arg model "$TARGET_CHAT_MODEL" \
             --arg email "$CONTACT_EMAIL" \
+            --arg openrouter "$OPENROUTER_API_KEY" \
             --arg contactDatabase "${CONTACT_DATABASE_URL:-}" \
             '.Variables
               | .CHAT_MODEL = $model
               | .CONTACT_EMAIL = $email
+              | .OPENROUTER_API_KEY = $openrouter
               | if $contactDatabase != "" then .CONTACT_DATABASE_URL = $contactDatabase else . end
               | {Variables: .}' \
             "$lambda_env_current" \

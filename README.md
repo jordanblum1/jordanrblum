@@ -45,7 +45,7 @@ The widget POSTs to a relative `/api/chat` by default, which only works in produ
 PUBLIC_CHAT_ENDPOINT=https://jordanblum.com/api/chat
 ```
 
-Provisioning and backend deploys run entirely through `.github/workflows/chat-backend.yml` and require two repo secrets beyond the existing AWS ones: `ANTHROPIC_API_KEY` and `CONTACT_EMAIL`.
+Provisioning and backend deploys run entirely through `.github/workflows/chat-backend.yml` and require two repo secrets beyond the existing AWS ones: `OPENROUTER_API_KEY` and `CONTACT_EMAIL`. Chat messages pass through OpenRouter to the configured model provider; the backend data path and cutover privacy gates are documented in [`server/README.md`](server/README.md#model-data-path).
 
 ## Shared app support and privacy
 

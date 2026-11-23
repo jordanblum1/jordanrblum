@@ -4,14 +4,21 @@ import { buildSystemPrompt } from './systemPrompt.js';
 import { evaluateEmailReveal } from './tools/revealEmail.js';
 import type { ChatMessage, ResumeOfferLogEntry, RevealLogEntry } from './types.js';
 
-export const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
+export const DEFAULT_MODEL = 'anthropic/claude-haiku-4.5';
 export const DEFAULT_MAX_TOKENS = 1200;
+const DIRECT_DEFAULT_MODELS = new Set(['claude-haiku-4-5-20251001', 'claude-sonnet-5']);
 
 let client: Anthropic | undefined;
 
 function getClient(): Anthropic {
   if (!client) {
-    client = new Anthropic();
+    const openRouterApiKey = process.env.OPENROUTER_API_KEY;
+    if (!openRouterApiKey) throw new Error('OPENROUTER_API_KEY is required');
+    client = new Anthropic({
+      baseURL: 'https://openrouter.ai/api',
+      authToken: openRouterApiKey,
+      apiKey: null,
+    });
   }
   return client;
 }
@@ -21,6 +28,8 @@ export interface AgentTurnParams {
   revealLog: RevealLogEntry[];
   resumeOfferLog: ResumeOfferLogEntry[];
   onResumeOffer?: () => void;
+  signal?: AbortSignal;
+  client?: Anthropic;
 }
 
 function countPriorUserTurns(messages: ChatMessage[]): number {
@@ -29,11 +38,18 @@ function countPriorUserTurns(messages: ChatMessage[]): number {
   return Math.max(userTurns - 1, 0);
 }
 
+export function configuredModel(): string {
+  const model = process.env.CHAT_MODEL;
+  return !model || DIRECT_DEFAULT_MODELS.has(model) ? DEFAULT_MODEL : model;
+}
+
 export async function* runAgentTurn({
   messages,
   revealLog,
   resumeOfferLog,
   onResumeOffer,
+  signal,
+  client: agentClient,
 }: AgentTurnParams): AsyncGenerator<string> {
   const priorUserTurns = countPriorUserTurns(messages);
 
@@ -67,23 +83,26 @@ export async function* runAgentTurn({
     },
   });
 
-  const model = process.env.CHAT_MODEL || DEFAULT_MODEL;
+  const model = configuredModel();
   const maxTokens = Number(process.env.CHAT_MAX_TOKENS) || DEFAULT_MAX_TOKENS;
 
-  const runner = getClient().beta.messages.toolRunner({
-    model,
-    max_tokens: maxTokens,
-    system: [
-      {
-        type: 'text',
-        text: buildSystemPrompt(),
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    tools: [revealEmailTool, offerResumeTool],
-    messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    stream: true,
-  });
+  const runner = (agentClient ?? getClient()).beta.messages.toolRunner(
+    {
+      model,
+      max_tokens: maxTokens,
+      system: [
+        {
+          type: 'text',
+          text: buildSystemPrompt(),
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
+      tools: [revealEmailTool, offerResumeTool],
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      stream: true,
+    },
+    { signal },
+  );
 
   for await (const messageStream of runner) {
     for await (const event of messageStream) {
