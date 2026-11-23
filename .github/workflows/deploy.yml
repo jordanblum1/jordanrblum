@@ -64,26 +64,12 @@ jobs:
       # Performance budget: fails the build if a change cooks the benchmark
       # (thresholds in .lighthouserc.json, calibrated with ~25% headroom over
       # the 2026-07 audit numbers: mobile perf 0.95, LCP 2.9s, 457KB total).
+      - name: Test Lighthouse process cleanup
+        run: bash scripts/tests/lighthouse-process-cleanup.sh
+
       - name: Lighthouse CI perf budget
         shell: bash
-        run: |
-          # Start Linux Chrome explicitly because chrome-launcher assumes WSL uses Windows Chrome.
-          profile=$(mktemp -d "$RUNNER_TEMP/lighthouse.XXXXXX")
-          "$CHROME_PATH" --headless --remote-debugging-port=0 --user-data-dir="$profile" about:blank \
-            >"$profile/chrome.log" 2>&1 &
-          chrome_pid=$!
-          trap 'kill "$chrome_pid" 2>/dev/null || true; wait "$chrome_pid" 2>/dev/null || true; rm -rf -- "$profile"' EXIT
-          for attempt in {1..50}; do
-            if [[ -s "$profile/DevToolsActivePort" ]]; then break; fi
-            if ! kill -0 "$chrome_pid" 2>/dev/null; then break; fi
-            sleep 0.2
-          done
-          if [[ ! -s "$profile/DevToolsActivePort" ]]; then
-            cat "$profile/chrome.log"
-            exit 1
-          fi
-          port=$(head -n 1 "$profile/DevToolsActivePort")
-          pnpm dlx @lhci/cli@0.15.x autorun --collect.settings.port="$port"
+        run: scripts/ci/run-lighthouse.sh pnpm dlx @lhci/cli@0.15.x autorun
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium

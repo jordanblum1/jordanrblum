@@ -62,7 +62,7 @@ const starters = [
           Hey — I’m Jordy, Jordan’s assistant. I can give you the quick version of his work, side projects, and
           background. Pick a question below, or ask your own.
         </p>
-        <div class="chat-starters" role="group" aria-label="Suggested questions">
+        <div class="chat-starters" role="group" aria-label="Suggested questions" aria-describedby="chat-privacy-note">
           {starters.map((starter) => <button type="button" class="chat-chip" data-chat-chip>{starter}</button>)}
         </div>
       </div>
@@ -96,12 +96,15 @@ const starters = [
           maxlength="2000"
           placeholder="Ask Jordy about Jordan…"
           autocomplete="off"
-          aria-describedby="chat-input-hint"
+          aria-describedby="chat-privacy-note chat-input-hint"
         ></textarea>
         <button type="submit" class="chat-send" data-chat-send aria-label="Send message" disabled>
           <span class="chat-send-arrow" aria-hidden="true">↑</span>
         </button>
       </div>
+      <p id="chat-privacy-note" class="chat-privacy-note">
+        Messages are processed by OpenRouter and its model provider. Jordan privately saves this conversation.
+      </p>
       <span id="chat-input-hint" class="visually-hidden">
         Press Enter to send, Shift and Enter for a new line. Messages can be up to 2000 characters.
       </span>
@@ -914,6 +917,14 @@ const starters = [
 
   .chat-composer:focus-within {
     border-color: color-mix(in oklab, var(--accent) 60%, var(--hairline));
+  }
+
+  .chat-privacy-note {
+    margin: var(--space-2) var(--space-1) 0;
+    color: var(--ink-muted);
+    font-size: 0.72rem;
+    line-height: 1.45;
+    text-wrap: pretty;
   }
 
   .chat-input {

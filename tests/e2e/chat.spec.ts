@@ -37,11 +37,52 @@ test('there is no floating launcher; the nav trigger opens the panel with the Jo
   await expect(intro).toContainText('Hey — I’m Jordy, Jordan’s assistant.');
   await expect(intro).toContainText('I can give you the quick version of his work, side projects, and background.');
   await expect(intro).toContainText('Pick a question below, or ask your own.');
+  const privacyNote = panel.locator('#chat-privacy-note');
+  await expect(privacyNote).toBeVisible();
+  await expect(privacyNote).toHaveText(
+    'Messages are processed by OpenRouter and its model provider. Jordan privately saves this conversation.',
+  );
+  await expect(panel.locator('[data-chat-input]')).toHaveAttribute(
+    'aria-describedby',
+    'chat-privacy-note chat-input-hint',
+  );
+  await expect(panel.locator('[data-chat-intro] .chat-starters')).toHaveAttribute(
+    'aria-describedby',
+    'chat-privacy-note',
+  );
 
   // No persistent mailto in the panel — the email only surfaces inside
   // error/limit notices.
   await expect(panel.locator('.chat-footer')).toHaveCount(0);
   await expect(panel.locator('a[href^="mailto:"]')).toHaveCount(0);
+});
+
+test('the pre-send privacy disclosure stays inside the composer with a clean console', async ({ page }) => {
+  const consoleErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  await page.reload();
+  await page.locator('nav[aria-label="Primary"] button[data-nav-chat]').click();
+
+  const panel = page.locator('[data-chat-panel]');
+  const form = panel.locator('[data-chat-form]');
+  const privacyNote = panel.locator('#chat-privacy-note');
+  await expect(privacyNote).toBeVisible();
+  const placement = await privacyNote.evaluate((element) => {
+    const note = element.getBoundingClientRect();
+    const form = element.closest('[data-chat-form]')!.getBoundingClientRect();
+    return {
+      left: note.left >= form.left,
+      right: note.right <= form.right,
+      top: note.top >= form.top,
+      bottom: note.bottom <= form.bottom,
+    };
+  });
+
+  expect(placement).toEqual({ left: true, right: true, top: true, bottom: true });
+  await expect(form).toBeInViewport();
+  expect(consoleErrors).toEqual([]);
 });
 
 test('the BLUM mark animates in without shifting the header layout', async ({ page }) => {
@@ -620,5 +661,6 @@ test.describe('mobile sheet', () => {
     await expect(page.locator('[data-chat-form]')).toBeInViewport();
     await expect(page.locator('[data-chat-input]')).toBeInViewport();
     await expect(page.locator('[data-chat-send]')).toBeInViewport();
+    await expect(page.locator('#chat-privacy-note')).toBeInViewport();
   });
 });
