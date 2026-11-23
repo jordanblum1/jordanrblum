@@ -122,10 +122,11 @@ continuation request, including an allowed email reveal, so that content follows
 the same OpenRouter and inference-provider path as the visitor's messages.
 
 The request policy does not configure OpenRouter's own account-level input and
-output logging. Before enabling this path for visitor traffic, the operator must
-verify that separate logging setting and each eligible provider’s retention policy, resolve the user-facing privacy notice or
-consent requirement for the added gateway, add the `OPENROUTER_API_KEY`
-repository secret, and pass a staged non-visitor smoke test.
+output logging. The chat composer discloses the OpenRouter/model-provider path
+and private conversation storage before a visitor sends a message. Before
+enabling this path for visitor traffic, the operator must verify the separate
+account logging setting and each eligible provider's retention policy, add the
+`OPENROUTER_API_KEY` repository secret, and pass a staged non-visitor smoke test.
 Keep the old Anthropic credential in GitHub and the Lambda until every known
 consumer has been verified on its replacement; removal and revocation are a
 separate credential change.
