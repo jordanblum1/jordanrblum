@@ -42,14 +42,15 @@ group_has_live_processes() {
   local process_state
   local process_group
   local stat_file
+  local status=0
 
   if command -v ps >/dev/null 2>&1; then
     process_stats=$(ps -axo pgid=,stat=) || return 2
     awk -v group_id="$group_id" '
       $1 == group_id && $2 !~ /^Z/ { found = 1 }
       END { exit(found ? 0 : 1) }
-    ' <<<"$process_stats" && return 0
-    return 1
+    ' <<<"$process_stats" || status=$?
+    return "$status"
   fi
 
   if [[ -d /proc/self ]]; then

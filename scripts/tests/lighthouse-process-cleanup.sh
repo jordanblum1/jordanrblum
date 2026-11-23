@@ -25,6 +25,9 @@ set -u
 if [[ -n ${CHROME_FIXTURE_LAUNCH_MARKER:-} ]]; then
   printf 'launched\n' >"$CHROME_FIXTURE_LAUNCH_MARKER"
 fi
+if [[ -n ${CHROME_FIXTURE_PID_FILE:-} ]]; then
+  printf '%s\n' "$$" >"$CHROME_FIXTURE_PID_FILE"
+fi
 for argument in "$@"; do
   case "$argument" in
     --user-data-dir=*) profile=${argument#--user-data-dir=} ;;
@@ -165,6 +168,53 @@ test_empty_process_group_inside_exit_trap() {
   fi
 }
 
+test_awk_failure_is_bounded() {
+  local chrome_pid
+  local runner_temp=$fixture_root/awk-failure
+  local started_at=$SECONDS
+  local status=0
+  mkdir -p "$runner_temp" "$fixture_root/awk-failure-path"
+  cat >"$fixture_root/awk-failure-path/awk" <<'AWK'
+#!/usr/bin/env bash
+if [[ ! -e $AWK_FIXTURE_INPUT ]]; then
+  cat >"$AWK_FIXTURE_INPUT"
+else
+  cat >/dev/null
+fi
+exit 2
+AWK
+  cat >"$fixture_root/awk-failure-path/ps" <<'PS'
+#!/usr/bin/env bash
+printf '%s S\n' "$(cat "$CHROME_FIXTURE_PID_FILE")"
+PS
+  chmod +x "$fixture_root/awk-failure-path/awk" "$fixture_root/awk-failure-path/ps"
+
+  PATH="$fixture_root/awk-failure-path:$PATH" \
+    RUNNER_TEMP=$runner_temp \
+    CHROME_PATH=$fixture_root/fake-chrome \
+    CHROME_FIXTURE_MODE=inspection-failure \
+    CHROME_FIXTURE_PID_FILE=$fixture_root/awk-failure.pid \
+    AWK_FIXTURE_INPUT=$fixture_root/awk-failure.input \
+    "$repo_root/scripts/ci/run-lighthouse.sh" "$fixture_root/fake-lighthouse" \
+    >"$fixture_root/awk-failure.log" 2>&1 || status=$?
+
+  chrome_pid=$(<"$fixture_root/awk-failure.pid")
+  if ! awk -v group_id="$chrome_pid" \
+    '$1 == group_id && $2 !~ /^Z/ { found = 1 } END { exit(found ? 0 : 1) }' \
+    "$fixture_root/awk-failure.input"; then
+    echo "awk failure fixture did not receive a live owned process row" >&2
+    return 1
+  fi
+  if (( status == 0 || SECONDS - started_at >= 3 )); then
+    echo "awk failure did not produce a bounded cleanup failure" >&2
+    return 1
+  fi
+  if ! find "$runner_temp" -mindepth 1 -maxdepth 1 -type d -name 'lighthouse.*' -print -quit | grep -q .; then
+    echo "awk failure removed an unconfirmed Chrome profile" >&2
+    return 1
+  fi
+}
+
 run_case 0 || exit 1
 run_case 23 || exit 1
 if LIGHTHOUSE_FIXTURE_OVERRIDE_STATUS=99 run_case 0 2>"$fixture_root/status-mismatch.log"; then
@@ -174,4 +224,5 @@ fi
 test_profile_creation_failure || exit 1
 test_inspection_failure_is_bounded || exit 1
 test_empty_process_group_inside_exit_trap || exit 1
+test_awk_failure_is_bounded || exit 1
 echo "Lighthouse process-group cleanup fixtures passed"
