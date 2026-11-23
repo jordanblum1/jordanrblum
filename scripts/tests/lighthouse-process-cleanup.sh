@@ -138,6 +138,30 @@ test_inspection_failure_is_bounded() {
   fi
 }
 
+test_empty_process_group_inside_exit_trap() {
+  local helper_file=$fixture_root/group-helper.sh
+  mkdir -p "$fixture_root/empty-process-table"
+  printf '#!/usr/bin/env bash\nexit 0\n' >"$fixture_root/empty-process-table/ps"
+  chmod +x "$fixture_root/empty-process-table/ps"
+  sed -n '/^group_has_live_processes() {$/,/^}$/p' \
+    "$repo_root/scripts/ci/run-lighthouse.sh" >"$helper_file"
+
+  if ! PATH="$fixture_root/empty-process-table:$PATH" bash -c '
+    source "$1"
+    probe() {
+      status=0
+      group_has_live_processes 2147483647 || status=$?
+      trap - EXIT
+      (( status == 1 ))
+    }
+    trap probe EXIT
+    exit 0
+  ' bash "$helper_file"; then
+    echo "empty process group was reported as live inside an EXIT trap" >&2
+    return 1
+  fi
+}
+
 run_case 0 || exit 1
 run_case 23 || exit 1
 if LIGHTHOUSE_FIXTURE_OVERRIDE_STATUS=99 run_case 0 2>"$fixture_root/status-mismatch.log"; then
@@ -146,4 +170,5 @@ if LIGHTHOUSE_FIXTURE_OVERRIDE_STATUS=99 run_case 0 2>"$fixture_root/status-mism
 fi
 test_profile_creation_failure || exit 1
 test_inspection_failure_is_bounded || exit 1
+test_empty_process_group_inside_exit_trap || exit 1
 echo "Lighthouse process-group cleanup fixtures passed"
