@@ -26,14 +26,23 @@ print_group_diagnostics() {
   local checker_status=0
   local detail_output
   local detail_status=0
+  local filtered_status=0
   local liveness_output
   local liveness_status=0
+  local nonexistent_status=0
+  local probe_status=0
 
   group_has_live_processes "$group_id" || checker_status=$?
+  group_has_live_processes 2147483647 || nonexistent_status=$?
+  awk 'BEGIN { exit 7 }' </dev/null || probe_status=$?
+  command -V awk >&2
+  printf 'awk_exit_probe=%s nonexistent_group=%s\n' "$probe_status" "$nonexistent_status" >&2
   liveness_output=$(ps -axo pgid=,stat= 2>&1) || liveness_status=$?
   printf 'group_has_live_processes=%s liveness_ps=%s\n' "$checker_status" "$liveness_status" >&2
   if (( liveness_status == 0 )); then
-    awk -v group_id="$group_id" '$1 == group_id' <<<"$liveness_output" >&2
+    awk -v group_id="$group_id" '$1 == group_id { print; found = 1 } END { exit(found ? 0 : 1) }' \
+      <<<"$liveness_output" >&2 || filtered_status=$?
+    printf 'same_snapshot_filter=%s\n' "$filtered_status" >&2
   else
     printf '%s\n' "$liveness_output" >&2
   fi
