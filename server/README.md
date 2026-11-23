@@ -113,15 +113,19 @@ Anthropic Messages endpoint. OpenRouter routes the request to an inference
 provider for the exact `anthropic/claude-haiku-4.5` model; this application does
 not opt into a fallback model or OpenRouter Auto. The Lambda separately saves
 the existing transcript record to the private S3 bucket described below.
+Every model request, including tool continuations, sets OpenRouter's
+`provider.data_collection` policy to `deny` so routing excludes providers that
+store or train on the request content.
 
 Tool execution stays in the Lambda. The model sees each tool result on the
 continuation request, including an allowed email reveal, so that content follows
 the same OpenRouter and inference-provider path as the visitor's messages.
 
-Before enabling this path for visitor traffic, the operator must verify the
-OpenRouter account's prompt-logging and provider data settings, resolve the
-user-facing privacy notice or consent requirement for the added gateway, add the
-`OPENROUTER_API_KEY` repository secret, and pass a staged non-visitor smoke test.
+The request policy does not configure OpenRouter's own account-level input and
+output logging. Before enabling this path for visitor traffic, the operator must
+verify that separate logging setting, resolve the user-facing privacy notice or
+consent requirement for the added gateway, add the `OPENROUTER_API_KEY`
+repository secret, and pass a staged non-visitor smoke test.
 Keep the old Anthropic credential in GitHub and the Lambda until every known
 consumer has been verified on its replacement; removal and revocation are a
 separate credential change.

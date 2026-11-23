@@ -151,6 +151,7 @@ describe('OpenRouter Anthropic SDK HTTP contract', () => {
     expect(first.body).toMatchObject({
       model: 'anthropic/claude-haiku-4.5',
       max_tokens: 1200,
+      provider: { data_collection: 'deny' },
       stream: true,
       messages: [
         { role: 'user', content: 'What have you built?' },
@@ -167,7 +168,9 @@ describe('OpenRouter Anthropic SDK HTTP contract', () => {
       expect.objectContaining({ name: 'offer_resume' }),
     ]);
 
-    const continuation = fixture.requests[1]!.body.messages as Array<Record<string, unknown>>;
+    const continuationRequest = fixture.requests[1]!.body;
+    expect(continuationRequest.provider).toEqual({ data_collection: 'deny' });
+    const continuation = continuationRequest.messages as Array<Record<string, unknown>>;
     expect(continuation).toHaveLength(5);
     expect(continuation[3]).toMatchObject({
       role: 'assistant',

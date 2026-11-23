@@ -7,6 +7,7 @@ import type { ChatMessage, ResumeOfferLogEntry, RevealLogEntry } from './types.j
 export const DEFAULT_MODEL = 'anthropic/claude-haiku-4.5';
 export const DEFAULT_MAX_TOKENS = 1200;
 const DIRECT_DEFAULT_MODELS = new Set(['claude-haiku-4-5-20251001', 'claude-sonnet-5']);
+const OPENROUTER_PROVIDER_POLICY = { provider: { data_collection: 'deny' as const } };
 
 let client: Anthropic | undefined;
 
@@ -88,6 +89,7 @@ export async function* runAgentTurn({
 
   const runner = (agentClient ?? getClient()).beta.messages.toolRunner(
     {
+      ...OPENROUTER_PROVIDER_POLICY,
       model,
       max_tokens: maxTokens,
       system: [
