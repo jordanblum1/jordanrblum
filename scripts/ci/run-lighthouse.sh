@@ -23,9 +23,29 @@ chrome_pid=
 
 print_group_diagnostics() {
   local group_id=$1
+  local checker_status=0
+  local detail_output
+  local detail_status=0
+  local liveness_output
+  local liveness_status=0
+
+  group_has_live_processes "$group_id" || checker_status=$?
+  liveness_output=$(ps -axo pgid=,stat= 2>&1) || liveness_status=$?
+  printf 'group_has_live_processes=%s liveness_ps=%s\n' "$checker_status" "$liveness_status" >&2
+  if (( liveness_status == 0 )); then
+    awk -v group_id="$group_id" '$1 == group_id' <<<"$liveness_output" >&2
+  else
+    printf '%s\n' "$liveness_output" >&2
+  fi
+
   printf 'PID PPID PGID SID STAT COMM\n' >&2
-  ps -eo pid=,ppid=,pgid=,sid=,stat=,comm= 2>/dev/null \
-    | awk -v group_id="$group_id" '$3 == group_id' >&2
+  detail_output=$(ps -eo pid=,ppid=,pgid=,sid=,stat=,comm= 2>&1) || detail_status=$?
+  printf 'detail_ps=%s\n' "$detail_status" >&2
+  if (( detail_status == 0 )); then
+    awk -v group_id="$group_id" '$3 == group_id' <<<"$detail_output" >&2
+  else
+    printf '%s\n' "$detail_output" >&2
+  fi
 }
 
 group_has_live_processes() {
