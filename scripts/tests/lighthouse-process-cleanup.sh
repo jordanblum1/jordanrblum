@@ -152,7 +152,10 @@ test_empty_process_group_inside_exit_trap() {
       status=0
       group_has_live_processes 2147483647 || status=$?
       trap - EXIT
-      (( status == 1 ))
+      if (( status == 1 )); then
+        exit 0
+      fi
+      exit 1
     }
     trap probe EXIT
     exit 0
