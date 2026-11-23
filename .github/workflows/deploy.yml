@@ -13,7 +13,7 @@ on:
         default: false
 
 jobs:
-  # Fork pull requests never execute untrusted code on the private Mac. Keep
+  # Fork pull requests never execute untrusted code on the self-hosted runner. Keep
   # this red so a skipped private-runner check cannot be mistaken for acceptance.
   untrusted-fork:
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
@@ -27,7 +27,7 @@ jobs:
 
   test:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, macOS, ARM64, personal-mac]
+    runs-on: [self-hosted, Linux, X64, personal-pc]
     permissions:
       contents: read
     steps:
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          # The private Mac retains the pnpm store across runs.
+          # The self-hosted runner retains the pnpm store across runs.
           package-manager-cache: false
 
       - run: pnpm install --frozen-lockfile
@@ -68,7 +68,7 @@ jobs:
         run: pnpm dlx @lhci/cli@0.15.x autorun
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
 
       - run: pnpm test:e2e
         env:
@@ -116,7 +116,7 @@ jobs:
   deploy:
     needs: test
     if: github.event_name != 'pull_request' && inputs.validate_only != true
-    runs-on: [self-hosted, macOS, ARM64, personal-mac]
+    runs-on: [self-hosted, Linux, X64, personal-pc]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -199,7 +199,7 @@ jobs:
   deploy-studio:
     needs: test
     if: github.event_name != 'pull_request' && inputs.validate_only != true && vars.BLUM_STUDIOS_PROJECT_ID != ''
-    runs-on: [self-hosted, macOS, ARM64, personal-mac]
+    runs-on: [self-hosted, Linux, X64, personal-pc]
     permissions:
       contents: read
     steps:
@@ -213,8 +213,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:studio
       - run: pnpm prepare:studio-deploy
-      # Existing owner CLI authentication on the private Mac; no token in source.
       - name: Publish prebuilt studio site
         env:
           STUDIO_PROJECT: ${{ vars.BLUM_STUDIOS_PROJECT_ID }}
-        run: vercel deploy --prebuilt --prod --yes --project "$STUDIO_PROJECT" --scope jordanblum1s-projects
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Configure the VERCEL_TOKEN repository secret before enabling Studio publishing"
+            exit 1
+          fi
+          pnpm dlx vercel@66.6.0 deploy --prebuilt --prod --yes --project "$STUDIO_PROJECT" --scope jordanblum1s-projects --token "$VERCEL_TOKEN"
