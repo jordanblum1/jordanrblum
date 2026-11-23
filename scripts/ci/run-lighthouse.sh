@@ -10,7 +10,15 @@ fi
 : "${CHROME_PATH:?CHROME_PATH must point to a Chrome executable}"
 
 runner_temp=${RUNNER_TEMP:-${TMPDIR:-/tmp}}
-profile=$(mktemp -d "$runner_temp/lighthouse.XXXXXX")
+profile=
+if ! profile=$(mktemp -d "$runner_temp/lighthouse.XXXXXX"); then
+  echo "Could not create an owned Chrome profile in $runner_temp" >&2
+  exit 1
+fi
+if [[ -z $profile || ! -d $profile ]]; then
+  echo "mktemp did not return an owned Chrome profile directory" >&2
+  exit 1
+fi
 chrome_pid=
 
 group_has_live_processes() {
@@ -19,6 +27,15 @@ group_has_live_processes() {
   local process_state
   local process_group
   local stat_file
+
+  if command -v ps >/dev/null 2>&1; then
+    process_stats=$(ps -axo pgid=,stat=) || return 2
+    awk -v group_id="$group_id" '
+      $1 == group_id && $2 !~ /^Z/ { found = 1 }
+      END { exit(found ? 0 : 1) }
+    ' <<<"$process_stats"
+    return
+  fi
 
   if [[ -d /proc/self ]]; then
     for stat_file in /proc/[0-9]*/stat; do
@@ -33,11 +50,7 @@ group_has_live_processes() {
     return 1
   fi
 
-  process_stats=$(ps -axo pgid=,stat=) || return 2
-  awk -v group_id="$group_id" '
-    $1 == group_id && $2 !~ /^Z/ { found = 1 }
-    END { exit(found ? 0 : 1) }
-  ' <<<"$process_stats"
+  return 2
 }
 
 wait_for_group_to_stop() {
@@ -65,7 +78,12 @@ stop_chrome_group() {
 
   group_has_live_processes "$group_id" || group_status=$?
   (( group_status == 1 )) && return 0
-  (( group_status > 1 )) && return 1
+  if (( group_status > 1 )); then
+    kill -TERM -- "-$group_id" 2>/dev/null || true
+    sleep 0.1
+    kill -KILL -- "-$group_id" 2>/dev/null || true
+    return 1
+  fi
 
   kill -TERM -- "-$group_id" 2>/dev/null || true
   if wait_for_group_to_stop "$group_id" 30; then
@@ -82,11 +100,12 @@ cleanup() {
   trap - EXIT INT TERM
 
   if [[ -n $chrome_pid ]]; then
-    if ! stop_chrome_group "$chrome_pid"; then
+    if stop_chrome_group "$chrome_pid"; then
+      wait "$chrome_pid" 2>/dev/null || true
+    else
       echo "Chrome process group $chrome_pid did not stop; keeping $profile for safe diagnosis" >&2
       cleanup_status=1
     fi
-    wait "$chrome_pid" 2>/dev/null || true
   fi
 
   if (( cleanup_status == 0 )); then
